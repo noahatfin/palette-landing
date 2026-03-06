@@ -1,0 +1,5 @@
+.DS_Store
+.claude/
+iridescent.framer.website/
+node_modules/
+.vercel/

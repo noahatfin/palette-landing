@@ -1,0 +1,469 @@
+/* === Reset & Global === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background: rgb(203, 231, 244);
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* === Nav === */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100px;
+  padding: 0 40px;
+}
+
+.nav-spacer {
+  flex: 1;
+}
+
+.nav-logo {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-logo a {
+  font-family: 'Braah One', sans-serif;
+  font-size: 26px;
+  color: #000;
+  letter-spacing: 0;
+}
+
+.nav-icon {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.nav-icon a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+}
+
+/* === Background === */
+.background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.background-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(10px);
+  transform: scale(1.05);
+}
+
+/* === Hero === */
+.hero {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100vh;
+  padding: 160px;
+  pointer-events: none;
+}
+
+.hero-top,
+.hero-bottom {
+  pointer-events: auto;
+}
+
+.hero-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+h1 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 63px;
+  letter-spacing: -0.05em;
+  line-height: 1.1em;
+  color: #000;
+  width: 611px;
+  max-width: 100%;
+}
+
+h2 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.6em;
+  color: rgba(0, 0, 0, 0.7);
+  width: 80%;
+  max-width: 500px;
+}
+
+/* === Hero Bottom === */
+.hero-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+}
+
+.offset-text {
+  position: absolute;
+  top: -87px;
+  left: -135px;
+}
+
+.offset-text h3 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.6em;
+  color: #000;
+  letter-spacing: 0.02em;
+}
+
+/* === Email Form === */
+.email-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.email-form input {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 0 2px rgb(0, 0, 0);
+  border: none;
+  border-radius: 99px;
+  padding: 15px 69px 15px 15px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+  color: #000;
+  width: 300px;
+  outline: none;
+}
+
+.email-form input::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.email-form button {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  bottom: 4px;
+  width: 54px;
+  border: none;
+  border-radius: 95px;
+  background: #000;
+  color: #fff;
+  font-family: 'Glegoo', serif;
+  font-size: 26px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.email-form button:hover {
+  opacity: 0.8;
+}
+
+.arrow-mobile {
+  display: none;
+}
+
+/* === Ticker === */
+.ticker-wrapper {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 100vh;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+}
+
+.ticker-inner {
+  width: 105%;
+  margin-left: -2.5%;
+  height: 150px;
+  transform: rotate(4deg);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.ticker-track {
+  display: flex;
+  white-space: nowrap;
+  animation: ticker-scroll 30s linear infinite;
+}
+
+.ticker-text {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  font-size: 150px;
+  letter-spacing: 0.05em;
+  color: #000;
+  padding-right: 80px;
+  flex-shrink: 0;
+}
+
+/* === Floating Shapes === */
+.shape {
+  position: absolute;
+  z-index: 4;
+  will-change: transform;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.shape.dragging {
+  cursor: grabbing;
+  z-index: 20;
+}
+
+.shape img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+.shape-1 {
+  bottom: 298px;
+  left: 89%;
+  width: 83px;
+  height: 83px;
+  filter: blur(1px);
+  transform: translateX(-50%) rotate(-16deg);
+}
+
+.shape-2 {
+  bottom: 323px;
+  left: 27%;
+  width: 116px;
+  height: 116px;
+  filter: drop-shadow(2px 19px 13px #00000075);
+  transform: translateX(-50%) rotate(12deg);
+}
+
+.shape-3 {
+  bottom: 450px;
+  left: 84%;
+  width: 225px;
+  height: 184px;
+  filter: drop-shadow(2px 19px 13px #00000075);
+  transform: translateX(-50%);
+}
+
+.shape-4 {
+  top: 46%;
+  left: 47%;
+  width: 99px;
+  height: 107px;
+  filter: drop-shadow(2px 19px 13px #00000075);
+  transform: translate(-50%, -50%);
+}
+
+.shape-5 {
+  bottom: 489px;
+  left: 17%;
+  width: 172px;
+  height: 169px;
+  filter: drop-shadow(2px 19px 13px #00000075);
+  transform: translateX(-50%);
+}
+
+.shape-6 {
+  bottom: 234px;
+  left: 67%;
+  width: 171px;
+  height: 171px;
+  filter: drop-shadow(2px 19px 13px #00000075);
+  transform: translateX(-50%);
+}
+
+
+/* === Footer === */
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: calc(50% - 720px);
+  width: 1440px;
+  height: 57px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+
+.footer a {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  font-size: 14px;
+  color: #000;
+  transition: color 0.3s cubic-bezier(0.44, 0, 0.56, 1);
+}
+
+.footer a:hover {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* === Responsive: Tablet (810px - 1439px) === */
+@media (min-width: 810px) and (max-width: 1439.98px) {
+  .hero-top {
+    gap: 16px;
+  }
+
+  h1 {
+    font-size: 50px;
+    width: min-content;
+  }
+
+  .offset-text {
+    position: absolute;
+    top: -80px;
+    left: -100px;
+  }
+
+  .footer {
+    width: 100%;
+    left: 0;
+  }
+
+  .shape-1 { width: 60px; height: 60px; }
+  .shape-2 { width: 90px; height: 90px; }
+  .shape-3 { width: 170px; height: 140px; left: 80%; }
+  .shape-4 { width: 75px; height: 82px; }
+  .shape-5 { width: 130px; height: 128px; }
+  .shape-6 { width: 130px; height: 130px; }
+}
+
+/* === Responsive: Mobile (<810px) === */
+@media (max-width: 809.98px) {
+  .nav {
+    height: auto;
+    padding: 16px 20px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(203, 231, 244, 0.6);
+  }
+
+  .hero {
+    padding: 118px;
+    height: 100svh;
+  }
+
+  .hero-top {
+    gap: 16px;
+  }
+
+  h1 {
+    font-size: 40px;
+    width: 297px;
+    max-width: 100%;
+  }
+
+  h2 {
+    line-height: 1.3em;
+    width: 90%;
+  }
+
+  .hero-bottom {
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .offset-text {
+    position: relative;
+    top: auto;
+    left: auto;
+    text-align: center;
+    margin-bottom: 20px;
+    order: 0;
+  }
+
+  .email-form {
+    order: 1;
+  }
+
+  .email-form input {
+    width: 280px;
+    padding-right: 60px;
+  }
+
+  .email-form button {
+    width: 47px;
+    font-family: 'Gabarito', sans-serif;
+  }
+
+  .arrow-desktop {
+    display: none;
+  }
+  .arrow-mobile {
+    display: inline;
+  }
+
+  .ticker-text {
+    font-size: 100px;
+  }
+
+  .shape { display: none; }
+
+  .footer {
+    width: 100%;
+    left: 0;
+    height: 50px;
+    gap: 20px;
+  }
+
+  .footer a {
+    font-size: 12px;
+  }
+}
