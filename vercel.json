@@ -2,6 +2,9 @@
   "buildCommand": null,
   "outputDirectory": ".",
   "cleanUrls": true,
+  "github": {
+    "enabled": false
+  },
   "headers": [
     {
       "source": "/imgs/(.*)",
