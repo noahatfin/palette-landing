@@ -47,7 +47,7 @@
 /* === Shapes === */
 .shape {
   position: fixed;
-  z-index: 4;
+  z-index: 3;
   will-change: transform;
   cursor: grab;
   user-select: none;
@@ -55,7 +55,7 @@
   touch-action: none;
 }
 
-.shape.dragging { cursor: grabbing; z-index: 20; }
+.shape.dragging { cursor: grabbing; z-index: 3; }
 
 .shape img {
   width: 100%;
