@@ -74,6 +74,19 @@
   const springDuration = getSpringDuration();
   const springEasing = generateLinearEasing(30);
 
+  // Check if linear() easing is supported (Chrome 113+, Safari 17+, Firefox 112+)
+  const supportsLinearEasing = (function () {
+    try {
+      return CSS.supports('animation-timing-function', 'linear(0, 1)');
+    } catch (e) {
+      return false;
+    }
+  })();
+
+  // Fallback easing when linear() isn't supported
+  const fallbackEasing = 'cubic-bezier(0.16, 1, 0.3, 1)';
+  const fallbackDuration = 700;
+
   // Animation configs: [selector, delay, perspectiveOverride]
   const animationTargets = [
     ['[data-animate="hero"]', 0.15, 1200],
@@ -81,47 +94,57 @@
 
   /**
    * Set initial hidden state for animated elements
+   * Only hides if WAAPI is available (progressive enhancement)
    */
   function initAnimations() {
+    if (typeof Element.prototype.animate !== 'function') return;
     animationTargets.forEach(function (config) {
       var el = document.querySelector(config[0]);
       if (el) {
         var perspective = config[2] || 1200;
         el.style.opacity = '0.001';
-        el.style.transform = 'perspective(' + perspective + 'px) translateY(100px) scale(0.9)';
+        el.style.transform = 'perspective(' + perspective + 'px) translateY(48px) scale(0.96)';
       }
     });
   }
 
   /**
-   * Animate element using Web Animations API with spring easing
+   * Animate element using Web Animations API with spring easing (or fallback)
    */
   function animateElement(el, delay, perspective) {
+    if (typeof el.animate !== 'function') return;
     var perspectiveVal = perspective || 1200;
+    var easing = supportsLinearEasing ? springEasing : fallbackEasing;
+    var duration = supportsLinearEasing ? springDuration * 1000 : fallbackDuration;
 
     setTimeout(function () {
-      el.animate([
-        {
-          opacity: 0.001,
-          transform: 'perspective(' + perspectiveVal + 'px) translateY(100px) scale(0.9)'
-        },
-        {
-          opacity: 1,
-          transform: 'perspective(' + perspectiveVal + 'px) translateY(0px) scale(1)'
-        }
-      ], {
-        duration: springDuration * 1000,
-        easing: springEasing,
-        fill: 'forwards'
-      });
+      try {
+        el.animate([
+          {
+            opacity: 0.001,
+            transform: 'perspective(' + perspectiveVal + 'px) translateY(48px) scale(0.96)'
+          },
+          {
+            opacity: 1,
+            transform: 'perspective(' + perspectiveVal + 'px) translateY(0px) scale(1)'
+          }
+        ], {
+          duration: duration,
+          easing: easing,
+          fill: 'forwards'
+        });
+      } catch (e) {
+        // Animation failed — just show the element
+        el.style.opacity = '1';
+        el.style.transform = '';
+      }
     }, delay * 1000);
   }
 
   /**
-   * Set up Intersection Observer for appear animations
+   * Trigger appear animations on load
    */
   function setupObserver() {
-    // Since this is a single viewport page, trigger all animations on load
     animationTargets.forEach(function (config) {
       var el = document.querySelector(config[0]);
       if (el) {
