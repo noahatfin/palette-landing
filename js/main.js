@@ -463,7 +463,9 @@
     var springEasingReveal = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
     var revealDuration = 560;
     var staggerDelay = 70; // ms between nearby reveal blocks
-    var targets = Array.from(document.querySelectorAll('[data-reveal]'));
+    var targets = Array.from(document.querySelectorAll('[data-reveal]')).filter(function (el) {
+      return !el.classList.contains('feature-card');
+    });
     if (!targets.length) return;
 
     // Set initial hidden state
@@ -516,6 +518,90 @@
   }
 
   /**
+   * Feature cards motion: staggered reveal + gentle 3D hover tilt
+   */
+  function setupFeatureCardsMotion() {
+    var cards = Array.from(document.querySelectorAll('.feature-card'));
+    if (!cards.length) return;
+
+    var prefersReducedMotion = false;
+    try {
+      prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {
+      prefersReducedMotion = false;
+    }
+
+    if (!prefersReducedMotion) {
+      document.body.classList.add('features-motion');
+    }
+
+    if (prefersReducedMotion || typeof IntersectionObserver !== 'function') {
+      cards.forEach(function (card) {
+        card.classList.add('is-visible');
+      });
+    } else {
+      var revealObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          revealObserver.unobserve(entry.target);
+          var idx = cards.indexOf(entry.target);
+          var delay = Math.max(idx, 0) * 90;
+          setTimeout(function () {
+            entry.target.classList.add('is-visible');
+          }, delay);
+        });
+      }, {
+        threshold: 0.35,
+        rootMargin: '0px 0px -8% 0px'
+      });
+
+      cards.forEach(function (card) {
+        revealObserver.observe(card);
+      });
+    }
+
+    if (prefersReducedMotion) return;
+
+    cards.forEach(function (card) {
+      function setFromPointer(clientX, clientY) {
+        var rect = card.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        var x = (clientX - rect.left) / rect.width;
+        var y = (clientY - rect.top) / rect.height;
+        var clampedX = Math.max(0, Math.min(1, x));
+        var clampedY = Math.max(0, Math.min(1, y));
+        var rotateX = (0.5 - clampedY) * 6;
+        var rotateY = (clampedX - 0.5) * 8;
+
+        card.style.setProperty('--card-rotate-x', rotateX.toFixed(2) + 'deg');
+        card.style.setProperty('--card-rotate-y', rotateY.toFixed(2) + 'deg');
+        card.style.setProperty('--card-glow-x', (clampedX * 100).toFixed(1) + '%');
+        card.style.setProperty('--card-glow-y', (clampedY * 100).toFixed(1) + '%');
+      }
+
+      function resetTilt() {
+        card.classList.remove('is-hovered');
+        card.style.setProperty('--card-rotate-x', '0deg');
+        card.style.setProperty('--card-rotate-y', '0deg');
+        card.style.setProperty('--card-glow-x', '50%');
+        card.style.setProperty('--card-glow-y', '28%');
+      }
+
+      card.addEventListener('pointerenter', function (e) {
+        card.classList.add('is-hovered');
+        setFromPointer(e.clientX, e.clientY);
+      });
+
+      card.addEventListener('pointermove', function (e) {
+        setFromPointer(e.clientX, e.clientY);
+      });
+
+      card.addEventListener('pointerleave', resetTilt);
+      card.addEventListener('blur', resetTilt, true);
+    });
+  }
+
+  /**
    * Form handling
    */
   function setupForm() {
@@ -536,6 +622,7 @@
     setupForm();
     setupDraggableShapes();
     setupScrollReveal();
+    setupFeatureCardsMotion();
   }
 
   if (document.readyState === 'loading') {
