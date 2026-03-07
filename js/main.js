@@ -280,178 +280,167 @@
   }
 
   /**
-   * Fullpage spring scroll — section-by-section navigation with damping
+   * Section indicator synced to native scrolling
    */
   function setupFullpageScroll() {
     var sections = Array.from(document.querySelectorAll('section[id]'));
     if (!sections.length) return;
 
     var currentIdx = 0;
-    var transitioning = false;
-    var targetY = 0;
-    var rafId = null;
 
-    var startY = 0;
-    var startTime = 0;
-    var animDur = 360;
-
-    function getSectionTop(idx) {
-      return sections[idx] ? sections[idx].offsetTop : 0;
-    }
-
-    function easeOutExpo(t) {
-      return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
-    }
-
-    function animateTick(now) {
-      var t = Math.min((now - startTime) / animDur, 1);
-      window.scrollTo(0, startY + (targetY - startY) * easeOutExpo(t));
-      if (t < 1) {
-        rafId = requestAnimationFrame(animateTick);
-      } else {
-        window.scrollTo(0, targetY);
-        rafId = null;
-        setTimeout(function () { transitioning = false; }, 50);
-      }
-    }
-
-    function goTo(idx) {
-      if (idx < 0) idx = 0;
-      if (idx >= sections.length) idx = sections.length - 1;
-      if (idx === currentIdx) return;
-      var jumped = Math.abs(idx - currentIdx);
-      currentIdx = idx;
-      targetY = getSectionTop(idx);
-      transitioning = true;
-      startY = window.scrollY;
-      startTime = performance.now();
-      animDur = Math.min(360 + jumped * 70, 520);
-      if (rafId) cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(animateTick);
-      updateIndicator(idx);
-    }
-
-    // Wheel — allow internal section scroll first, then advance section
-    var wheelAccum = 0;
-    var wheelDir = 0;
-    var wheelTimer = null;
-    var WHEEL_THRESHOLD = 110;
-    var WHEEL_RESET_MS = 140;
-
-    function normalizeWheelDelta(e) {
-      var delta = e.deltaY;
-      if (e.deltaMode === 1) return delta * 16; // line mode
-      if (e.deltaMode === 2) return delta * window.innerHeight; // page mode
-      return delta; // pixel mode
-    }
-
-    window.addEventListener('wheel', function (e) {
-      e.preventDefault();
-      if (transitioning) return;
-      var delta = normalizeWheelDelta(e);
-      if (!delta) return;
-
-      // If this section has internal overflow, scroll it first
-      var sec = sections[currentIdx];
-      var canDown = sec.scrollTop + sec.clientHeight < sec.scrollHeight - 3;
-      var canUp   = sec.scrollTop > 3;
-
-      if (delta > 0 && canDown) {
-        sec.scrollTop += delta;
-        return;
-      }
-      if (delta < 0 && canUp) {
-        sec.scrollTop += delta;
-        return;
-      }
-
-      // Accumulate intent to change section
-      var nextDir = delta > 0 ? 1 : -1;
-      if (wheelDir && wheelDir !== nextDir) wheelAccum = 0;
-      wheelDir = nextDir;
-      wheelAccum += delta;
-      clearTimeout(wheelTimer);
-      wheelTimer = setTimeout(function () {
-        wheelAccum = 0;
-        wheelDir = 0;
-      }, WHEEL_RESET_MS);
-
-      if (Math.abs(wheelAccum) > WHEEL_THRESHOLD) {
-        var dir = wheelAccum > 0 ? 1 : -1;
-        wheelAccum = 0;
-        wheelDir = 0;
-        goTo(currentIdx + dir);
-      }
-    }, { passive: false });
-
-    // Touch swipe
-    var touchY0 = 0;
-    window.addEventListener('touchstart', function (e) {
-      touchY0 = e.touches[0].clientY;
-    }, { passive: true });
-
-    window.addEventListener('touchend', function (e) {
-      if (transitioning) return;
-      var dy = touchY0 - e.changedTouches[0].clientY;
-      if (Math.abs(dy) > 50) goTo(currentIdx + (dy > 0 ? 1 : -1));
-    }, { passive: true });
-
-    // Nav / anchor clicks
-    document.querySelectorAll('a[href^="#"]').forEach(function (link) {
-      link.addEventListener('click', function (e) {
-        var id = this.getAttribute('href').slice(1);
-        var idx = sections.findIndex(function (s) { return s.id === id; });
-        if (idx !== -1) {
-          e.preventDefault();
-          goTo(idx);
-        }
+    function findActiveSectionIndex() {
+      var probeY = window.scrollY + window.innerHeight * 0.45;
+      var found = 0;
+      sections.forEach(function (s, i) {
+        if (s.offsetTop <= probeY) found = i;
       });
-    });
+      return found;
+    }
 
     // Build right-side indicator
     var sectionNames = { home: 'Home', features: 'Features', waitlist: 'Waitlist', contact: 'Contact' };
-    var indicator = document.createElement('div');
-    indicator.className = 'fp-indicator';
+    var indicator = document.querySelector('.fp-indicator');
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.className = 'fp-indicator';
+      document.body.appendChild(indicator);
+    }
+    indicator.innerHTML = '';
+    var dotWrappers = [];
     sections.forEach(function (s, i) {
       var wrapper = document.createElement('div');
       wrapper.className = 'fp-dot-wrapper';
       var dot = document.createElement('div');
       dot.className = 'fp-dot' + (i === 0 ? ' active' : '');
-      dot.addEventListener('click', function () { goTo(i); });
+      dot.addEventListener('click', function () {
+        currentIdx = i;
+        updateIndicator(i);
+        sections[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
       var label = document.createElement('span');
       label.className = 'fp-dot-label';
       label.textContent = sectionNames[s.id] || s.id;
       wrapper.appendChild(dot);
       wrapper.appendChild(label);
       indicator.appendChild(wrapper);
+      dotWrappers.push(wrapper);
     });
+    var droplet = document.createElement('div');
+    droplet.className = 'fp-droplet';
+    indicator.appendChild(droplet);
     var arrow = document.createElement('div');
     arrow.className = 'fp-arrow';
     indicator.appendChild(arrow);
-    document.body.appendChild(indicator);
 
-    function updateIndicator(idx) {
+    function moveDroplet(idx, animateJump) {
+      var target = dotWrappers[idx];
+      if (!target) return;
+      var top = target.offsetTop + (target.offsetHeight - droplet.offsetHeight) / 2;
+      droplet.style.top = top + 'px';
+      if (animateJump) {
+        droplet.classList.remove('is-jumping');
+        void droplet.offsetWidth;
+        droplet.classList.add('is-jumping');
+      }
+    }
+
+    function updateIndicator(idx, options) {
+      options = options || {};
       indicator.querySelectorAll('.fp-dot').forEach(function (dot, i) {
         dot.classList.remove('active');
         if (i === idx) {
-          void dot.offsetWidth; // force reflow to replay animation
           dot.classList.add('active');
         }
       });
+      moveDroplet(idx, !options.silent);
       arrow.style.opacity = idx >= sections.length - 1 ? '0' : '1';
     }
 
+    function syncFromScroll(silent) {
+      var idx = findActiveSectionIndex();
+      if (idx !== currentIdx) {
+        currentIdx = idx;
+        updateIndicator(idx, { silent: !!silent });
+        return;
+      }
+      moveDroplet(currentIdx, false);
+      arrow.style.opacity = currentIdx >= sections.length - 1 ? '0' : '1';
+    }
+
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        ticking = false;
+        syncFromScroll(false);
+      });
+    }, { passive: true });
+
+    window.addEventListener('resize', function () {
+      syncFromScroll(true);
+    });
+
     // Detect initial section (e.g. if page loaded with hash)
     function detectInitial() {
-      var mid = window.scrollY + window.innerHeight / 2;
-      var found = 0;
-      sections.forEach(function (s, i) {
-        if (s.offsetTop <= mid) found = i;
-      });
-      currentIdx = found;
-      updateIndicator(found);
+      currentIdx = findActiveSectionIndex();
+      updateIndicator(currentIdx, { silent: true });
     }
     detectInitial();
+  }
+
+  /**
+   * Waitlist feature carousel arrows
+   */
+  function setupWaitlistFeatureCarousel() {
+    var wrap = document.querySelector('.waitlist-features');
+    if (!wrap) return;
+
+    var strip = wrap.querySelector('.waitlist-features-grid');
+    var prevBtn = wrap.querySelector('[data-carousel-dir="prev"]');
+    var nextBtn = wrap.querySelector('[data-carousel-dir="next"]');
+    if (!strip || !prevBtn || !nextBtn) return;
+
+    var prefersReducedMotion = false;
+    try {
+      prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {
+      prefersReducedMotion = false;
+    }
+
+    function getGapPx() {
+      var styles = window.getComputedStyle(strip);
+      var rawGap = styles.columnGap || styles.gap || '0';
+      var val = parseFloat(rawGap);
+      return isNaN(val) ? 0 : val;
+    }
+
+    function getStepPx() {
+      var card = strip.querySelector('.waitlist-feature-card');
+      if (!card) return Math.max(strip.clientWidth * 0.86, 260);
+      return card.getBoundingClientRect().width + getGapPx();
+    }
+
+    function updateButtons() {
+      var maxLeft = Math.max(0, strip.scrollWidth - strip.clientWidth);
+      prevBtn.disabled = strip.scrollLeft <= 2;
+      nextBtn.disabled = strip.scrollLeft >= maxLeft - 2;
+    }
+
+    function onArrowClick(dir) {
+      var step = getStepPx();
+      strip.scrollBy({
+        left: dir * step,
+        behavior: prefersReducedMotion ? 'auto' : 'smooth'
+      });
+    }
+
+    prevBtn.addEventListener('click', function () { onArrowClick(-1); });
+    nextBtn.addEventListener('click', function () { onArrowClick(1); });
+    strip.addEventListener('scroll', updateButtons, { passive: true });
+    window.addEventListener('resize', updateButtons);
+
+    updateButtons();
   }
 
   /**
@@ -518,7 +507,7 @@
   }
 
   /**
-   * Feature cards motion: staggered reveal + gentle 3D hover tilt
+   * Feature cards motion: staggered reveal
    */
   function setupFeatureCardsMotion() {
     var cards = Array.from(document.querySelectorAll('.feature-card'));
@@ -539,65 +528,26 @@
       cards.forEach(function (card) {
         card.classList.add('is-visible');
       });
-    } else {
-      var revealObserver = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (!entry.isIntersecting) return;
-          revealObserver.unobserve(entry.target);
-          var idx = cards.indexOf(entry.target);
-          var delay = Math.max(idx, 0) * 90;
-          setTimeout(function () {
-            entry.target.classList.add('is-visible');
-          }, delay);
-        });
-      }, {
-        threshold: 0.35,
-        rootMargin: '0px 0px -8% 0px'
-      });
-
-      cards.forEach(function (card) {
-        revealObserver.observe(card);
-      });
+      return;
     }
 
-    if (prefersReducedMotion) return;
+    var revealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        revealObserver.unobserve(entry.target);
+        var idx = cards.indexOf(entry.target);
+        var delay = Math.max(idx, 0) * 90;
+        setTimeout(function () {
+          entry.target.classList.add('is-visible');
+        }, delay);
+      });
+    }, {
+      threshold: 0.35,
+      rootMargin: '0px 0px -8% 0px'
+    });
 
     cards.forEach(function (card) {
-      function setFromPointer(clientX, clientY) {
-        var rect = card.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
-        var x = (clientX - rect.left) / rect.width;
-        var y = (clientY - rect.top) / rect.height;
-        var clampedX = Math.max(0, Math.min(1, x));
-        var clampedY = Math.max(0, Math.min(1, y));
-        var rotateX = (0.5 - clampedY) * 6;
-        var rotateY = (clampedX - 0.5) * 8;
-
-        card.style.setProperty('--card-rotate-x', rotateX.toFixed(2) + 'deg');
-        card.style.setProperty('--card-rotate-y', rotateY.toFixed(2) + 'deg');
-        card.style.setProperty('--card-glow-x', (clampedX * 100).toFixed(1) + '%');
-        card.style.setProperty('--card-glow-y', (clampedY * 100).toFixed(1) + '%');
-      }
-
-      function resetTilt() {
-        card.classList.remove('is-hovered');
-        card.style.setProperty('--card-rotate-x', '0deg');
-        card.style.setProperty('--card-rotate-y', '0deg');
-        card.style.setProperty('--card-glow-x', '50%');
-        card.style.setProperty('--card-glow-y', '28%');
-      }
-
-      card.addEventListener('pointerenter', function (e) {
-        card.classList.add('is-hovered');
-        setFromPointer(e.clientX, e.clientY);
-      });
-
-      card.addEventListener('pointermove', function (e) {
-        setFromPointer(e.clientX, e.clientY);
-      });
-
-      card.addEventListener('pointerleave', resetTilt);
-      card.addEventListener('blur', resetTilt, true);
+      revealObserver.observe(card);
     });
   }
 
@@ -619,8 +569,10 @@
   function init() {
     initAnimations();
     setupObserver();
+    setupFullpageScroll();
     setupForm();
     setupDraggableShapes();
+    setupWaitlistFeatureCarousel();
     setupScrollReveal();
     setupFeatureCardsMotion();
   }

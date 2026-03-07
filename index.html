@@ -18,11 +18,6 @@
 </head>
 <body>
 
-  <!-- Background -->
-  <div class="background">
-    <img src="imgs/hero-bg.png" alt="" class="background-img" />
-  </div>
-
   <!-- Nav -->
   <nav class="nav">
     <div class="nav-logo">
@@ -83,10 +78,24 @@
           <a href="#waitlist" class="btn-primary">Get Early Access &rarr;</a>
           <a href="#features" class="btn-secondary">See how it works</a>
         </div>
-        <div class="hero-video">
-          <div class="hero-video-inner">
-            <div class="hero-video-play"></div>
-            <span class="hero-video-label">Watch the demo</span>
+        <div class="hero-video-banner" aria-label="Demo video showcase">
+          <div class="hero-video-rail">
+            <div class="hero-video-set">
+              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00077.mp4" type="video/mp4" /></video></article>
+              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00079.mp4" type="video/mp4" /></video></article>
+              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00080.mp4" type="video/mp4" /></video></article>
+              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00082.mp4" type="video/mp4" /></video></article>
+              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00117.mp4" type="video/mp4" /></video></article>
+              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00125.mp4" type="video/mp4" /></video></article>
+            </div>
+            <div class="hero-video-set" aria-hidden="true">
+              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00077.mp4" type="video/mp4" /></video></article>
+              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00079.mp4" type="video/mp4" /></video></article>
+              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00080.mp4" type="video/mp4" /></video></article>
+              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00082.mp4" type="video/mp4" /></video></article>
+              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00117.mp4" type="video/mp4" /></video></article>
+              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00125.mp4" type="video/mp4" /></video></article>
+            </div>
           </div>
         </div>
         <div class="scroll-hint">scroll</div>
@@ -224,6 +233,38 @@
           <span class="waitlist-note">No spam. Unsubscribe any time.</span>
         </form>
 
+        <div class="waitlist-features" data-reveal="4">
+          <div class="waitlist-features-head">
+            <div class="waitlist-features-arrows" aria-label="Feature cards navigation">
+              <button type="button" class="waitlist-features-arrow" data-carousel-dir="prev" aria-label="Scroll cards left">&#8592;</button>
+              <button type="button" class="waitlist-features-arrow" data-carousel-dir="next" aria-label="Scroll cards right">&#8594;</button>
+            </div>
+          </div>
+
+          <div class="waitlist-features-grid">
+            <article class="waitlist-feature-card">
+              <img class="waitlist-feature-media" src="index1.jpg" alt="Watercolor landscape painting" />
+              <h3>Describe your story</h3>
+              <p>Chat with the AI director as naturally as texting a friend. Describe scenes, characters, and moods — Palette understands context and intent.</p>
+            </article>
+            <article class="waitlist-feature-card">
+              <img class="waitlist-feature-media" src="index1.jpg" alt="Watercolor landscape painting" />
+              <h3>Watch it come to life</h3>
+              <p>Palette generates video frames and sequences in real time. Preview each scene instantly and iterate until it feels exactly right.</p>
+            </article>
+            <article class="waitlist-feature-card">
+              <img class="waitlist-feature-media" src="index1.jpg" alt="Watercolor landscape painting" />
+              <h3>Polish in seconds</h3>
+              <p>A simple timeline editor lets you trim clips, reorder scenes, and adjust pacing — without any video editing experience needed.</p>
+            </article>
+            <article class="waitlist-feature-card">
+              <img class="waitlist-feature-media" src="index1.jpg" alt="Watercolor landscape painting" />
+              <h3>Describe your story</h3>
+              <p>Chat with the AI director as naturally as texting a friend. Describe scenes, characters, and moods — Palette understands context and intent.</p>
+            </article>
+          </div>
+        </div>
+
         <!-- Success state (shown after submit) -->
         <div class="waitlist-success" id="waitlist-success">
           <div class="waitlist-success-icon">✦</div>
@@ -305,7 +346,6 @@
           <div class="footer-emblem">✦</div>
         </div>
         <div class="footer-nav">
-          <a href="#">PAI</a>
           <a href="#">STUDIO</a>
           <a href="#">EAST</a>
           <a href="#">ENTERPRISE</a>
@@ -320,6 +360,28 @@
         <p class="footer-copy">© 2026 Palette Studios. All rights reserved.</p>
       </div>
     </footer>
+  </div>
+
+  <!-- Right-side section indicator fallback (enhanced by js/main.js) -->
+  <div class="fp-indicator" aria-label="Section navigation">
+    <div class="fp-dot-wrapper">
+      <div class="fp-dot active"></div>
+      <span class="fp-dot-label">Home</span>
+    </div>
+    <div class="fp-dot-wrapper">
+      <div class="fp-dot"></div>
+      <span class="fp-dot-label">Features</span>
+    </div>
+    <div class="fp-dot-wrapper">
+      <div class="fp-dot"></div>
+      <span class="fp-dot-label">Waitlist</span>
+    </div>
+    <div class="fp-dot-wrapper">
+      <div class="fp-dot"></div>
+      <span class="fp-dot-label">Contact</span>
+    </div>
+    <div class="fp-droplet"></div>
+    <div class="fp-arrow"></div>
   </div>
 
   <script>
