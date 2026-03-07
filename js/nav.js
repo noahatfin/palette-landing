@@ -7,6 +7,10 @@
 
     // Smooth-scroll on nav link click
     function handleNavClick(e) {
+      if (e.defaultPrevented) {
+        closeMobileNav();
+        return;
+      }
       var href = this.getAttribute('href');
       if (href && href.startsWith('#')) {
         e.preventDefault();

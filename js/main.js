@@ -293,7 +293,7 @@
 
     var startY = 0;
     var startTime = 0;
-    var animDur = 480;
+    var animDur = 360;
 
     function getSectionTop(idx) {
       return sections[idx] ? sections[idx].offsetTop : 0;
@@ -318,13 +318,14 @@
     function goTo(idx) {
       if (idx < 0) idx = 0;
       if (idx >= sections.length) idx = sections.length - 1;
+      if (idx === currentIdx) return;
       var jumped = Math.abs(idx - currentIdx);
       currentIdx = idx;
       targetY = getSectionTop(idx);
       transitioning = true;
       startY = window.scrollY;
       startTime = performance.now();
-      animDur = Math.min(480 + jumped * 80, 620);
+      animDur = Math.min(360 + jumped * 70, 520);
       if (rafId) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(animateTick);
       updateIndicator(idx);
@@ -332,34 +333,53 @@
 
     // Wheel — allow internal section scroll first, then advance section
     var wheelAccum = 0;
+    var wheelDir = 0;
     var wheelTimer = null;
+    var WHEEL_THRESHOLD = 110;
+    var WHEEL_RESET_MS = 140;
+
+    function normalizeWheelDelta(e) {
+      var delta = e.deltaY;
+      if (e.deltaMode === 1) return delta * 16; // line mode
+      if (e.deltaMode === 2) return delta * window.innerHeight; // page mode
+      return delta; // pixel mode
+    }
 
     window.addEventListener('wheel', function (e) {
       e.preventDefault();
       if (transitioning) return;
+      var delta = normalizeWheelDelta(e);
+      if (!delta) return;
 
       // If this section has internal overflow, scroll it first
       var sec = sections[currentIdx];
       var canDown = sec.scrollTop + sec.clientHeight < sec.scrollHeight - 3;
       var canUp   = sec.scrollTop > 3;
 
-      if (e.deltaY > 0 && canDown) {
-        sec.scrollTop += e.deltaY;
+      if (delta > 0 && canDown) {
+        sec.scrollTop += delta;
         return;
       }
-      if (e.deltaY < 0 && canUp) {
-        sec.scrollTop += e.deltaY;
+      if (delta < 0 && canUp) {
+        sec.scrollTop += delta;
         return;
       }
 
       // Accumulate intent to change section
-      wheelAccum += e.deltaY;
+      var nextDir = delta > 0 ? 1 : -1;
+      if (wheelDir && wheelDir !== nextDir) wheelAccum = 0;
+      wheelDir = nextDir;
+      wheelAccum += delta;
       clearTimeout(wheelTimer);
-      wheelTimer = setTimeout(function () { wheelAccum = 0; }, 200);
+      wheelTimer = setTimeout(function () {
+        wheelAccum = 0;
+        wheelDir = 0;
+      }, WHEEL_RESET_MS);
 
-      if (Math.abs(wheelAccum) > 48) {
+      if (Math.abs(wheelAccum) > WHEEL_THRESHOLD) {
         var dir = wheelAccum > 0 ? 1 : -1;
         wheelAccum = 0;
+        wheelDir = 0;
         goTo(currentIdx + dir);
       }
     }, { passive: false });
@@ -435,58 +455,63 @@
   }
 
   /**
-   * Spring scroll reveal — animate [data-reveal] children as sections enter viewport
+   * Scroll reveal — animate each [data-reveal] block when it enters viewport
    */
   function setupScrollReveal() {
     if (typeof Element.prototype.animate !== 'function') return;
 
     var springEasingReveal = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
-    var revealDuration = 700;
-    var staggerDelay = 120; // ms between each data-reveal element
+    var revealDuration = 560;
+    var staggerDelay = 70; // ms between nearby reveal blocks
+    var targets = Array.from(document.querySelectorAll('[data-reveal]'));
+    if (!targets.length) return;
 
-    // Gather all sections with [data-reveal] children
-    var sections = document.querySelectorAll('section[id]');
+    // Set initial hidden state
+    targets.forEach(function (el) {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(28px) scale(0.98)';
+      el.style.willChange = 'opacity, transform';
+    });
 
-    sections.forEach(function (section) {
-      var targets = section.querySelectorAll('[data-reveal]');
-      if (!targets.length) return;
+    function reveal(el) {
+      var index = parseInt(el.getAttribute('data-reveal'), 10) || 0;
+      var delay = Math.min(index * staggerDelay, 280);
 
-      // Set initial hidden state
-      targets.forEach(function (el) {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(36px) scale(0.97)';
-        el.style.willChange = 'opacity, transform';
-      });
-
-      var observer = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (!entry.isIntersecting) return;
-          observer.unobserve(entry.target);
-
-          var sectionTargets = entry.target.querySelectorAll('[data-reveal]');
-          sectionTargets.forEach(function (el) {
-            var index = parseInt(el.getAttribute('data-reveal'), 10) || 0;
-            var delay = index * staggerDelay;
-            setTimeout(function () {
-              try {
-                el.animate([
-                  { opacity: 0, transform: 'translateY(36px) scale(0.97)' },
-                  { opacity: 1, transform: 'translateY(0px) scale(1)' }
-                ], {
-                  duration: revealDuration,
-                  easing: springEasingReveal,
-                  fill: 'forwards'
-                });
-              } catch (e) {
-                el.style.opacity = '1';
-                el.style.transform = '';
-              }
-            }, delay);
+      setTimeout(function () {
+        try {
+          el.animate([
+            { opacity: 0, transform: 'translateY(28px) scale(0.98)' },
+            { opacity: 1, transform: 'translateY(0px) scale(1)' }
+          ], {
+            duration: revealDuration,
+            easing: springEasingReveal,
+            fill: 'forwards'
           });
-        });
-      }, { threshold: 0.1 });
+        } catch (e) {
+          el.style.opacity = '1';
+          el.style.transform = '';
+        }
+      }, delay);
+    }
 
-      observer.observe(section);
+    if (typeof IntersectionObserver !== 'function') {
+      targets.forEach(reveal);
+      return;
+    }
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        observer.unobserve(entry.target);
+        reveal(entry.target);
+      });
+    }, {
+      threshold: 0.2,
+      rootMargin: '0px 0px -10% 0px'
+    });
+
+    targets.forEach(function (el) {
+      observer.observe(el);
     });
   }
 
@@ -510,7 +535,6 @@
     setupObserver();
     setupForm();
     setupDraggableShapes();
-    setupFullpageScroll();
     setupScrollReveal();
   }
 
