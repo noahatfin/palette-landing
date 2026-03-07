@@ -1,7 +1,7 @@
 /* ============================================================
-   Features page
+   Features section
    ============================================================ */
-.features-page { padding-top: 64px; }
+.features-page { padding-top: 64px; } /* standalone page fallback */
 
 /* === Intro === */
 .features-intro {
@@ -10,11 +10,8 @@
   margin: 0 auto;
 }
 
-.features-intro-inner {
-  max-width: 600px;
-}
-
-.features-intro h1 {
+/* h2 used in merged layout, h1 in standalone */
+.features-intro-heading {
   font-size: 58px;
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -23,6 +20,7 @@
   margin-bottom: 20px;
 }
 
+.features-intro-heading em,
 .features-intro h1 em {
   font-family: var(--font-display);
   font-style: italic;
@@ -31,6 +29,20 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.features-intro-inner {
+  max-width: 600px;
+}
+
+/* h1 used in standalone features.html */
+.features-intro h1 {
+  font-size: 58px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.06;
+  color: var(--ink);
+  margin-bottom: 20px;
 }
 
 .features-intro p {
@@ -383,7 +395,7 @@
 /* === Responsive === */
 @media (max-width: 809.98px) {
   .features-intro { padding: 56px 24px 40px; }
-  .features-intro h1 { font-size: 38px; }
+  .features-intro h1, .features-intro-heading { font-size: 38px; }
 
   .mockup-wrapper { padding: 0 16px 48px; }
   .mockup-body {
@@ -407,7 +419,7 @@
 }
 
 @media (min-width: 810px) and (max-width: 1199.98px) {
-  .features-intro h1 { font-size: 44px; }
+  .features-intro h1, .features-intro-heading { font-size: 44px; }
   .features-grid { grid-template-columns: repeat(2, 1fr); padding: 0 32px 80px; }
   .mockup-wrapper { padding: 0 32px 60px; }
   .features-section-header { padding: 0 32px 32px; }

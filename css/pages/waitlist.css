@@ -25,7 +25,8 @@
   pointer-events: auto;
 }
 
-.waitlist-main h1 {
+.waitlist-main h1,
+.waitlist-heading {
   font-size: 72px;
   font-weight: 700;
   letter-spacing: -0.045em;
@@ -35,7 +36,8 @@
   margin-bottom: 20px;
 }
 
-.waitlist-main h1 em {
+.waitlist-main h1 em,
+.waitlist-heading em {
   font-family: var(--font-display);
   font-style: italic;
   font-weight: 700;
@@ -164,6 +166,6 @@
 @media (max-width: 809.98px) {
   .waitlist-page { padding-top: 56px; }
   .waitlist-main { padding: 70px 24px 60px; }
-  .waitlist-main h1 { font-size: 46px; }
+  .waitlist-main h1, .waitlist-heading { font-size: 46px; }
   .waitlist-main > p { font-size: 15px; }
 }

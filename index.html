@@ -8,10 +8,13 @@
   <link rel="icon" href="imgs/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Braah+One&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,700&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Braah+One&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,700&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/animations.css" />
   <link rel="stylesheet" href="css/pages/home.css" />
+  <link rel="stylesheet" href="css/pages/features.css" />
+  <link rel="stylesheet" href="css/pages/waitlist.css" />
+  <link rel="stylesheet" href="css/pages/contact.css" />
 </head>
 <body>
 
@@ -23,15 +26,15 @@
   <!-- Nav -->
   <nav class="nav">
     <div class="nav-logo">
-      <a href="index.html">Palette</a>
+      <a href="#home">Palette</a>
     </div>
     <div class="nav-links">
-      <a href="features.html">Features</a>
-      <a href="waitlist.html">Waitlist</a>
-      <a href="contact.html">Contact</a>
+      <a href="#features">Features</a>
+      <a href="#waitlist">Waitlist</a>
+      <a href="#contact">Contact</a>
     </div>
     <div class="nav-cta">
-      <a href="waitlist.html" class="btn-primary">Get Early Access &rarr;</a>
+      <a href="#waitlist" class="btn-primary">Get Early Access &rarr;</a>
     </div>
     <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
       <span></span><span></span><span></span>
@@ -40,10 +43,10 @@
 
   <!-- Mobile nav drawer -->
   <div class="nav-mobile">
-    <a href="features.html">Features</a>
-    <a href="waitlist.html">Waitlist</a>
-    <a href="contact.html">Contact</a>
-    <a href="waitlist.html" class="btn-primary">Get Early Access &rarr;</a>
+    <a href="#features">Features</a>
+    <a href="#waitlist">Waitlist</a>
+    <a href="#contact">Contact</a>
+    <a href="#waitlist" class="btn-primary">Get Early Access &rarr;</a>
   </div>
 
   <!-- Ticker -->
@@ -70,20 +73,201 @@
 
   <!-- Page wrapper -->
   <div class="page">
-    <!-- Hero -->
-    <main class="hero" data-animate="hero">
-      <div class="hero-badge">
-        <span class="hero-badge-dot"></span>
-        AI Short Drama &amp; Comics Platform
+
+    <!-- ── HOME / Hero ─────────────────────────────────────── -->
+    <section id="home" class="section-page">
+      <main class="hero" data-animate="hero">
+        <h1 class="hero-headline">Tell your story.<br /><em>AI shoots the video.</em></h1>
+        <p class="hero-sub">Palette is the simplest way to create AI-powered short dramas and comics — describe what you want, and watch it come to life.</p>
+        <div class="hero-actions">
+          <a href="#waitlist" class="btn-primary">Get Early Access &rarr;</a>
+          <a href="#features" class="btn-secondary">See how it works</a>
+        </div>
+        <div class="hero-video">
+          <div class="hero-video-inner">
+            <div class="hero-video-play"></div>
+            <span class="hero-video-label">Watch the demo</span>
+          </div>
+        </div>
+        <div class="scroll-hint">scroll</div>
+      </main>
+    </section>
+
+    <!-- ── FEATURES ─────────────────────────────────────────── -->
+    <section id="features" class="section-page">
+
+      <!-- Intro -->
+      <div class="features-intro">
+        <div class="features-intro-inner" data-reveal="0">
+          <p class="section-label">How it works</p>
+          <h2 class="features-intro-heading">Create without <em>limits.</em></h2>
+          <p>Palette combines conversational AI, video generation, and intuitive editing — all in one place. No timeline expertise required.</p>
+        </div>
       </div>
-      <h1 class="hero-headline">Tell your story.<br /><em>AI shoots the video.</em></h1>
-      <p class="hero-sub">Palette is the simplest way to create AI-powered short dramas and comics — describe what you want, and watch it come to life.</p>
-      <div class="hero-actions">
-        <a href="waitlist.html" class="btn-primary">Get Early Access &rarr;</a>
-        <a href="features.html" class="btn-secondary">See how it works</a>
+
+      <!-- App mockup -->
+      <div class="mockup-wrapper" data-reveal="1">
+        <div class="app-mockup">
+          <div class="mockup-titlebar">
+            <div class="mockup-dot"></div>
+            <div class="mockup-dot"></div>
+            <div class="mockup-dot"></div>
+            <span class="mockup-title">Palette — My Short Drama</span>
+          </div>
+          <div class="mockup-body">
+
+            <!-- Left: scenes -->
+            <div class="mockup-scenes">
+              <div class="mockup-scenes-label">Scenes</div>
+              <div class="scene-thumb active">
+                <span class="scene-thumb-label">Scene 1</span>
+              </div>
+              <div class="scene-thumb">
+                <span class="scene-thumb-label">Scene 2</span>
+              </div>
+              <div class="scene-thumb">
+                <span class="scene-thumb-label">Scene 3</span>
+              </div>
+              <div class="scene-thumb">
+                <span class="scene-thumb-label">Scene 4</span>
+              </div>
+            </div>
+
+            <!-- Center: video preview -->
+            <div class="mockup-video">
+              <div class="mockup-video-frame">
+                <div class="mockup-video-glow"></div>
+                <div class="mockup-play"></div>
+              </div>
+              <div class="mockup-video-glow" style="position:absolute;inset:0;pointer-events:none;"></div>
+              <span class="mockup-video-label">Scene 1 — Morning Arrival</span>
+            </div>
+
+            <!-- Right: chat -->
+            <div class="mockup-chat">
+              <div class="mockup-chat-label">Director</div>
+              <div class="chat-bubble user">A young woman arrives at a misty train station at dawn.</div>
+              <div class="chat-bubble ai">Got it — generating Scene 1. I'll use soft morning light and a slow pan to establish the mood.</div>
+              <div class="chat-bubble user">Make her look hopeful but nervous.</div>
+              <div class="chat-bubble ai">Applied subtle expression cues. Scene 1 is ready to preview.</div>
+              <div class="mockup-chat-input">Continue the story…</div>
+            </div>
+
+            <!-- Bottom: timeline -->
+            <div class="mockup-timeline">
+              <div class="timeline-controls">
+                <div class="timeline-btn">&#9664;</div>
+                <div class="timeline-btn" style="background:rgba(0,0,0,0.12);">&#9654;</div>
+                <div class="timeline-btn">&#9654;&#9654;</div>
+              </div>
+              <div class="timeline-track">
+                <div class="timeline-clip"></div>
+                <div class="timeline-clip"></div>
+                <div class="timeline-clip"></div>
+                <div class="timeline-clip"></div>
+                <div class="timeline-clip"></div>
+                <div class="timeline-playhead"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
-      <div class="scroll-hint">scroll</div>
-    </main>
+
+      <!-- Feature cards -->
+      <div class="features-section-header" data-reveal="2">
+        <p class="section-label">Core features</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card" data-reveal="3">
+          <div class="feature-icon fi-1">💬</div>
+          <h3>Describe your story</h3>
+          <p>Chat with the AI director as naturally as texting a friend. Describe scenes, characters, and moods — Palette understands context and intent.</p>
+        </div>
+        <div class="feature-card" data-reveal="4">
+          <div class="feature-icon fi-2">🎬</div>
+          <h3>Watch it come to life</h3>
+          <p>Palette generates video frames and sequences in real time. Preview each scene instantly and iterate until it feels exactly right.</p>
+        </div>
+        <div class="feature-card" data-reveal="5">
+          <div class="feature-icon fi-3">✂️</div>
+          <h3>Polish in seconds</h3>
+          <p>A simple timeline editor lets you trim clips, reorder scenes, and adjust pacing — without any video editing experience needed.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── WAITLIST ─────────────────────────────────────────── -->
+    <section id="waitlist" class="section-page">
+      <main class="waitlist-main">
+        <p class="section-label" data-reveal="0">Early Access</p>
+        <h2 class="waitlist-heading" data-reveal="1">Be first to <em>create.</em></h2>
+        <p data-reveal="2">Palette is launching soon. Join the waitlist to get early access, shape the product, and bring your stories to life before anyone else.</p>
+
+        <!-- Form -->
+        <form class="waitlist-form" id="waitlist-form" data-reveal="3">
+          <div class="waitlist-form-row">
+            <input type="email" placeholder="Enter your email address" required autocomplete="email" />
+            <button type="submit" aria-label="Submit">&#8594;</button>
+          </div>
+          <span class="waitlist-note">No spam. Unsubscribe any time.</span>
+        </form>
+
+        <!-- Success state (shown after submit) -->
+        <div class="waitlist-success" id="waitlist-success">
+          <div class="waitlist-success-icon">✦</div>
+          <h3>You're on the list.</h3>
+          <p>We'll reach out as soon as early access is ready.</p>
+        </div>
+      </main>
+    </section>
+
+    <!-- ── CONTACT ──────────────────────────────────────────── -->
+    <section id="contact" class="section-page">
+      <main class="contact-main">
+
+        <!-- Left: heading + text -->
+        <div class="contact-left" data-reveal="0">
+          <p class="section-label">Get in touch</p>
+          <h2 class="contact-heading">Say <em>hello.</em></h2>
+          <p>Have a question, partnership idea, or just want to follow along? We'd love to hear from you.</p>
+        </div>
+
+        <!-- Right: contact card -->
+        <div class="contact-right" data-reveal="1">
+          <div class="contact-card">
+            <div class="contact-item">
+              <span class="contact-item-label">Email</span>
+              <a href="mailto:team@kiwivideo.ai" class="contact-item-value">team@kiwivideo.ai</a>
+            </div>
+
+            <div class="contact-divider"></div>
+
+            <div class="contact-item">
+              <span class="contact-item-label">Follow us</span>
+              <div class="contact-socials">
+                <a href="https://x.com" target="_blank" rel="noopener noreferrer" class="social-link">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                  X / Twitter
+                </a>
+              </div>
+            </div>
+
+            <div class="contact-divider"></div>
+
+            <div class="contact-item">
+              <span class="contact-item-label">Join the waitlist</span>
+              <a href="#waitlist" class="btn-primary" style="align-self:flex-start;margin-top:4px;">Get Early Access &rarr;</a>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </section>
 
     <!-- Footer -->
     <footer class="footer">
@@ -91,11 +275,25 @@
       <div class="footer-links">
         <a href="#">Terms</a>
         <a href="#">Privacy</a>
-        <a href="contact.html">Contact</a>
+        <a href="#contact">Contact</a>
       </div>
     </footer>
   </div>
 
+  <script>
+    // Waitlist form
+    (function () {
+      var form = document.getElementById('waitlist-form');
+      var success = document.getElementById('waitlist-success');
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          form.style.display = 'none';
+          success.classList.add('visible');
+        });
+      }
+    })();
+  </script>
   <script src="js/main.js"></script>
   <script src="js/nav.js"></script>
 </body>
