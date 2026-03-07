@@ -280,6 +280,217 @@
   }
 
   /**
+   * Fullpage spring scroll — section-by-section navigation with damping
+   */
+  function setupFullpageScroll() {
+    var sections = Array.from(document.querySelectorAll('section[id]'));
+    if (!sections.length) return;
+
+    var currentIdx = 0;
+    var transitioning = false;
+    var targetY = 0;
+    var rafId = null;
+
+    var startY = 0;
+    var startTime = 0;
+    var animDur = 480;
+
+    function getSectionTop(idx) {
+      return sections[idx] ? sections[idx].offsetTop : 0;
+    }
+
+    function easeOutExpo(t) {
+      return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    }
+
+    function animateTick(now) {
+      var t = Math.min((now - startTime) / animDur, 1);
+      window.scrollTo(0, startY + (targetY - startY) * easeOutExpo(t));
+      if (t < 1) {
+        rafId = requestAnimationFrame(animateTick);
+      } else {
+        window.scrollTo(0, targetY);
+        rafId = null;
+        setTimeout(function () { transitioning = false; }, 50);
+      }
+    }
+
+    function goTo(idx) {
+      if (idx < 0) idx = 0;
+      if (idx >= sections.length) idx = sections.length - 1;
+      var jumped = Math.abs(idx - currentIdx);
+      currentIdx = idx;
+      targetY = getSectionTop(idx);
+      transitioning = true;
+      startY = window.scrollY;
+      startTime = performance.now();
+      animDur = Math.min(480 + jumped * 80, 620);
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(animateTick);
+      updateIndicator(idx);
+    }
+
+    // Wheel — allow internal section scroll first, then advance section
+    var wheelAccum = 0;
+    var wheelTimer = null;
+
+    window.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      if (transitioning) return;
+
+      // If this section has internal overflow, scroll it first
+      var sec = sections[currentIdx];
+      var canDown = sec.scrollTop + sec.clientHeight < sec.scrollHeight - 3;
+      var canUp   = sec.scrollTop > 3;
+
+      if (e.deltaY > 0 && canDown) {
+        sec.scrollTop += e.deltaY;
+        return;
+      }
+      if (e.deltaY < 0 && canUp) {
+        sec.scrollTop += e.deltaY;
+        return;
+      }
+
+      // Accumulate intent to change section
+      wheelAccum += e.deltaY;
+      clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(function () { wheelAccum = 0; }, 200);
+
+      if (Math.abs(wheelAccum) > 48) {
+        var dir = wheelAccum > 0 ? 1 : -1;
+        wheelAccum = 0;
+        goTo(currentIdx + dir);
+      }
+    }, { passive: false });
+
+    // Touch swipe
+    var touchY0 = 0;
+    window.addEventListener('touchstart', function (e) {
+      touchY0 = e.touches[0].clientY;
+    }, { passive: true });
+
+    window.addEventListener('touchend', function (e) {
+      if (transitioning) return;
+      var dy = touchY0 - e.changedTouches[0].clientY;
+      if (Math.abs(dy) > 50) goTo(currentIdx + (dy > 0 ? 1 : -1));
+    }, { passive: true });
+
+    // Nav / anchor clicks
+    document.querySelectorAll('a[href^="#"]').forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        var id = this.getAttribute('href').slice(1);
+        var idx = sections.findIndex(function (s) { return s.id === id; });
+        if (idx !== -1) {
+          e.preventDefault();
+          goTo(idx);
+        }
+      });
+    });
+
+    // Build right-side indicator
+    var sectionNames = { home: 'Home', features: 'Features', waitlist: 'Waitlist', contact: 'Contact' };
+    var indicator = document.createElement('div');
+    indicator.className = 'fp-indicator';
+    sections.forEach(function (s, i) {
+      var wrapper = document.createElement('div');
+      wrapper.className = 'fp-dot-wrapper';
+      var dot = document.createElement('div');
+      dot.className = 'fp-dot' + (i === 0 ? ' active' : '');
+      dot.addEventListener('click', function () { goTo(i); });
+      var label = document.createElement('span');
+      label.className = 'fp-dot-label';
+      label.textContent = sectionNames[s.id] || s.id;
+      wrapper.appendChild(dot);
+      wrapper.appendChild(label);
+      indicator.appendChild(wrapper);
+    });
+    var arrow = document.createElement('div');
+    arrow.className = 'fp-arrow';
+    indicator.appendChild(arrow);
+    document.body.appendChild(indicator);
+
+    function updateIndicator(idx) {
+      indicator.querySelectorAll('.fp-dot').forEach(function (dot, i) {
+        dot.classList.remove('active');
+        if (i === idx) {
+          void dot.offsetWidth; // force reflow to replay animation
+          dot.classList.add('active');
+        }
+      });
+      arrow.style.opacity = idx >= sections.length - 1 ? '0' : '1';
+    }
+
+    // Detect initial section (e.g. if page loaded with hash)
+    function detectInitial() {
+      var mid = window.scrollY + window.innerHeight / 2;
+      var found = 0;
+      sections.forEach(function (s, i) {
+        if (s.offsetTop <= mid) found = i;
+      });
+      currentIdx = found;
+      updateIndicator(found);
+    }
+    detectInitial();
+  }
+
+  /**
+   * Spring scroll reveal — animate [data-reveal] children as sections enter viewport
+   */
+  function setupScrollReveal() {
+    if (typeof Element.prototype.animate !== 'function') return;
+
+    var springEasingReveal = 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+    var revealDuration = 700;
+    var staggerDelay = 120; // ms between each data-reveal element
+
+    // Gather all sections with [data-reveal] children
+    var sections = document.querySelectorAll('section[id]');
+
+    sections.forEach(function (section) {
+      var targets = section.querySelectorAll('[data-reveal]');
+      if (!targets.length) return;
+
+      // Set initial hidden state
+      targets.forEach(function (el) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(36px) scale(0.97)';
+        el.style.willChange = 'opacity, transform';
+      });
+
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          observer.unobserve(entry.target);
+
+          var sectionTargets = entry.target.querySelectorAll('[data-reveal]');
+          sectionTargets.forEach(function (el) {
+            var index = parseInt(el.getAttribute('data-reveal'), 10) || 0;
+            var delay = index * staggerDelay;
+            setTimeout(function () {
+              try {
+                el.animate([
+                  { opacity: 0, transform: 'translateY(36px) scale(0.97)' },
+                  { opacity: 1, transform: 'translateY(0px) scale(1)' }
+                ], {
+                  duration: revealDuration,
+                  easing: springEasingReveal,
+                  fill: 'forwards'
+                });
+              } catch (e) {
+                el.style.opacity = '1';
+                el.style.transform = '';
+              }
+            }, delay);
+          });
+        });
+      }, { threshold: 0.1 });
+
+      observer.observe(section);
+    });
+  }
+
+  /**
    * Form handling
    */
   function setupForm() {
@@ -299,6 +510,8 @@
     setupObserver();
     setupForm();
     setupDraggableShapes();
+    setupFullpageScroll();
+    setupScrollReveal();
   }
 
   if (document.readyState === 'loading') {
