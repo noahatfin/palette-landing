@@ -76,12 +76,7 @@
 
   // Animation configs: [selector, delay, perspectiveOverride]
   const animationTargets = [
-    ['[data-animate="nav"]', 0.1, 1200],
-    ['[data-animate="h1"]', 0.2, 1200],
-    ['[data-animate="h2"]', 0.3, 500],
-    ['[data-animate="email-form"]', 0.5, 1200],
-    ['[data-animate="offset-text"]', 0.5, 1200],
-    ['[data-animate="footer"]', 0.6, 1200],
+    ['[data-animate="hero"]', 0.15, 1200],
   ];
 
   /**
