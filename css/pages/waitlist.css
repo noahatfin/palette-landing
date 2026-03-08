@@ -254,19 +254,21 @@
 }
 
 .waitlist-feature-card h3 {
-  font-size: 26px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   color: var(--ink);
-  margin-bottom: 10px;
-  line-height: 1.1;
+  margin-bottom: 8px;
+  line-height: 1.2;
+  text-wrap: balance;
 }
 
 .waitlist-feature-card p {
-  font-size: 14px;
-  line-height: 1.65;
+  font-size: 13px;
+  line-height: 1.58;
   color: var(--ink-secondary);
-  margin-top: auto;
+  margin-top: 0;
+  text-wrap: pretty;
 }
 
 /* === Success state === */
@@ -338,6 +340,11 @@
   }
 
   .waitlist-feature-card h3 {
-    font-size: 22px;
+    font-size: 16px;
+  }
+
+  .waitlist-feature-card p {
+    font-size: 12.5px;
+    line-height: 1.55;
   }
 }
