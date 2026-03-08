@@ -15,49 +15,18 @@
 <body>
 
 <!-- ============================================================
-     BACKGROUND TICKER (fixed, behind everything)
-     ============================================================ -->
-<div class="bg-ticker" aria-hidden="true">
-  <div class="bg-ticker-inner">
-    <div class="bg-ticker-track">
-      <span class="bg-ticker-word">PALETTE&nbsp;</span>
-      <span class="bg-ticker-word">PALETTE&nbsp;</span>
-      <span class="bg-ticker-word">PALETTE&nbsp;</span>
-      <span class="bg-ticker-word">PALETTE&nbsp;</span>
-      <span class="bg-ticker-word">PALETTE&nbsp;</span>
-      <span class="bg-ticker-word">PALETTE&nbsp;</span>
-      <span class="bg-ticker-word">PALETTE&nbsp;</span>
-      <span class="bg-ticker-word">PALETTE&nbsp;</span>
-      <span class="bg-ticker-word">PALETTE&nbsp;</span>
-      <span class="bg-ticker-word">PALETTE&nbsp;</span>
-      <span class="bg-ticker-word">PALETTE&nbsp;</span>
-      <span class="bg-ticker-word">PALETTE&nbsp;</span>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================================
-     DECORATIVE SHAPES
-     ============================================================ -->
-<div class="shape shape-a" aria-hidden="true">
-  <img src="imgs/shape-2.png" alt="" />
-</div>
-<div class="shape shape-b" aria-hidden="true">
-  <img src="imgs/shape-5.png" alt="" />
-</div>
-
-<!-- ============================================================
      NAV
      ============================================================ -->
 <nav class="nav" id="nav">
   <div class="nav-inner">
     <a href="/" class="nav-logo">palette</a>
     <ul class="nav-links">
-      <li><a href="#features">Features</a></li>
-      <li><a href="#how">How it works</a></li>
-      <li><a href="#access">FAQ</a></li>
+      <li><a href="#features">Studio</a></li>
+      <li><a href="#how">Technology</a></li>
+      <li><a href="#access">Pricing</a></li>
+      <li><a href="#">News</a></li>
     </ul>
-    <a href="#access" class="btn btn-outline">Early Access</a>
+    <a href="#access" class="btn btn-outline">Sign in</a>
     <button class="nav-burger" id="nav-burger" aria-label="Menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -66,238 +35,166 @@
 
 <!-- Mobile drawer -->
 <nav class="nav-drawer" id="nav-drawer">
-  <a href="#features">Features</a>
-  <a href="#how">How it works</a>
-  <a href="#access">Early Access</a>
-  <a href="#access" class="btn btn-outline" style="margin-top:8px;text-align:center;">Join Waitlist</a>
+  <a href="#features">Studio</a>
+  <a href="#how">Technology</a>
+  <a href="#access">Pricing</a>
+  <a href="#access" class="btn btn-outline" style="margin-top:8px;text-align:center;">Sign in</a>
 </nav>
 
 <!-- ============================================================
-     HERO
+     HERO — full-screen video mosaic + centered headline
      ============================================================ -->
-<div class="hero-outer">
 <section class="hero" id="hero">
-  <div class="hero-row">
-
-    <!-- Left: Phone mockup with TikTok feed -->
-    <div class="hero-phone-col">
-      <div class="hero-phone-wrap">
-        <div class="phone">
-          <div class="phone-notch"></div>
-          <div class="phone-screen">
-            <div class="feed" id="phone-feed">
-
-              <!-- Feed item 1 -->
-              <div class="feed-item">
-                <video src="videos/v1.mp4" muted loop playsinline preload="metadata"></video>
-                <div class="feed-sidebar" aria-hidden="true">
-                  <div class="feed-btn">♥</div>
-                  <div class="feed-btn">💬</div>
-                  <div class="feed-btn">↗</div>
-                </div>
-                <div class="feed-caption">
-                  <p class="feed-caption-text">Chinese mini-drama · Rain night · by @palette_ai</p>
-                </div>
-              </div>
-
-              <!-- Feed item 2 -->
-              <div class="feed-item">
-                <video src="videos/v2.mp4" muted loop playsinline preload="metadata"></video>
-                <div class="feed-sidebar" aria-hidden="true">
-                  <div class="feed-btn">♥</div>
-                  <div class="feed-btn">💬</div>
-                  <div class="feed-btn">↗</div>
-                </div>
-                <div class="feed-caption">
-                  <p class="feed-caption-text">FPV forest drone · Golden hour · by @palette_ai</p>
-                </div>
-              </div>
-
-              <!-- Feed item 3 -->
-              <div class="feed-item">
-                <video src="videos/v3.mp4" muted loop playsinline preload="metadata"></video>
-                <div class="feed-sidebar" aria-hidden="true">
-                  <div class="feed-btn">♥</div>
-                  <div class="feed-btn">💬</div>
-                  <div class="feed-btn">↗</div>
-                </div>
-                <div class="feed-caption">
-                  <p class="feed-caption-text">Anime girl · FPV tracking · by @palette_ai</p>
-                </div>
-              </div>
-
-              <!-- Feed item 4 -->
-              <div class="feed-item">
-                <video src="videos/v4.mp4" muted loop playsinline preload="metadata"></video>
-                <div class="feed-sidebar" aria-hidden="true">
-                  <div class="feed-btn">♥</div>
-                  <div class="feed-btn">💬</div>
-                  <div class="feed-btn">↗</div>
-                </div>
-                <div class="feed-caption">
-                  <p class="feed-caption-text">Seedance 2.0 · Cinematic · by @palette_ai</p>
-                </div>
-              </div>
-
-              <!-- Feed item 5 -->
-              <div class="feed-item">
-                <video src="videos/v5.mp4" muted loop playsinline preload="metadata"></video>
-                <div class="feed-sidebar" aria-hidden="true">
-                  <div class="feed-btn">♥</div>
-                  <div class="feed-btn">💬</div>
-                  <div class="feed-btn">↗</div>
-                </div>
-                <div class="feed-caption">
-                  <p class="feed-caption-text">Skateboard · Beat sync · by @palette_ai</p>
-                </div>
-              </div>
-
-              <!-- Feed item 6 -->
-              <div class="feed-item">
-                <video src="videos/v6.mp4" muted loop playsinline preload="metadata"></video>
-                <div class="feed-sidebar" aria-hidden="true">
-                  <div class="feed-btn">♥</div>
-                  <div class="feed-btn">💬</div>
-                  <div class="feed-btn">↗</div>
-                </div>
-                <div class="feed-caption">
-                  <p class="feed-caption-text">1950s B&W · Cinematic · by @palette_ai</p>
-                </div>
-              </div>
-
-            </div><!-- /.feed -->
-          </div><!-- /.phone-screen -->
-        </div><!-- /.phone -->
-      </div><!-- /.hero-phone-wrap -->
-    </div><!-- /.hero-phone-col -->
-
-    <!-- Right: TextVideoMask + content -->
-    <div class="hero-content">
-
-      <!-- TextVideoMask: "PALETTE" with v6 playing through letterforms -->
-      <div class="tmask" aria-label="PALETTE">
-        <video class="tmask-vid" autoplay muted loop playsinline>
-          <source src="videos/v6.mp4" type="video/mp4" />
-        </video>
-        <div class="tmask-cover" aria-hidden="true">
-          <span class="tmask-word">PAL</span>
-          <span class="tmask-word">ETTE</span>
-        </div>
-      </div>
-
-      <p class="hero-tag reveal" data-d="1">From idea to film. Instantly.</p>
-      <p class="hero-sub reveal" data-d="2">The AI video studio that writes, directs, and produces your short films — all from a single prompt.</p>
-
-      <div class="hero-actions reveal" data-d="3">
-        <a href="#access" class="btn btn-accent-gold">Get early access</a>
-        <a href="#how" class="btn btn-ghost">See how it works ↓</a>
-      </div>
-
-      <div class="hero-badges reveal" data-d="4">
-        <div class="hero-badge">10k+ creators waiting</div>
-        <div class="hero-badge">4K export · 3 min generation</div>
-      </div>
-
-    </div><!-- /.hero-content -->
-  </div><!-- /.hero-row -->
+  <div class="hero-bg" aria-hidden="true">
+    <div class="hero-bg-grid">
+      <video src="videos/v1.mp4" autoplay muted loop playsinline></video>
+      <video src="videos/v2.mp4" autoplay muted loop playsinline></video>
+      <video src="videos/v3.mp4" autoplay muted loop playsinline></video>
+      <video src="videos/v4.mp4" autoplay muted loop playsinline></video>
+      <video src="videos/v5.mp4" autoplay muted loop playsinline></video>
+      <video src="videos/v6.mp4" autoplay muted loop playsinline></video>
+    </div>
+    <div class="hero-overlay"></div>
+  </div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">AI Video Studio</p>
+    <h1 class="hero-headline">The AI studio that<br>films your ideas.</h1>
+    <p class="hero-sub">From a single prompt to a fully produced short film — in minutes.</p>
+    <a href="#access" class="btn btn-primary">Try Palette →</a>
+  </div>
 </section>
-</div><!-- /.hero-outer -->
 
 <!-- ============================================================
-     KEYWORDS TICKER
+     MISSION STATEMENT
      ============================================================ -->
-<div class="kw-ticker" aria-hidden="true">
-  <div class="kw-ticker-track">
-    <span class="kw-ticker-item">AI Video</span>
-    <span class="kw-ticker-item">Short Drama</span>
-    <span class="kw-ticker-item">One Take</span>
-    <span class="kw-ticker-item">Cinematic</span>
-    <span class="kw-ticker-item">Generation</span>
-    <span class="kw-ticker-item">Palette</span>
-    <span class="kw-ticker-item">AI Video</span>
-    <span class="kw-ticker-item">Short Drama</span>
-    <span class="kw-ticker-item">One Take</span>
-    <span class="kw-ticker-item">Cinematic</span>
-    <span class="kw-ticker-item">Generation</span>
-    <span class="kw-ticker-item">Palette</span>
+<section class="mission">
+  <div class="mission-inner">
+    <p class="mission-text">Our mission is to give every storyteller — from bedroom creators to professional directors — the power to turn their ideas into cinematic video.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     CREATOR STRIP (like Luma's logo marquee)
+     ============================================================ -->
+<div class="creator-strip">
+  <p class="creator-strip-label">Creators making films with Palette</p>
+  <div class="creator-track-wrap">
+    <div class="creator-track">
+      <span class="creator-name">@novaframes</span>
+      <span class="creator-name">@cinemabot</span>
+      <span class="creator-name">@dreampixels</span>
+      <span class="creator-name">@framesmith</span>
+      <span class="creator-name">@reelcraft</span>
+      <span class="creator-name">@autocinema</span>
+      <span class="creator-name">@shortai_pro</span>
+      <span class="creator-name">@filmdrop</span>
+      <span class="creator-name">@pixelstory</span>
+      <!-- duplicate for seamless loop -->
+      <span class="creator-name">@novaframes</span>
+      <span class="creator-name">@cinemabot</span>
+      <span class="creator-name">@dreampixels</span>
+      <span class="creator-name">@framesmith</span>
+      <span class="creator-name">@reelcraft</span>
+      <span class="creator-name">@autocinema</span>
+      <span class="creator-name">@shortai_pro</span>
+      <span class="creator-name">@filmdrop</span>
+      <span class="creator-name">@pixelstory</span>
+    </div>
   </div>
 </div>
 
 <!-- ============================================================
-     MANIFESTO
+     STUDIO / PRODUCTS (like Luma "Product & Platform")
      ============================================================ -->
-<section class="manifesto" id="manifesto">
-  <div class="manifesto-inner">
-    <div class="manifesto-left">
-      <p class="manifesto-label reveal" data-d="1">What is Palette</p>
-      <h2 class="manifesto-statement reveal" data-d="2">
-        Every story deserves<br/>
-        to be <em>seen.</em><br/>
-        Now every story<br/>
-        can be <em>filmed.</em>
-      </h2>
+<section class="products" id="features">
+  <div class="products-inner">
+    <div class="section-head">
+      <p class="section-label">Studio</p>
+      <h2 class="section-title">Everything you need<br>to produce</h2>
     </div>
-    <div class="manifesto-right">
-      <p class="manifesto-p reveal" data-d="3">Palette is the world's first AI-native short film studio. We give every storyteller — not just those with cameras, crews, or budgets — the power to turn ideas into cinematic video.</p>
-      <p class="manifesto-p reveal" data-d="4">Our models understand narrative structure, visual language, pacing, and emotion. They don't just generate clips — they craft stories.</p>
-      <p class="manifesto-p reveal" data-d="5">From a single sentence to a fully produced short film. In minutes.</p>
+    <div class="product-grid">
+
+      <!-- Featured card: full-width, side-by-side -->
+      <a class="product-card product-card--featured" href="#access">
+        <div class="product-visual">
+          <video src="videos/v1.mp4" autoplay muted loop playsinline></video>
+        </div>
+        <div class="product-meta">
+          <span class="product-tag">Script AI</span>
+          <h3 class="product-name">Narrative intelligence</h3>
+          <p class="product-desc">Write your idea in plain language. Palette's narrative AI structures it into a scene-by-scene script complete with dialogue, pacing, and emotional beats — automatically.</p>
+          <span class="product-link">Learn more →</span>
+        </div>
+      </a>
+
+      <!-- Card: Director -->
+      <a class="product-card" href="#access">
+        <div class="product-visual">
+          <video src="videos/v2.mp4" autoplay muted loop playsinline></video>
+        </div>
+        <div class="product-meta">
+          <span class="product-tag">Director AI</span>
+          <h3 class="product-name">AI Studio Director</h3>
+          <p class="product-desc">Shot composition, color grade, sound design — the director model handles every creative decision automatically.</p>
+          <span class="product-link">Learn more →</span>
+        </div>
+      </a>
+
+      <!-- Card: Export -->
+      <a class="product-card" href="#access">
+        <div class="product-visual">
+          <video src="videos/v3.mp4" autoplay muted loop playsinline></video>
+        </div>
+        <div class="product-meta">
+          <span class="product-tag">Export</span>
+          <h3 class="product-name">4K broadcast-ready</h3>
+          <p class="product-desc">Render in 4K with licensed music, color grading, and captions — ready for TikTok, Instagram, or film festivals.</p>
+          <span class="product-link">Learn more →</span>
+        </div>
+      </a>
+
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     FEATURES
+     TECHNOLOGY / RESEARCH (like Luma "Research")
      ============================================================ -->
-<section class="features" id="features">
-  <div class="features-inner">
-    <div class="features-header">
-      <h2 class="features-title reveal" data-d="1">What Palette does</h2>
+<section class="research" id="how">
+  <div class="research-inner">
+    <div class="section-head">
+      <p class="section-label">Technology</p>
+      <h2 class="section-title">Powered by frontier AI</h2>
     </div>
+    <div class="research-list">
 
-    <div class="feature-row reveal" data-d="2">
-      <div class="feature-num">01</div>
-      <div class="feature-title">Script AI</div>
-      <p class="feature-desc">Write your idea in plain language. Palette's narrative AI structures it into a scene-by-scene script complete with dialogue, pacing, and emotional beats.</p>
-    </div>
-
-    <div class="feature-row reveal" data-d="3">
-      <div class="feature-num">02</div>
-      <div class="feature-title">AI Studio Director</div>
-      <p class="feature-desc">Our director model decides shot composition, color grade, sound design, and visual style — adapting to your genre automatically.</p>
-    </div>
-
-    <div class="feature-row reveal" data-d="4">
-      <div class="feature-num">03</div>
-      <div class="feature-title">4K Export</div>
-      <p class="feature-desc">Render your film in broadcast-quality 4K with licensed music, color grading, and captions ready for TikTok, Instagram, or film festivals.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
-     HOW IT WORKS
-     ============================================================ -->
-<section class="how" id="how">
-  <div class="how-inner">
-    <p class="how-label reveal" data-d="1">Process</p>
-    <h2 class="how-title reveal" data-d="2">Three steps.<br/>One masterpiece.</h2>
-
-    <div class="how-steps">
-      <div class="how-step reveal" data-d="3">
-        <span class="how-step-num">Step 01</span>
-        <h3 class="how-step-title">Describe your vision</h3>
-        <p class="how-step-desc">Type your idea. A genre, a mood, a scene — even a single sentence. Palette's AI understands context and intent.</p>
+      <div class="research-item">
+        <div class="research-visual">
+          <video src="videos/v4.mp4" autoplay muted loop playsinline></video>
+        </div>
+        <div class="research-info">
+          <div class="research-info-top">
+            <span class="research-tag research-tag--new">New</span>
+            <h3 class="research-name">PaletteGen 2.0</h3>
+          </div>
+          <p class="research-desc">Our second-generation video synthesis model. Understands narrative structure, visual language, and cinematic pacing at the shot level.</p>
+          <a href="#access" class="research-cta">Join waitlist →</a>
+        </div>
       </div>
-      <div class="how-step reveal" data-d="4">
-        <span class="how-step-num">Step 02</span>
-        <h3 class="how-step-title">AI produces your film</h3>
-        <p class="how-step-desc">Script, storyboard, visual generation, music composition — everything happens automatically in under 3 minutes.</p>
+
+      <div class="research-item">
+        <div class="research-visual">
+          <video src="videos/v5.mp4" autoplay muted loop playsinline></video>
+        </div>
+        <div class="research-info">
+          <div class="research-info-top">
+            <h3 class="research-name">StoryMind</h3>
+          </div>
+          <p class="research-desc">The narrative AI that converts a single sentence into a complete film script — with emotional beats, dialogue, and shot-by-shot visual direction.</p>
+          <a href="#access" class="research-cta">Join waitlist →</a>
+        </div>
       </div>
-      <div class="how-step reveal" data-d="5">
-        <span class="how-step-num">Step 03</span>
-        <h3 class="how-step-title">Share or export</h3>
-        <p class="how-step-desc">Post directly to social media or download your 4K film. Edit in-platform or bring it into your workflow.</p>
-      </div>
+
     </div>
   </div>
 </section>
@@ -341,11 +238,34 @@
 </section>
 
 <!-- ============================================================
-     FOOTER
+     FOOTER (multi-column, like Luma)
      ============================================================ -->
 <footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="/" class="footer-logo">palette</a>
+      <p class="footer-tagline">The AI studio that films your ideas.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-col-title">Product</p>
+      <a href="#features">Studio</a>
+      <a href="#how">Technology</a>
+      <a href="#access">Pricing</a>
+    </div>
+    <div class="footer-col">
+      <p class="footer-col-title">Company</p>
+      <a href="#">About</a>
+      <a href="#">Careers</a>
+      <a href="#">News</a>
+    </div>
+    <div class="footer-col">
+      <p class="footer-col-title">Legal</p>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+    </div>
+  </div>
   <div class="footer-wordmark">
-    <p class="footer-wordmark-text">× PALETTE ×</p>
+    <p class="footer-wordmark-text">palette</p>
   </div>
 </footer>
 

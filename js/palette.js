@@ -102,8 +102,8 @@
     // Section labels
     var sectionNames = {
       hero: 'Hero',
-      features: 'Features',
-      how: 'How it works',
+      features: 'Studio',
+      how: 'Technology',
       stats: 'Stats',
       access: 'Access'
     };
