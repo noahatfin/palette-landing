@@ -135,6 +135,82 @@
   transform: translateY(-1px);
 }
 
+/* === Dark contact section tuning (index #contact) === */
+#contact .contact-right {
+  position: relative;
+}
+
+#contact .contact-right::before {
+  content: '';
+  position: absolute;
+  inset: 6% -8%;
+  background:
+    radial-gradient(60% 50% at 50% 30%, rgba(110, 130, 168, 0.16) 0%, rgba(59, 78, 108, 0.1) 38%, transparent 72%);
+  filter: blur(22px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#contact .contact-card {
+  position: relative;
+  z-index: 1;
+  background:
+    linear-gradient(160deg, rgba(16, 20, 28, 0.94) 0%, rgba(11, 15, 22, 0.96) 56%, rgba(8, 11, 17, 0.98) 100%);
+  border: 1px solid rgba(154, 173, 205, 0.18);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 24px 58px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(137, 156, 189, 0.05);
+}
+
+#contact .contact-item-label {
+  color: rgba(207, 217, 236, 0.48);
+}
+
+#contact .contact-item-value {
+  color: rgba(234, 241, 255, 0.9);
+}
+
+#contact .contact-item-value:hover {
+  color: rgba(201, 214, 241, 0.96);
+}
+
+#contact .contact-divider {
+  background:
+    linear-gradient(90deg, rgba(154, 173, 205, 0.03) 0%, rgba(154, 173, 205, 0.24) 40%, rgba(154, 173, 205, 0.03) 100%);
+}
+
+#contact .social-link {
+  background: transparent;
+  border: 1px solid rgba(154, 173, 205, 0.24);
+  color: rgba(220, 231, 252, 0.82);
+  box-shadow: none;
+}
+
+#contact .social-link:hover {
+  background: transparent;
+  border-color: rgba(171, 191, 225, 0.38);
+  color: rgba(236, 244, 255, 0.94);
+}
+
+#contact .contact-card .btn-primary {
+  background: transparent !important;
+  color: rgba(241, 246, 255, 0.92) !important;
+  border: 1px solid rgba(165, 184, 216, 0.32) !important;
+  box-shadow: none !important;
+}
+
+#contact .contact-card .btn-primary:hover {
+  opacity: 1;
+  background: transparent !important;
+  border-color: rgba(183, 202, 235, 0.44) !important;
+  transform: translateY(-1px);
+}
+
+#contact .contact-card .contact-cta {
+  background: transparent !important;
+}
+
 /* === Responsive === */
 @media (max-width: 809.98px) {
   .contact-page { padding-top: 56px; }
