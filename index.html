@@ -1,404 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Palette — Tell your story. AI shoots the video.</title>
-  <meta name="description" content="Palette is an AI-powered platform for creating short dramas and comics. Just describe your story and watch it come to life." />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Palette — AI Video Creation Studio</title>
+  <meta name="description" content="From idea to film. Instantly. Palette is the AI video studio that writes, directs, and produces your short films — all from a single prompt." />
   <link rel="icon" href="imgs/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Braah+One&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,700&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
-  <link rel="stylesheet" href="css/animations.css" />
-  <link rel="stylesheet" href="css/pages/home.css" />
-  <link rel="stylesheet" href="css/pages/features.css" />
-  <link rel="stylesheet" href="css/pages/waitlist.css" />
-  <link rel="stylesheet" href="css/pages/contact.css" />
+  <link rel="stylesheet" href="css/palette.css" />
 </head>
 <body>
 
-  <!-- Nav -->
-  <nav class="nav">
-    <div class="nav-logo">
-      <a href="#home">Palette</a>
+<!-- ============================================================
+     BACKGROUND TICKER (fixed, behind everything)
+     ============================================================ -->
+<div class="bg-ticker" aria-hidden="true">
+  <div class="bg-ticker-inner">
+    <div class="bg-ticker-track">
+      <span class="bg-ticker-word">PALETTE&nbsp;</span>
+      <span class="bg-ticker-word">PALETTE&nbsp;</span>
+      <span class="bg-ticker-word">PALETTE&nbsp;</span>
+      <span class="bg-ticker-word">PALETTE&nbsp;</span>
+      <span class="bg-ticker-word">PALETTE&nbsp;</span>
+      <span class="bg-ticker-word">PALETTE&nbsp;</span>
+      <span class="bg-ticker-word">PALETTE&nbsp;</span>
+      <span class="bg-ticker-word">PALETTE&nbsp;</span>
+      <span class="bg-ticker-word">PALETTE&nbsp;</span>
+      <span class="bg-ticker-word">PALETTE&nbsp;</span>
+      <span class="bg-ticker-word">PALETTE&nbsp;</span>
+      <span class="bg-ticker-word">PALETTE&nbsp;</span>
     </div>
-    <div class="nav-links">
-      <a href="#features">Features</a>
-      <a href="#waitlist">Waitlist</a>
-      <a href="#contact">Contact</a>
-    </div>
-    <div class="nav-cta">
-      <a href="#waitlist" class="btn-primary">Get Early Access &rarr;</a>
-    </div>
-    <button class="nav-toggle" aria-label="Menu" aria-expanded="false">
+  </div>
+</div>
+
+<!-- ============================================================
+     DECORATIVE SHAPES
+     ============================================================ -->
+<div class="shape shape-a" aria-hidden="true">
+  <img src="imgs/shape-2.png" alt="" />
+</div>
+<div class="shape shape-b" aria-hidden="true">
+  <img src="imgs/shape-5.png" alt="" />
+</div>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">palette</a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#access">FAQ</a></li>
+    </ul>
+    <a href="#access" class="btn btn-outline">Early Access</a>
+    <button class="nav-burger" id="nav-burger" aria-label="Menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
-  </nav>
-
-  <!-- Mobile nav drawer -->
-  <div class="nav-mobile">
-    <a href="#features">Features</a>
-    <a href="#waitlist">Waitlist</a>
-    <a href="#contact">Contact</a>
-    <a href="#waitlist" class="btn-primary">Get Early Access &rarr;</a>
   </div>
+</nav>
 
-  <!-- Ticker -->
-  <div class="ticker-wrapper">
-    <div class="ticker-inner">
-      <div class="ticker-track">
-        <span class="ticker-text">PALETTE</span>
-        <span class="ticker-text">PALETTE</span>
-        <span class="ticker-text">PALETTE</span>
-        <span class="ticker-text">PALETTE</span>
-        <span class="ticker-text">PALETTE</span>
-        <span class="ticker-text">PALETTE</span>
+<!-- Mobile drawer -->
+<nav class="nav-drawer" id="nav-drawer">
+  <a href="#features">Features</a>
+  <a href="#how">How it works</a>
+  <a href="#access">Early Access</a>
+  <a href="#access" class="btn btn-outline" style="margin-top:8px;text-align:center;">Join Waitlist</a>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<div class="hero-outer">
+<section class="hero" id="hero">
+  <div class="hero-row">
+
+    <!-- Left: Phone mockup with TikTok feed -->
+    <div class="hero-phone-col">
+      <div class="hero-phone-wrap">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="feed" id="phone-feed">
+
+              <!-- Feed item 1 -->
+              <div class="feed-item">
+                <video src="videos/v1.mp4" muted loop playsinline preload="metadata"></video>
+                <div class="feed-sidebar" aria-hidden="true">
+                  <div class="feed-btn">♥</div>
+                  <div class="feed-btn">💬</div>
+                  <div class="feed-btn">↗</div>
+                </div>
+                <div class="feed-caption">
+                  <p class="feed-caption-text">Chinese mini-drama · Rain night · by @palette_ai</p>
+                </div>
+              </div>
+
+              <!-- Feed item 2 -->
+              <div class="feed-item">
+                <video src="videos/v2.mp4" muted loop playsinline preload="metadata"></video>
+                <div class="feed-sidebar" aria-hidden="true">
+                  <div class="feed-btn">♥</div>
+                  <div class="feed-btn">💬</div>
+                  <div class="feed-btn">↗</div>
+                </div>
+                <div class="feed-caption">
+                  <p class="feed-caption-text">FPV forest drone · Golden hour · by @palette_ai</p>
+                </div>
+              </div>
+
+              <!-- Feed item 3 -->
+              <div class="feed-item">
+                <video src="videos/v3.mp4" muted loop playsinline preload="metadata"></video>
+                <div class="feed-sidebar" aria-hidden="true">
+                  <div class="feed-btn">♥</div>
+                  <div class="feed-btn">💬</div>
+                  <div class="feed-btn">↗</div>
+                </div>
+                <div class="feed-caption">
+                  <p class="feed-caption-text">Anime girl · FPV tracking · by @palette_ai</p>
+                </div>
+              </div>
+
+              <!-- Feed item 4 -->
+              <div class="feed-item">
+                <video src="videos/v4.mp4" muted loop playsinline preload="metadata"></video>
+                <div class="feed-sidebar" aria-hidden="true">
+                  <div class="feed-btn">♥</div>
+                  <div class="feed-btn">💬</div>
+                  <div class="feed-btn">↗</div>
+                </div>
+                <div class="feed-caption">
+                  <p class="feed-caption-text">Seedance 2.0 · Cinematic · by @palette_ai</p>
+                </div>
+              </div>
+
+              <!-- Feed item 5 -->
+              <div class="feed-item">
+                <video src="videos/v5.mp4" muted loop playsinline preload="metadata"></video>
+                <div class="feed-sidebar" aria-hidden="true">
+                  <div class="feed-btn">♥</div>
+                  <div class="feed-btn">💬</div>
+                  <div class="feed-btn">↗</div>
+                </div>
+                <div class="feed-caption">
+                  <p class="feed-caption-text">Skateboard · Beat sync · by @palette_ai</p>
+                </div>
+              </div>
+
+              <!-- Feed item 6 -->
+              <div class="feed-item">
+                <video src="videos/v6.mp4" muted loop playsinline preload="metadata"></video>
+                <div class="feed-sidebar" aria-hidden="true">
+                  <div class="feed-btn">♥</div>
+                  <div class="feed-btn">💬</div>
+                  <div class="feed-btn">↗</div>
+                </div>
+                <div class="feed-caption">
+                  <p class="feed-caption-text">1950s B&W · Cinematic · by @palette_ai</p>
+                </div>
+              </div>
+
+            </div><!-- /.feed -->
+          </div><!-- /.phone-screen -->
+        </div><!-- /.phone -->
+      </div><!-- /.hero-phone-wrap -->
+    </div><!-- /.hero-phone-col -->
+
+    <!-- Right: TextVideoMask + content -->
+    <div class="hero-content">
+
+      <!-- TextVideoMask: "PALETTE" with v6 playing through letterforms -->
+      <div class="tmask" aria-label="PALETTE">
+        <video class="tmask-vid" autoplay muted loop playsinline>
+          <source src="videos/v6.mp4" type="video/mp4" />
+        </video>
+        <div class="tmask-cover" aria-hidden="true">
+          <span class="tmask-word">PAL</span>
+          <span class="tmask-word">ETTE</span>
+        </div>
+      </div>
+
+      <p class="hero-tag reveal" data-d="1">From idea to film. Instantly.</p>
+      <p class="hero-sub reveal" data-d="2">The AI video studio that writes, directs, and produces your short films — all from a single prompt.</p>
+
+      <div class="hero-actions reveal" data-d="3">
+        <a href="#access" class="btn btn-accent-gold">Get early access</a>
+        <a href="#how" class="btn btn-ghost">See how it works ↓</a>
+      </div>
+
+      <div class="hero-badges reveal" data-d="4">
+        <div class="hero-badge">10k+ creators waiting</div>
+        <div class="hero-badge">4K export · 3 min generation</div>
+      </div>
+
+    </div><!-- /.hero-content -->
+  </div><!-- /.hero-row -->
+</section>
+</div><!-- /.hero-outer -->
+
+<!-- ============================================================
+     KEYWORDS TICKER
+     ============================================================ -->
+<div class="kw-ticker" aria-hidden="true">
+  <div class="kw-ticker-track">
+    <span class="kw-ticker-item">AI Video</span>
+    <span class="kw-ticker-item">Short Drama</span>
+    <span class="kw-ticker-item">One Take</span>
+    <span class="kw-ticker-item">Cinematic</span>
+    <span class="kw-ticker-item">Generation</span>
+    <span class="kw-ticker-item">Palette</span>
+    <span class="kw-ticker-item">AI Video</span>
+    <span class="kw-ticker-item">Short Drama</span>
+    <span class="kw-ticker-item">One Take</span>
+    <span class="kw-ticker-item">Cinematic</span>
+    <span class="kw-ticker-item">Generation</span>
+    <span class="kw-ticker-item">Palette</span>
+  </div>
+</div>
+
+<!-- ============================================================
+     MANIFESTO
+     ============================================================ -->
+<section class="manifesto" id="manifesto">
+  <div class="manifesto-inner">
+    <div class="manifesto-left">
+      <p class="manifesto-label reveal" data-d="1">What is Palette</p>
+      <h2 class="manifesto-statement reveal" data-d="2">
+        Every story deserves<br/>
+        to be <em>seen.</em><br/>
+        Now every story<br/>
+        can be <em>filmed.</em>
+      </h2>
+    </div>
+    <div class="manifesto-right">
+      <p class="manifesto-p reveal" data-d="3">Palette is the world's first AI-native short film studio. We give every storyteller — not just those with cameras, crews, or budgets — the power to turn ideas into cinematic video.</p>
+      <p class="manifesto-p reveal" data-d="4">Our models understand narrative structure, visual language, pacing, and emotion. They don't just generate clips — they craft stories.</p>
+      <p class="manifesto-p reveal" data-d="5">From a single sentence to a fully produced short film. In minutes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FEATURES
+     ============================================================ -->
+<section class="features" id="features">
+  <div class="features-inner">
+    <div class="features-header">
+      <h2 class="features-title reveal" data-d="1">What Palette does</h2>
+    </div>
+
+    <div class="feature-row reveal" data-d="2">
+      <div class="feature-num">01</div>
+      <div class="feature-title">Script AI</div>
+      <p class="feature-desc">Write your idea in plain language. Palette's narrative AI structures it into a scene-by-scene script complete with dialogue, pacing, and emotional beats.</p>
+    </div>
+
+    <div class="feature-row reveal" data-d="3">
+      <div class="feature-num">02</div>
+      <div class="feature-title">AI Studio Director</div>
+      <p class="feature-desc">Our director model decides shot composition, color grade, sound design, and visual style — adapting to your genre automatically.</p>
+    </div>
+
+    <div class="feature-row reveal" data-d="4">
+      <div class="feature-num">03</div>
+      <div class="feature-title">4K Export</div>
+      <p class="feature-desc">Render your film in broadcast-quality 4K with licensed music, color grading, and captions ready for TikTok, Instagram, or film festivals.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     HOW IT WORKS
+     ============================================================ -->
+<section class="how" id="how">
+  <div class="how-inner">
+    <p class="how-label reveal" data-d="1">Process</p>
+    <h2 class="how-title reveal" data-d="2">Three steps.<br/>One masterpiece.</h2>
+
+    <div class="how-steps">
+      <div class="how-step reveal" data-d="3">
+        <span class="how-step-num">Step 01</span>
+        <h3 class="how-step-title">Describe your vision</h3>
+        <p class="how-step-desc">Type your idea. A genre, a mood, a scene — even a single sentence. Palette's AI understands context and intent.</p>
+      </div>
+      <div class="how-step reveal" data-d="4">
+        <span class="how-step-num">Step 02</span>
+        <h3 class="how-step-title">AI produces your film</h3>
+        <p class="how-step-desc">Script, storyboard, visual generation, music composition — everything happens automatically in under 3 minutes.</p>
+      </div>
+      <div class="how-step reveal" data-d="5">
+        <span class="how-step-num">Step 03</span>
+        <h3 class="how-step-title">Share or export</h3>
+        <p class="how-step-desc">Post directly to social media or download your 4K film. Edit in-platform or bring it into your workflow.</p>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- Floating shapes -->
-  <div class="shape shape-1"><img src="imgs/shape-1.png" alt="" draggable="false" /></div>
-  <div class="shape shape-2"><img src="imgs/shape-2.png" alt="" draggable="false" /></div>
-  <div class="shape shape-3"><img src="imgs/shape-3.png" alt="" draggable="false" /></div>
-  <div class="shape shape-4"><img src="imgs/shape-4.png" alt="" draggable="false" /></div>
-  <div class="shape shape-5"><img src="imgs/shape-5.png" alt="" draggable="false" /></div>
-  <div class="shape shape-6"><img src="imgs/shape-6.png" alt="" draggable="false" /></div>
-
-  <!-- Page wrapper -->
-  <div class="page">
-
-    <!-- ── HOME / Hero ─────────────────────────────────────── -->
-    <section id="home" class="section-page">
-      <main class="hero" data-animate="hero">
-        <h1 class="hero-headline">Tell your story.<br /><em>AI shoots the video.</em></h1>
-        <p class="hero-sub">Palette is the simplest way to create AI-powered short dramas and comics — describe what you want, and watch it come to life.</p>
-        <div class="hero-actions">
-          <a href="#waitlist" class="btn-primary">Get Early Access &rarr;</a>
-          <a href="#features" class="btn-secondary">See how it works</a>
-        </div>
-        <div class="hero-video-banner" aria-label="Demo video showcase">
-          <div class="hero-video-rail">
-            <div class="hero-video-set">
-              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00077.mp4" type="video/mp4" /></video></article>
-              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00079.mp4" type="video/mp4" /></video></article>
-              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00080.mp4" type="video/mp4" /></video></article>
-              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00082.mp4" type="video/mp4" /></video></article>
-              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00117.mp4" type="video/mp4" /></video></article>
-              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00125.mp4" type="video/mp4" /></video></article>
-            </div>
-            <div class="hero-video-set" aria-hidden="true">
-              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00077.mp4" type="video/mp4" /></video></article>
-              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00079.mp4" type="video/mp4" /></video></article>
-              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00080.mp4" type="video/mp4" /></video></article>
-              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00082.mp4" type="video/mp4" /></video></article>
-              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00117.mp4" type="video/mp4" /></video></article>
-              <article class="hero-video-tile"><video autoplay muted loop playsinline preload="metadata"><source src="video_00125.mp4" type="video/mp4" /></video></article>
-            </div>
-          </div>
-        </div>
-        <div class="scroll-hint">scroll</div>
-      </main>
-    </section>
-
-    <!-- ── FEATURES ─────────────────────────────────────────── -->
-    <section id="features" class="section-page">
-
-      <!-- Intro -->
-      <div class="features-intro">
-        <div class="features-intro-inner" data-reveal="0">
-          <p class="section-label">How it works</p>
-          <h2 class="features-intro-heading">Create without <em>limits.</em></h2>
-          <p>Palette combines conversational AI, video generation, and intuitive editing — all in one place. No timeline expertise required.</p>
-        </div>
-      </div>
-
-      <!-- App mockup -->
-      <div class="mockup-wrapper" data-reveal="1">
-        <div class="app-mockup">
-          <div class="mockup-titlebar">
-            <div class="mockup-dot"></div>
-            <div class="mockup-dot"></div>
-            <div class="mockup-dot"></div>
-            <span class="mockup-title">Palette — My Short Drama</span>
-          </div>
-          <div class="mockup-body">
-
-            <!-- Left: scenes -->
-            <div class="mockup-scenes">
-              <div class="mockup-scenes-label">Scenes</div>
-              <div class="scene-thumb active">
-                <span class="scene-thumb-label">Scene 1</span>
-              </div>
-              <div class="scene-thumb">
-                <span class="scene-thumb-label">Scene 2</span>
-              </div>
-              <div class="scene-thumb">
-                <span class="scene-thumb-label">Scene 3</span>
-              </div>
-              <div class="scene-thumb">
-                <span class="scene-thumb-label">Scene 4</span>
-              </div>
-            </div>
-
-            <!-- Center: video preview -->
-            <div class="mockup-video">
-              <div class="mockup-video-frame">
-                <div class="mockup-video-glow"></div>
-                <div class="mockup-play"></div>
-              </div>
-              <div class="mockup-video-glow" style="position:absolute;inset:0;pointer-events:none;"></div>
-              <span class="mockup-video-label">Scene 1 — Morning Arrival</span>
-            </div>
-
-            <!-- Right: chat -->
-            <div class="mockup-chat">
-              <div class="mockup-chat-label">Director</div>
-              <div class="chat-bubble user">A young woman arrives at a misty train station at dawn.</div>
-              <div class="chat-bubble ai">Got it — generating Scene 1. I'll use soft morning light and a slow pan to establish the mood.</div>
-              <div class="chat-bubble user">Make her look hopeful but nervous.</div>
-              <div class="chat-bubble ai">Applied subtle expression cues. Scene 1 is ready to preview.</div>
-              <div class="mockup-chat-input">Continue the story…</div>
-            </div>
-
-            <!-- Bottom: timeline -->
-            <div class="mockup-timeline">
-              <div class="timeline-controls">
-                <div class="timeline-btn">&#9664;</div>
-                <div class="timeline-btn" style="background:rgba(0,0,0,0.12);">&#9654;</div>
-                <div class="timeline-btn">&#9654;&#9654;</div>
-              </div>
-              <div class="timeline-track">
-                <div class="timeline-clip"></div>
-                <div class="timeline-clip"></div>
-                <div class="timeline-clip"></div>
-                <div class="timeline-clip"></div>
-                <div class="timeline-clip"></div>
-                <div class="timeline-playhead"></div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      <!-- Feature cards -->
-      <div class="features-section-header" data-reveal="2">
-        <p class="section-label">Core features</p>
-      </div>
-
-      <div class="features-grid">
-        <div class="feature-card fc-1" data-reveal="3">
-          <div class="feature-top">
-            <div class="feature-icon fi-1"><span class="feature-icon-core">💬</span></div>
-            <span class="feature-chip">Prompt → Scene Plan</span>
-          </div>
-          <h3>Describe your story</h3>
-          <p>Chat with the AI director as naturally as texting a friend. Describe scenes, characters, and moods — Palette understands context and intent.</p>
-        </div>
-        <div class="feature-card fc-2" data-reveal="4">
-          <div class="feature-top">
-            <div class="feature-icon fi-2"><span class="feature-icon-core">🎬</span></div>
-            <span class="feature-chip">Scene Plan → Live Render</span>
-          </div>
-          <h3>Watch it come to life</h3>
-          <p>Palette generates video frames and sequences in real time. Preview each scene instantly and iterate until it feels exactly right.</p>
-        </div>
-        <div class="feature-card fc-3" data-reveal="5">
-          <div class="feature-top">
-            <div class="feature-icon fi-3"><span class="feature-icon-core">✂️</span></div>
-            <span class="feature-chip">Live Render → Final Cut</span>
-          </div>
-          <h3>Polish in seconds</h3>
-          <p>A simple timeline editor lets you trim clips, reorder scenes, and adjust pacing — without any video editing experience needed.</p>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ── WAITLIST ─────────────────────────────────────────── -->
-    <section id="waitlist" class="section-page">
-      <main class="waitlist-main">
-        <p class="section-label" data-reveal="0">Early Access</p>
-        <h2 class="waitlist-heading" data-reveal="1">Be first to <em>create.</em></h2>
-        <p data-reveal="2">Palette is launching soon. Join the waitlist to get early access, shape the product, and bring your stories to life before anyone else.</p>
-
-        <!-- Form -->
-        <form class="waitlist-form" id="waitlist-form" data-reveal="3">
-          <div class="waitlist-form-row">
-            <input type="email" placeholder="Enter your email address" required autocomplete="email" />
-            <button type="submit" aria-label="Submit">&#8594;</button>
-          </div>
-          <span class="waitlist-note">No spam. Unsubscribe any time.</span>
-        </form>
-
-        <div class="waitlist-features" data-reveal="4">
-          <div class="waitlist-features-head">
-            <div class="waitlist-features-arrows" aria-label="Feature cards navigation">
-              <button type="button" class="waitlist-features-arrow" data-carousel-dir="prev" aria-label="Scroll cards left">&#8592;</button>
-              <button type="button" class="waitlist-features-arrow" data-carousel-dir="next" aria-label="Scroll cards right">&#8594;</button>
-            </div>
-          </div>
-
-          <div class="waitlist-features-grid">
-            <article class="waitlist-feature-card">
-              <img class="waitlist-feature-media" src="index1.jpg" alt="Watercolor landscape painting" />
-              <h3>Describe your story</h3>
-              <p>Chat with the AI director as naturally as texting a friend. Describe scenes, characters, and moods — Palette understands context and intent.</p>
-            </article>
-            <article class="waitlist-feature-card">
-              <img class="waitlist-feature-media" src="index1.jpg" alt="Watercolor landscape painting" />
-              <h3>Watch it come to life</h3>
-              <p>Palette generates video frames and sequences in real time. Preview each scene instantly and iterate until it feels exactly right.</p>
-            </article>
-            <article class="waitlist-feature-card">
-              <img class="waitlist-feature-media" src="index1.jpg" alt="Watercolor landscape painting" />
-              <h3>Polish in seconds</h3>
-              <p>A simple timeline editor lets you trim clips, reorder scenes, and adjust pacing — without any video editing experience needed.</p>
-            </article>
-            <article class="waitlist-feature-card">
-              <img class="waitlist-feature-media" src="index1.jpg" alt="Watercolor landscape painting" />
-              <h3>Describe your story</h3>
-              <p>Chat with the AI director as naturally as texting a friend. Describe scenes, characters, and moods — Palette understands context and intent.</p>
-            </article>
-          </div>
-        </div>
-
-        <!-- Success state (shown after submit) -->
-        <div class="waitlist-success" id="waitlist-success">
-          <div class="waitlist-success-icon">✦</div>
-          <h3>You're on the list.</h3>
-          <p>We'll reach out as soon as early access is ready.</p>
-        </div>
-      </main>
-    </section>
-
-    <!-- ── CONTACT ──────────────────────────────────────────── -->
-    <section id="contact" class="section-page">
-      <main class="contact-main">
-
-        <!-- Left: heading + text -->
-        <div class="contact-left" data-reveal="0">
-          <p class="section-label">Get in touch</p>
-          <h2 class="contact-heading">Say <em>hello.</em></h2>
-          <p>Have a question, partnership idea, or just want to follow along? We'd love to hear from you.</p>
-        </div>
-
-        <!-- Right: contact card -->
-        <div class="contact-right" data-reveal="1">
-          <div class="contact-card">
-            <div class="contact-item">
-              <span class="contact-item-label">Email</span>
-              <a href="mailto:team@kiwivideo.ai" class="contact-item-value">team@kiwivideo.ai</a>
-            </div>
-
-            <div class="contact-divider"></div>
-
-            <div class="contact-item">
-              <span class="contact-item-label">Follow us</span>
-              <div class="contact-socials">
-                <a href="https://x.com" target="_blank" rel="noopener noreferrer" class="social-link">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                  </svg>
-                  X / Twitter
-                </a>
-              </div>
-            </div>
-
-            <div class="contact-divider"></div>
-
-            <div class="contact-item">
-              <span class="contact-item-label">Join the waitlist</span>
-              <a href="#waitlist" class="btn-primary" style="align-self:flex-start;margin-top:4px;">Get Early Access &rarr;</a>
-            </div>
-          </div>
-        </div>
-
-      </main>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-top">
-        <div class="footer-left">
-          <div class="footer-brand">PALETTE</div>
-          <div class="footer-socials" aria-label="Social links">
-            <a href="https://www.linkedin.com/company/utopaistudios/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-              <img src="imgs/footer-linkedin.svg" alt="" />
-            </a>
-            <a href="https://x.com/UtopaiStudios" target="_blank" rel="noopener noreferrer" aria-label="X">
-              <img src="imgs/footer-x.svg" alt="" />
-            </a>
-            <a href="https://www.youtube.com/@UtopaiStudios" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-              <img src="imgs/footer-youtube.svg" alt="" />
-            </a>
-            <a href="https://www.instagram.com/utopai_studios/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-              <img src="imgs/footer-instagram.svg" alt="" />
-            </a>
-            <a href="https://www.tiktok.com/@utopai_studios" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-              <img src="imgs/footer-tiktok.svg" alt="" />
-            </a>
-          </div>
-        </div>
-        <div class="footer-center" aria-hidden="true">
-          <div class="footer-emblem">✦</div>
-        </div>
-        <div class="footer-nav">
-          <a href="#">STUDIO</a>
-          <a href="#">EAST</a>
-          <a href="#">ENTERPRISE</a>
-          <a href="#">ABOUT</a>
-          <a href="#">NEWS</a>
-          <a href="#">FAQ</a>
-          <a href="#">PRIVACY POLICY</a>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p class="footer-location">San Francisco Bay Area</p>
-        <p class="footer-copy">© 2026 Palette Studios. All rights reserved.</p>
-      </div>
-    </footer>
+<!-- ============================================================
+     STATS
+     ============================================================ -->
+<section class="stats" id="stats">
+  <div class="stats-inner">
+    <div class="stat-item reveal" data-d="1">
+      <div class="stat-num"><span class="counter" data-target="10">0</span><span class="stat-unit">k+</span></div>
+      <p class="stat-label">creators on the waitlist</p>
+    </div>
+    <div class="stat-item reveal" data-d="2">
+      <div class="stat-num"><span class="counter" data-target="3">0</span><span class="stat-unit">min</span></div>
+      <p class="stat-label">average generation time</p>
+    </div>
+    <div class="stat-item reveal" data-d="3">
+      <div class="stat-num"><span class="counter" data-target="4">0</span><span class="stat-unit">K</span></div>
+      <p class="stat-label">export resolution</p>
+    </div>
+    <div class="stat-item reveal" data-d="4">
+      <div class="stat-num"><span class="counter" data-target="6">0</span><span class="stat-unit">+</span></div>
+      <p class="stat-label">cinematic styles</p>
+    </div>
   </div>
+</section>
 
-  <!-- Right-side section indicator fallback (enhanced by js/main.js) -->
-  <div class="fp-indicator" aria-label="Section navigation">
-    <div class="fp-dot-wrapper">
-      <div class="fp-dot active"></div>
-      <span class="fp-dot-label">Home</span>
-    </div>
-    <div class="fp-dot-wrapper">
-      <div class="fp-dot"></div>
-      <span class="fp-dot-label">Features</span>
-    </div>
-    <div class="fp-dot-wrapper">
-      <div class="fp-dot"></div>
-      <span class="fp-dot-label">Waitlist</span>
-    </div>
-    <div class="fp-dot-wrapper">
-      <div class="fp-dot"></div>
-      <span class="fp-dot-label">Contact</span>
-    </div>
-    <div class="fp-droplet"></div>
-    <div class="fp-arrow"></div>
+<!-- ============================================================
+     EARLY ACCESS CTA
+     ============================================================ -->
+<section class="access" id="access">
+  <div class="access-inner">
+    <h2 class="access-title reveal" data-d="1">Be first.<br/><em>Be Palette.</em></h2>
+    <form id="contact-form">
+      <input type="email" id="c-email" placeholder="Your email address" autocomplete="email" />
+      <button type="submit" class="btn btn-accent-gold">Join waitlist →</button>
+    </form>
+    <div id="form-success" class="form-success">You're in. We'll be in touch.</div>
   </div>
+</section>
 
-  <script>
-    // Waitlist form
-    (function () {
-      var form = document.getElementById('waitlist-form');
-      var success = document.getElementById('waitlist-success');
-      if (form) {
-        form.addEventListener('submit', function (e) {
-          e.preventDefault();
-          form.style.display = 'none';
-          success.classList.add('visible');
-        });
-      }
-    })();
-  </script>
-  <script src="js/main.js"></script>
-  <script src="js/nav.js"></script>
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+  <div class="footer-wordmark">
+    <p class="footer-wordmark-text">× PALETTE ×</p>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/palette.js"></script>
 </body>
 </html>
