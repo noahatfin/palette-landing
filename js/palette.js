@@ -306,6 +306,27 @@
     });
   }
 
+  /* ── Nav theme swap (light/dark section detection) ──────── */
+  function updateNavTheme() {
+    var nav = document.querySelector('.nav');
+    if (!nav) return;
+    // Don't swap theme when scrolled (frosted dark bg takes over)
+    if (nav.classList.contains('is-scrolled')) {
+      nav.classList.remove('nav--light');
+      return;
+    }
+    var lightSections = document.querySelectorAll('.section-light');
+    var isOverLight = false;
+    lightSections.forEach(function (s) {
+      var r = s.getBoundingClientRect();
+      if (r.top <= 0 && r.bottom > 0) isOverLight = true;
+    });
+    nav.classList.toggle('nav--light', isOverLight);
+  }
+
+  // Expose so main.js scroll handler can call it
+  window._paletteUpdateNavTheme = updateNavTheme;
+
   /* ── Init ─────────────────────────────────────────────────── */
   function init() {
     // Phone feed
@@ -317,6 +338,8 @@
     setupTextVideoMask();
     setupFpIndicator();
     setupDraggableShapes();
+    // Initial nav theme sync (palette.js loads after main.js's onScroll)
+    updateNavTheme();
   }
 
   if (document.readyState === 'loading') {

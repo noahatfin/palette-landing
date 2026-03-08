@@ -1,33 +1,101 @@
 /* ============================================================
-   PALETTE — Cinematic Design System
-   Overrides styles.css tokens + all Palette-specific styles
+   PALETTE — Cinematic Design System (Luma-clone)
+   Dual light/dark theme with cream base + dark research sections
    ============================================================ */
 
-/* ── Token Overrides ─────────────────────────────────────── */
+/* ── Design Tokens ──────────────────────────────────────────── */
 :root {
-  --bg:         #0a0a0a;
-  --surface:    #111111;
-  --surface-2:  #1a1a1a;
-  --cream:      #f5f0eb;
-  --gold:       #c8962a;
-  --muted:      rgba(245,240,235,0.50);
-  --dim:        rgba(245,240,235,0.22);
-  --border:     rgba(245,240,235,0.08);
-  --max-w:      1200px;
+  /* Light theme */
+  --bg-light:    #f7f4ef;
+  --fg-light:    #0a0a0a;
+  --muted-light: rgba(10,10,10,0.55);
+  --dim-light:   rgba(10,10,10,0.28);
+  --border-light: rgba(10,10,10,0.10);
+
+  /* Dark theme */
+  --bg-dark:     #0a0a0a;
+  --fg-dark:     #f7f4ef;
+  --muted-dark:  rgba(247,244,239,0.50);
+  --dim-dark:    rgba(247,244,239,0.22);
+  --border-dark: rgba(247,244,239,0.09);
+
+  /* Brand */
+  --gold:        #c8962a;
+  --cream:       #f7f4ef;
+
+  /* Functional defaults (dark-first) */
+  --bg:          var(--bg-dark);
+  --fg:          var(--fg-dark);
+  --muted:       var(--muted-dark);
+  --dim:         var(--dim-dark);
+  --border:      var(--border-dark);
+  --surface:     #111111;
+  --surface-2:   #1a1a1a;
+
+  /* Layout */
   --nav-h:      64px;
-  --r:          16px;
+  --max-w:      1200px;
+  --r:          20px;
   --f-sans:     'DM Sans', sans-serif;
   --f-display:  'Playfair Display', serif;
   --f-mono:     'DM Mono', monospace;
   --accent:     #c8962a;
 }
 
-/* ── Nav overrides ────────────────────────────────────────── */
+/* ── Section theme overrides ────────────────────────────────── */
+.section-light {
+  --bg:     var(--bg-light);
+  --fg:     var(--fg-light);
+  --muted:  var(--muted-light);
+  --dim:    var(--dim-light);
+  --border: var(--border-light);
+  --surface: #eee9e2;
+  --surface-2: #e4dfd7;
+  background: var(--bg-light);
+  color: var(--fg-light);
+}
+
+.section-dark {
+  --bg:     var(--bg-dark);
+  --fg:     var(--fg-dark);
+  --muted:  var(--muted-dark);
+  --dim:    var(--dim-dark);
+  --border: var(--border-dark);
+  --surface: #111111;
+  --surface-2: #1a1a1a;
+  background: var(--bg-dark);
+  color: var(--fg-dark);
+}
+
+/* Body defaults to dark */
+body {
+  background: var(--bg-dark);
+  color: var(--fg-dark);
+}
+
+/* ── Nav ──────────────────────────────────────────────────── */
+.nav {
+  background: transparent;
+}
 .nav.is-scrolled {
-  background: rgba(10,10,10,0.90);
+  background: rgba(10,10,10,0.88);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
+
+/* Light nav variant — when scrolled into a light section */
+.nav--light .nav-logo,
+.nav--light .nav-links a {
+  color: var(--fg-light);
+}
+.nav--light .btn-outline {
+  border-color: rgba(10,10,10,0.20);
+  color: var(--fg-light);
+}
+.nav--light .nav-burger span {
+  background: var(--fg-light);
+}
+
 .nav-drawer {
   background: rgba(10,10,10,0.97);
 }
@@ -42,7 +110,7 @@
 /* ── Buttons ──────────────────────────────────────────────── */
 .btn-primary {
   background: var(--cream);
-  color: var(--bg);
+  color: var(--bg-dark);
   font-family: var(--f-sans);
   font-size: 14px;
   font-weight: 600;
@@ -74,11 +142,11 @@
 }
 .btn-ghost:hover {
   color: var(--cream);
-  background: rgba(245,240,235,0.06);
+  background: rgba(247,244,239,0.06);
 }
 
 /* ============================================================
-   HERO — Luma-style full-screen centered
+   HERO — single full-bleed video
    ============================================================ */
 .hero {
   position: relative;
@@ -89,25 +157,13 @@
   overflow: hidden;
 }
 
-.hero-bg {
+.hero-vid {
   position: absolute;
   inset: 0;
-  z-index: 0;
-}
-
-.hero-bg-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  width: 100%;
-  height: 100%;
-}
-.hero-bg-grid video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
-  opacity: 0.32;
+  opacity: 0.75;
 }
 
 .hero-overlay {
@@ -115,10 +171,10 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(10,10,10,0.65) 0%,
-    rgba(10,10,10,0.10) 35%,
-    rgba(10,10,10,0.10) 65%,
-    rgba(10,10,10,0.90) 100%
+    rgba(10,10,10,0.55) 0%,
+    rgba(10,10,10,0.05) 40%,
+    rgba(10,10,10,0.05) 65%,
+    rgba(10,10,10,0.85) 100%
   );
 }
 
@@ -168,12 +224,12 @@
   font-family: var(--f-sans);
   font-size: clamp(15px, 1.4vw, 18px);
   line-height: 1.65;
-  color: var(--muted);
+  color: var(--muted-dark);
   max-width: 460px;
 }
 
 /* ============================================================
-   MISSION STATEMENT
+   MISSION STATEMENT — light section
    ============================================================ */
 .mission {
   padding: 120px 40px;
@@ -183,22 +239,19 @@
   position: relative;
   z-index: 3;
 }
-.mission-inner {
-  max-width: 740px;
-  text-align: center;
-}
 .mission-text {
-  font-family: var(--f-display);
-  font-size: clamp(22px, 2.5vw, 34px);
-  font-weight: 700;
+  font-family: var(--f-sans);
+  font-size: clamp(22px, 2.8vw, 38px);
+  font-weight: 500;
   line-height: 1.45;
   letter-spacing: -0.02em;
-  color: var(--cream);
-  opacity: 0.82;
+  color: var(--fg);
+  max-width: 780px;
+  text-align: center;
 }
 
 /* ============================================================
-   CREATOR STRIP (like Luma's logo marquee)
+   CREATOR STRIP — light section
    ============================================================ */
 .creator-strip {
   padding: 48px 0;
@@ -250,7 +303,7 @@
 }
 
 /* ============================================================
-   PRODUCTS / STUDIO (like Luma "Product & Platform")
+   PRODUCTS / STUDIO — light section
    ============================================================ */
 .products {
   padding: 120px 0;
@@ -291,7 +344,7 @@
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.1;
-  color: var(--cream);
+  color: var(--fg);
 }
 
 /* Grid: featured top (2-col span) + 2 cards below */
@@ -301,7 +354,7 @@
   gap: 2px;
   border-radius: var(--r);
   overflow: hidden;
-  background: rgba(245,240,235,0.04);
+  background: var(--border);
 }
 
 .product-card {
@@ -372,7 +425,7 @@
   font-size: clamp(20px, 2vw, 30px);
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--cream);
+  color: var(--fg);
   line-height: 1.2;
 }
 .product-desc {
@@ -390,17 +443,16 @@
   display: block;
   transition: color 0.2s;
 }
-.product-card:hover .product-link { color: var(--cream); }
+.product-card:hover .product-link { color: var(--fg); }
 
 /* ============================================================
-   RESEARCH / TECHNOLOGY (like Luma "Research")
+   RESEARCH / TECHNOLOGY — dark section
    ============================================================ */
 .research {
   padding: 120px 0;
   border-top: 1px solid var(--border);
   position: relative;
   z-index: 3;
-  background: var(--surface);
 }
 .research-inner {
   max-width: var(--max-w);
@@ -420,7 +472,7 @@
 .research-item {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: var(--bg);
+  background: #111111;
   min-height: 420px;
   overflow: hidden;
 }
@@ -476,7 +528,7 @@
   font-size: clamp(28px, 3vw, 44px);
   font-weight: 700;
   letter-spacing: -0.03em;
-  color: var(--cream);
+  color: var(--fg);
   line-height: 1.1;
 }
 .research-desc {
@@ -489,7 +541,7 @@
   font-family: var(--f-sans);
   font-size: 14px;
   font-weight: 500;
-  color: var(--cream);
+  color: var(--fg);
   opacity: 0.55;
   text-decoration: none;
   transition: opacity 0.2s;
@@ -499,7 +551,7 @@
 .research-cta:hover { opacity: 1; }
 
 /* ============================================================
-   STATS ROW
+   STATS ROW — dark
    ============================================================ */
 .stats {
   padding: 100px 0;
@@ -529,7 +581,7 @@
   font-size: clamp(40px, 4vw, 60px);
   font-weight: 700;
   letter-spacing: -0.04em;
-  color: var(--cream);
+  color: var(--fg);
   line-height: 1;
 }
 .stat-unit { color: var(--gold); }
@@ -540,7 +592,7 @@
 }
 
 /* ============================================================
-   EARLY ACCESS CTA
+   EARLY ACCESS CTA — dark
    ============================================================ */
 .access {
   padding: 160px 0;
@@ -559,7 +611,7 @@
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1.05;
-  color: var(--cream);
+  color: var(--fg);
   margin-bottom: 48px;
 }
 .access-title em {
@@ -574,13 +626,13 @@
 }
 #contact-form input[type="email"] {
   flex: 1;
-  background: var(--surface);
+  background: #111111;
   border: 1px solid var(--border);
   border-radius: 100px;
   padding: 14px 24px;
   font-family: var(--f-sans);
   font-size: 14px;
-  color: var(--cream);
+  color: var(--fg);
   outline: none;
   transition: border-color 0.2s;
 }
@@ -597,14 +649,12 @@
 .form-success.show { display: block; }
 
 /* ============================================================
-   FOOTER (multi-column, like Luma)
+   FOOTER — dark
    ============================================================ */
 .footer {
-  background: var(--bg);
   border-top: 1px solid var(--border);
   padding: 0;
 }
-/* styles.css .footer-grid handles layout; override padding */
 .footer-grid {
   padding: 80px 40px 64px;
   grid-template-columns: 1fr auto auto auto;
@@ -615,20 +665,18 @@
   font-style: italic;
   font-size: 20px;
   font-weight: 700;
-  color: var(--cream);
+  color: var(--fg);
   display: block;
   margin-bottom: 10px;
 }
-/* styles.css .footer-col, .footer-col-title, .footer-col a apply */
 
-/* Big wordmark at bottom (styles.css .footer-wordmark handles wrapper) */
 .footer-wordmark-text {
   font-family: var(--f-display);
   font-style: italic;
   font-size: clamp(80px, 14vw, 200px);
   font-weight: 700;
   letter-spacing: -0.04em;
-  color: rgba(245,240,235,0.04);
+  color: rgba(247,244,239,0.04);
   white-space: nowrap;
   line-height: 1;
 }
@@ -666,7 +714,7 @@
   width: 1px;
   height: 14px;
   transform: translateX(-50%);
-  background: linear-gradient(to bottom, rgba(245,240,235,0.15), rgba(245,240,235,0.04));
+  background: linear-gradient(to bottom, rgba(247,244,239,0.15), rgba(247,244,239,0.04));
   pointer-events: none;
 }
 .fp-dot-wrapper:last-of-type::after { content: none; }
@@ -674,8 +722,8 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, rgba(245,240,235,0.85) 0%, rgba(245,240,235,0.1) 100%);
-  border: 1px solid rgba(245,240,235,0.2);
+  background: radial-gradient(circle at 32% 28%, rgba(247,244,239,0.85) 0%, rgba(247,244,239,0.1) 100%);
+  border: 1px solid rgba(247,244,239,0.2);
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   transition: transform 0.2s ease, opacity 0.2s ease;
@@ -732,7 +780,7 @@
   background: rgba(22,18,16,0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-dark);
   border-radius: 100px;
   padding: 4px 10px;
   transition: opacity 0.2s, transform 0.2s;
@@ -756,7 +804,7 @@
   display: block;
   width: 1px;
   height: 24px;
-  background: linear-gradient(to bottom, rgba(245,240,235,0.25), transparent);
+  background: linear-gradient(to bottom, rgba(247,244,239,0.25), transparent);
 }
 .fp-arrow::after {
   content: '';
@@ -765,7 +813,7 @@
   height: 0;
   border-left: 3px solid transparent;
   border-right: 3px solid transparent;
-  border-top: 4px solid rgba(245,240,235,0.2);
+  border-top: 4px solid rgba(247,244,239,0.2);
 }
 @keyframes fp-arrow-bob {
   0%, 100% { transform: translateY(0); opacity: 0.5; }
@@ -776,7 +824,6 @@
    RESPONSIVE
    ============================================================ */
 @media (max-width: 1024px) {
-  /* Featured card stacks on medium screens */
   .product-card--featured {
     flex-direction: column;
     min-height: auto;
@@ -785,7 +832,6 @@
     width: 100%;
     aspect-ratio: 16/9;
   }
-  /* Research items stack */
   .research-item {
     grid-template-columns: 1fr;
     min-height: auto;
