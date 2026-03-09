@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Palette — AI Video Creation Studio</title>
-  <meta name="description" content="From idea to film. Instantly. Palette is the AI video studio that writes, directs, and produces your short films — all from a single prompt." />
+  <title>Palette — AI Short Drama Studio</title>
+  <meta name="description" content="From idea to viral short drama. Palette is the AI studio that scripts, directs, and produces vertical short videos — all from a single prompt." />
   <link rel="icon" href="imgs/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/palette.css" />
 </head>
@@ -44,14 +44,16 @@
 <!-- ============================================================
      HERO — single full-screen video + centered headline
      ============================================================ -->
-<section class="hero section-dark" id="hero">
-  <video class="hero-vid" src="videos/v1.mp4" autoplay muted loop playsinline></video>
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <p class="hero-eyebrow">AI Video Studio</p>
-    <h1 class="hero-headline">The AI studio that<br>films your ideas.</h1>
-    <p class="hero-sub">From a single prompt to a fully produced short film — in minutes.</p>
-    <a href="#access" class="btn btn-primary">Try Palette →</a>
+<section class="hero hero-zone section-dark" id="hero">
+  <div class="hero-sticky-wrap">
+    <video class="hero-vid" src="videos/hero.mp4" autoplay muted loop playsinline></video>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Vertical Short Drama · AI</p>
+      <h1 class="hero-headline"><span class="hero-brand">Palette</span> produces<br>your short drama.</h1>
+      <p class="hero-sub">From script to screen-ready vertical video — in minutes. Built for creators and studios alike.</p>
+      <a href="#access" class="btn btn-primary">Try Palette →</a>
+    </div>
   </div>
 </section>
 
@@ -59,89 +61,181 @@
      MISSION STATEMENT
      ============================================================ -->
 <section class="mission section-light">
-  <p class="mission-text">Our mission is to give every storyteller the power to turn their ideas into cinematic video.</p>
+  <p class="mission-text">Our mission is to put a full short drama production studio in every creator's hands.</p>
 </section>
 
 <!-- ============================================================
-     CREATOR STRIP (like Luma's logo marquee)
+     APP PREVIEW MOCKUP
      ============================================================ -->
-<div class="creator-strip section-light">
-  <p class="creator-strip-label">Creators making films with Palette</p>
-  <div class="creator-track-wrap">
-    <div class="creator-track">
-      <span class="creator-name">@novaframes</span>
-      <span class="creator-name">@cinemabot</span>
-      <span class="creator-name">@dreampixels</span>
-      <span class="creator-name">@framesmith</span>
-      <span class="creator-name">@reelcraft</span>
-      <span class="creator-name">@autocinema</span>
-      <span class="creator-name">@shortai_pro</span>
-      <span class="creator-name">@filmdrop</span>
-      <span class="creator-name">@pixelstory</span>
-      <!-- duplicate for seamless loop -->
-      <span class="creator-name">@novaframes</span>
-      <span class="creator-name">@cinemabot</span>
-      <span class="creator-name">@dreampixels</span>
-      <span class="creator-name">@framesmith</span>
-      <span class="creator-name">@reelcraft</span>
-      <span class="creator-name">@autocinema</span>
-      <span class="creator-name">@shortai_pro</span>
-      <span class="creator-name">@filmdrop</span>
-      <span class="creator-name">@pixelstory</span>
+<section class="app-preview section-dark">
+  <div class="app-preview-inner">
+    <p class="section-label">Product Preview</p>
+    <div class="app-mockup">
+
+      <div class="mockup-titlebar">
+        <div class="mockup-dot"></div>
+        <div class="mockup-dot"></div>
+        <div class="mockup-dot"></div>
+        <span class="mockup-title">Palette — My Short Drama</span>
+      </div>
+
+      <div class="mockup-body">
+
+        <div class="mockup-scenes">
+          <div class="mockup-panel-label">Scenes</div>
+          <div class="scene-thumb active" style="background-image:url(imgs/thumb-1.jpg);background-size:cover;background-position:center"><span class="scene-thumb-label">Scene 1</span></div>
+          <div class="scene-thumb" style="background-image:url(imgs/thumb-2.jpg);background-size:cover;background-position:center"><span class="scene-thumb-label">Scene 2</span></div>
+          <div class="scene-thumb" style="background-image:url(imgs/thumb-3.jpg);background-size:cover;background-position:center"><span class="scene-thumb-label">Scene 3</span></div>
+          <div class="scene-thumb" style="background-image:url(imgs/thumb-4.jpg);background-size:cover;background-position:center"><span class="scene-thumb-label">Scene 4</span></div>
+        </div>
+
+        <div class="mockup-video">
+          <span class="mockup-video-label">Scene 1 — Morning Arrival</span>
+        </div>
+
+        <div class="mockup-chat">
+          <div class="mockup-panel-label">Director AI <span class="ai-badge">PaletteGen 2.0</span></div>
+          <div class="chat-bubble user" data-chat="0">
+            A young woman arrives at a misty train station at dawn.
+            <span class="chat-ts">09:41</span>
+          </div>
+          <div class="chat-bubble ai" data-chat="1">
+            Got it — generating Scene 1. Soft morning light, slow pan to set the mood.
+            <span class="chat-ts">09:41</span>
+          </div>
+          <div class="chat-bubble user" data-chat="2">
+            Make her look hopeful but nervous.
+            <span class="chat-ts">09:42</span>
+          </div>
+          <div class="chat-bubble ai" data-chat="3">
+            Applied. Scene 1 is ready to preview.
+            <div class="chat-actions">
+              <span class="chat-action">✓ Approve</span>
+              <span class="chat-action">↺ Regenerate</span>
+            </div>
+            <span class="chat-ts">09:42</span>
+          </div>
+          <div class="mockup-chat-input">Continue the story…</div>
+        </div>
+
+        <div class="mockup-timeline">
+          <div class="timeline-controls">
+            <div class="timeline-btn">&#9664;</div>
+            <div class="timeline-btn timeline-btn--play">&#9654;</div>
+            <div class="timeline-btn">&#9654;&#9654;</div>
+          </div>
+          <div class="timeline-area">
+            <div class="timeline-ruler">
+              <span>0:00</span><span>0:05</span><span>0:10</span>
+              <span>0:15</span><span>0:20</span><span>0:25</span>
+            </div>
+            <div class="timeline-row">
+              <span class="timeline-track-label">VID</span>
+              <div class="timeline-track">
+                <div class="timeline-clip"></div>
+                <div class="timeline-clip"></div>
+                <div class="timeline-clip"></div>
+                <div class="timeline-clip"></div>
+                <div class="timeline-clip"></div>
+                <div class="timeline-playhead"></div>
+              </div>
+            </div>
+            <div class="timeline-row">
+              <span class="timeline-track-label">AUD</span>
+              <div class="timeline-track timeline-track--audio">
+                <div class="timeline-wave"></div>
+              </div>
+            </div>
+            <div class="timeline-row">
+              <span class="timeline-track-label">FX</span>
+              <div class="timeline-track timeline-track--fx">
+                <div class="timeline-fx-marker" style="left:12%"></div>
+                <div class="timeline-fx-marker" style="left:38%"></div>
+                <div class="timeline-fx-marker" style="left:71%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
-</div>
+</section>
 
 <!-- ============================================================
-     STUDIO / PRODUCTS (like Luma "Product & Platform")
+     STUDIO / PRODUCTS — scroll-driven sticky section
      ============================================================ -->
 <section class="products section-light" id="features">
-  <div class="products-inner">
-    <div class="section-head">
-      <p class="section-label">Studio</p>
-      <h2 class="section-title">Everything you need<br>to produce</h2>
-    </div>
-    <div class="product-grid">
 
-      <!-- Featured card: full-width, side-by-side -->
-      <a class="product-card product-card--featured" href="#access">
-        <div class="product-visual">
-          <video src="videos/v1.mp4" autoplay muted loop playsinline></video>
-        </div>
-        <div class="product-meta">
-          <span class="product-tag">Script AI</span>
-          <h3 class="product-name">Narrative intelligence</h3>
-          <p class="product-desc">Write your idea in plain language. Palette's narrative AI structures it into a scene-by-scene script complete with dialogue, pacing, and emotional beats — automatically.</p>
-          <span class="product-link">Learn more →</span>
-        </div>
-      </a>
+  <div class="products-scroll" id="products-scroll">
+    <div class="products-sticky">
+      <div class="products-header">
+        <p class="section-label">Studio</p>
+        <h2 class="section-title">Everything you need to produce<br>vertical short dramas</h2>
+      </div>
+      <div class="products-layout">
 
-      <!-- Card: Director -->
-      <a class="product-card" href="#access">
-        <div class="product-visual">
-          <video src="videos/v2.mp4" autoplay muted loop playsinline></video>
+        <!-- LEFT: iPhone with TikTok video feed -->
+        <div class="products-phone">
+          <div class="iphone-device">
+            <div class="iphone-notch"></div>
+            <div class="iphone-screen">
+              <div class="phone-feed">
+              </div>
+              <div class="tiktok-overlay">
+                <div class="tiktok-hearts" id="products-hearts"></div>
+                <div class="tiktok-sidebar">
+                  <div class="tiktok-avatar"></div>
+                  <div class="tiktok-action"><span>❤️</span><span id="products-like-count">24.6w</span></div>
+                  <div class="tiktok-action"><span>💬</span><span>846</span></div>
+                  <div class="tiktok-action"><span>↗</span><span>Share</span></div>
+                </div>
+                <div class="tiktok-bottom">
+                  <div class="tiktok-username">@palette_ai</div>
+                  <div class="tiktok-caption">AI short drama · vertical-native ♪</div>
+                  <div class="tiktok-progress"><div class="tiktok-progress-bar"></div></div>
+                </div>
+                <div class="tiktok-danmaku" id="products-danmaku"></div>
+              </div>
+            </div>
+            <div class="iphone-home-bar"></div>
+          </div>
         </div>
-        <div class="product-meta">
-          <span class="product-tag">Director AI</span>
-          <h3 class="product-name">AI Studio Director</h3>
-          <p class="product-desc">Shot composition, color grade, sound design — the director model handles every creative decision automatically.</p>
-          <span class="product-link">Learn more →</span>
-        </div>
-      </a>
 
-      <!-- Card: Export -->
-      <a class="product-card" href="#access">
-        <div class="product-visual">
-          <video src="videos/v3.mp4" autoplay muted loop playsinline></video>
-        </div>
-        <div class="product-meta">
-          <span class="product-tag">Export</span>
-          <h3 class="product-name">4K broadcast-ready</h3>
-          <p class="product-desc">Render in 4K with licensed music, color grading, and captions — ready for TikTok, Instagram, or film festivals.</p>
-          <span class="product-link">Learn more →</span>
-        </div>
-      </a>
+        <!-- RIGHT: clean text, crossfade -->
+        <div class="products-text">
+          <div class="products-feature is-active">
+            <span class="product-tag">Script AI</span>
+            <h3 class="product-name">Story-first scripting</h3>
+            <p class="product-desc">Write your idea in plain language. Palette generates a complete short drama script — scene breakdowns, dialogue, character arcs, and vertical pacing — automatically.</p>
+            <a href="#access" class="product-link">Learn more →</a>
+          </div>
+          <div class="products-feature">
+            <span class="product-tag">Director AI</span>
+            <h3 class="product-name">Vertical-native direction</h3>
+            <p class="product-desc">Framing, cuts, and visual rhythm built for 9:16. The director model handles every shot decision with short-form audiences in mind.</p>
+            <a href="#access" class="product-link">Learn more →</a>
+          </div>
+          <div class="products-feature">
+            <span class="product-tag">Export</span>
+            <h3 class="product-name">Platform-ready in one click</h3>
+            <p class="product-desc">Export in 9:16 vertical with captions, licensed music, and color grading — ready for TikTok, Instagram Reels, and Douyin.</p>
+            <a href="#access" class="product-link">Learn more →</a>
+          </div>
 
+          <div class="products-progress" id="products-progress">
+            <span class="progress-dot active"></span>
+            <span class="progress-dot"></span>
+            <span class="progress-dot"></span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Scroll hint -->
+      <div class="products-scroll-hint" id="products-scroll-hint">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      </div>
     </div>
   </div>
 </section>
@@ -153,7 +247,7 @@
   <div class="research-inner">
     <div class="section-head">
       <p class="section-label">Technology</p>
-      <h2 class="section-title">Powered by frontier AI</h2>
+      <h2 class="section-title">Built for the vertical era</h2>
     </div>
     <div class="research-list">
 
@@ -166,7 +260,7 @@
             <span class="research-tag research-tag--new">New</span>
             <h3 class="research-name">PaletteGen 2.0</h3>
           </div>
-          <p class="research-desc">Our second-generation video synthesis model. Understands narrative structure, visual language, and cinematic pacing at the shot level.</p>
+          <p class="research-desc">Our second-generation vertical video model. Understands short drama pacing, emotional tension, and the visual language of mobile-first audiences.</p>
           <a href="#access" class="research-cta">Join waitlist →</a>
         </div>
       </div>
@@ -179,7 +273,7 @@
           <div class="research-info-top">
             <h3 class="research-name">StoryMind</h3>
           </div>
-          <p class="research-desc">The narrative AI that converts a single sentence into a complete film script — with emotional beats, dialogue, and shot-by-shot visual direction.</p>
+          <p class="research-desc">The narrative AI that turns a single idea into a full short drama script — with scene structure, character dialogue, and vertical shot direction built in.</p>
           <a href="#access" class="research-cta">Join waitlist →</a>
         </div>
       </div>
@@ -189,35 +283,32 @@
 </section>
 
 <!-- ============================================================
-     STATS
-     ============================================================ -->
-<section class="stats section-dark" id="stats">
-  <div class="stats-inner">
-    <div class="stat-item reveal" data-d="1">
-      <div class="stat-num"><span class="counter" data-target="10">0</span><span class="stat-unit">k+</span></div>
-      <p class="stat-label">creators on the waitlist</p>
-    </div>
-    <div class="stat-item reveal" data-d="2">
-      <div class="stat-num"><span class="counter" data-target="3">0</span><span class="stat-unit">min</span></div>
-      <p class="stat-label">average generation time</p>
-    </div>
-    <div class="stat-item reveal" data-d="3">
-      <div class="stat-num"><span class="counter" data-target="4">0</span><span class="stat-unit">K</span></div>
-      <p class="stat-label">export resolution</p>
-    </div>
-    <div class="stat-item reveal" data-d="4">
-      <div class="stat-num"><span class="counter" data-target="6">0</span><span class="stat-unit">+</span></div>
-      <p class="stat-label">cinematic styles</p>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
      EARLY ACCESS CTA
      ============================================================ -->
-<section class="access section-dark" id="access">
+<section class="access" id="access">
+  <!-- Floating iridescent stones (draggable) -->
+  <img src="imgs/shape-1.png" alt="" class="access-stone access-stone-1 shape" />
+  <img src="imgs/shape-3.png" alt="" class="access-stone access-stone-2 shape" />
+  <img src="imgs/shape-5.png" alt="" class="access-stone access-stone-3 shape" />
+  <img src="imgs/shape-6.png" alt="" class="access-stone access-stone-4 shape" />
+
+  <!-- Scrolling ticker -->
+  <div class="access-ticker">
+    <div class="access-ticker-track">
+      <span>PALETTE</span><span>PALETTE</span><span>PALETTE</span>
+      <span>PALETTE</span><span>PALETTE</span><span>PALETTE</span>
+      <span>PALETTE</span><span>PALETTE</span><span>PALETTE</span>
+      <span>PALETTE</span><span>PALETTE</span><span>PALETTE</span>
+    </div>
+  </div>
+
   <div class="access-inner">
-    <h2 class="access-title reveal" data-d="1">Be first.<br/><em>Be Palette.</em></h2>
+    <h2 class="access-title reveal" data-d="1">
+      <span class="access-word">Your</span>
+      <span class="access-word">story,</span><br/>
+      <em><span class="access-word">vertical-ready.</span></em>
+    </h2>
+    <p class="access-sub reveal" data-d="2">From idea to screen-ready vertical drama — powered by AI.</p>
     <form id="contact-form">
       <input type="email" id="c-email" placeholder="Your email address" autocomplete="email" />
       <button type="submit" class="btn btn-accent-gold">Join waitlist →</button>
@@ -233,7 +324,7 @@
   <div class="footer-grid">
     <div class="footer-brand">
       <a href="/" class="footer-logo">palette</a>
-      <p class="footer-tagline">The AI studio that films your ideas.</p>
+      <p class="footer-tagline">The AI studio that produces your short drama.</p>
     </div>
     <div class="footer-col">
       <p class="footer-col-title">Product</p>
