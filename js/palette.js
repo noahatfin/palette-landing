@@ -696,6 +696,10 @@
       setTimeout(function() { c.remove(); }, 4000);
     }
 
+    // Hero video is the first "feed" — it's already in the phone via flyToPhone.
+    // feedItems (from .phone-feed) are only the 2nd and 3rd videos.
+    var heroVid = document.querySelector('.hero-vid');
+
     function setStep(newIdx) {
       if (newIdx === currentIdx) return;
       currentIdx = newIdx;
@@ -703,6 +707,32 @@
       // Text crossfade
       features.forEach(function(f, i) {
         f.classList.toggle('is-active', i === newIdx);
+      });
+
+      // Phone feed: hero video = step 0, feedItems[0] = step 1, feedItems[1] = step 2
+      if (heroVid) {
+        if (newIdx === 0) {
+          heroVid.style.transform = '';
+          heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
+        } else {
+          heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
+          heroVid.style.transform = 'translateY(-100%)';
+        }
+      }
+
+      feedItems.forEach(function(item, i) {
+        var stepIdx = i + 1; // feedItems[0] maps to step 1, feedItems[1] maps to step 2
+        item.classList.remove('is-active', 'is-prev');
+        var vid = item.querySelector('video');
+        if (stepIdx === newIdx) {
+          item.classList.add('is-active');
+          if (vid) { vid.currentTime = 0; vid.play().catch(function(){}); }
+        } else if (stepIdx < newIdx) {
+          item.classList.add('is-prev');
+          if (vid) vid.pause();
+        } else {
+          if (vid) vid.pause();
+        }
       });
 
       // Progress dots
@@ -838,8 +868,44 @@
     setupChatAnimation();
     setupIphoneEnter();
     setupProductsScroll();
+    setupBackToTop();
     // Initial nav theme sync (palette.js loads after main.js's onScroll)
     updateNavTheme();
+  }
+
+  /* ── Scroll to top on refresh ─────────────────────────────── */
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+  window.scrollTo(0, 0);
+
+  /* ── Back-to-top button ───────────────────────────────────── */
+  function setupBackToTop() {
+    var btn = document.getElementById('back-to-top');
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    var lightSections = document.querySelectorAll('.section-light');
+
+    function updateBtn() {
+      var show = window.scrollY > window.innerHeight;
+      btn.classList.toggle('is-visible', show);
+
+      // Theme: check if button overlaps a light section
+      var btnY = window.innerHeight - 40; // btn is fixed near bottom
+      var isLight = false;
+      lightSections.forEach(function (s) {
+        var r = s.getBoundingClientRect();
+        if (r.top <= btnY && r.bottom > btnY) isLight = true;
+      });
+      btn.classList.toggle('is-light', isLight);
+    }
+
+    window.addEventListener('scroll', updateBtn, { passive: true });
+    updateBtn();
   }
 
   if (document.readyState === 'loading') {

@@ -968,12 +968,13 @@ body {
   grid-area: 1 / 1;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   align-self: center;
-  padding: 60px 56px;
-  background: var(--bg-dark);
-  color: var(--fg-dark);
-  border-radius: 32px;
+  padding: 40px 0 40px 36px;
+  border-left: 3px solid var(--dim-light);
+  background: transparent;
+  color: var(--fg-light);
+  border-radius: 0;
   opacity: 0;
   transform: translateY(28px);
   transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 0.68, 0, 1);
@@ -983,29 +984,30 @@ body {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+  border-left-color: var(--fg-light);
 }
 .products-feature .product-tag {
-  color: rgba(247,244,239,0.7);
-  background: rgba(247,244,239,0.08);
-  border-color: rgba(247,244,239,0.12);
+  color: var(--muted-light);
+  background: rgba(10,10,10,0.05);
+  border-color: rgba(10,10,10,0.10);
 }
 .products-feature .product-name {
-  color: var(--fg-dark);
+  color: var(--fg-light);
   font-size: clamp(24px, 2.5vw, 36px);
 }
 .products-feature .product-desc {
-  color: rgba(247,244,239,0.55);
+  color: var(--muted-light);
   font-size: 16px;
   line-height: 1.75;
   max-width: 420px;
 }
 .products-feature .product-link {
   margin-top: 12px;
-  color: rgba(247,244,239,0.4);
+  color: var(--dim-light);
   font-size: 14px;
 }
 .products-feature .product-link:hover {
-  color: var(--fg-dark);
+  color: var(--fg-light);
 }
 
 /* ── Progress dots ──────────────────────────────────────── */
@@ -1549,6 +1551,50 @@ body {
   margin-top: 16px;
 }
 .form-success.show { display: block; }
+
+/* ============================================================
+   BACK TO TOP
+   ============================================================ */
+.back-to-top {
+  position: fixed;
+  right: 32px;
+  bottom: 40px;
+  z-index: 999;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border-dark);
+  background: rgba(10,10,10,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--fg-dark);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 0.3s, transform 0.3s, background 0.2s;
+}
+.back-to-top.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.back-to-top:hover {
+  background: rgba(10,10,10,1);
+}
+/* Light section variant */
+.back-to-top.is-light {
+  background: rgba(255,255,255,0.85);
+  border-color: var(--border-light);
+  color: var(--fg-light);
+}
+.back-to-top.is-light:hover {
+  background: rgba(255,255,255,1);
+}
 
 /* ============================================================
    FOOTER — dark
