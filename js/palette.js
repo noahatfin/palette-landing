@@ -628,16 +628,21 @@
           content.style.pointerEvents = p > 0.05 ? 'none' : '';
         }
         // Centered text overlay
-        // Headline fades in at p 0.08–0.18, crossfades to mission at p 0.38–0.52
+        // Headline: delayed entrance at p 0.18–0.32 with float-up + scale, crossfades out at p 0.42–0.56
         if (centerHL) {
-          var hlIn  = ease(clamp((p - 0.08) / 0.10, 0, 1));
-          var hlOut = ease(clamp((p - 0.38) / 0.14, 0, 1));
+          var hlIn  = ease(clamp((p - 0.18) / 0.14, 0, 1));
+          var hlOut = ease(clamp((p - 0.42) / 0.14, 0, 1));
           centerHL.style.opacity   = hlIn * (1 - hlOut);
-          centerHL.style.transform = 'translateY(' + lerp(0, -30, hlOut) + 'px)';
+          var scaleIn = lerp(0.92, 1, hlIn);
+          var yIn     = lerp(40, 0, hlIn);
+          var yOut    = lerp(0, -30, hlOut);
+          centerHL.style.transform = 'translateY(' + (yIn + yOut) + 'px) scale(' + scaleIn * (1 - hlOut * 0.08) + ')';
+          if (hlIn > 0.01) centerHL.classList.add('is-visible');
+          else centerHL.classList.remove('is-visible');
         }
-        // Mission fades in at p 0.38–0.52, stays visible (merge handled separately)
+        // Mission fades in at p 0.42–0.56, stays visible (merge handled separately)
         if (centerMis && !hasMerged) {
-          var misIn = ease(clamp((p - 0.38) / 0.14, 0, 1));
+          var misIn = ease(clamp((p - 0.42) / 0.14, 0, 1));
           centerMis.style.opacity = misIn;
           centerMis.style.transform = 'translateY(' + lerp(30, 0, misIn) + 'px)';
         }
