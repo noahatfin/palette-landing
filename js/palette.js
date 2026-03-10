@@ -327,17 +327,6 @@
     var heroWrap = document.querySelector('.hero-sticky-wrap');
     if (!vid || !target || !heroWrap) return;
 
-    var headline = content ? content.querySelector('.hero-headline') : null;
-    var eyebrow  = content ? content.querySelector('.hero-eyebrow') : null;
-    var heroSub  = content ? content.querySelector('.hero-sub') : null;
-    var heroCTA  = content ? content.querySelector('.btn') : null;
-
-    var centerText = document.querySelector('.hero-center-text');
-    var centerHL   = centerText ? centerText.querySelector('.hero-center-headline') : null;
-    var centerMis  = centerText ? centerText.querySelector('.hero-center-mission') : null;
-    var missionSection = document.querySelector('.mission');
-    var hasMerged = false;
-
     function lerp(a, b, t) { return a + (b - a) * t; }
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
     function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
@@ -377,9 +366,6 @@
       isUndocking = false;
       vid.style.transition = '';
 
-      // FLIP: capture current visual position before reparent
-      var firstRect = vid.getBoundingClientRect();
-
       var s    = params.scale;
       var dockedW = window.innerWidth  * s;
       var dockedH = (window.innerHeight - BOTTOM_GAP) * s;
@@ -397,25 +383,6 @@
       vid.style.objectFit     = 'cover';
       vid.style.zIndex        = '1';
       vid.style.pointerEvents = 'none';
-      if (centerHL) centerHL.style.opacity = '0';
-
-      // FLIP: animate from old position to docked position
-      var lastRect = vid.getBoundingClientRect();
-      var dx = firstRect.left - lastRect.left;
-      var dy = firstRect.top  - lastRect.top;
-      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-        vid.style.transformOrigin = '0 0';
-        vid.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
-        vid.style.transition = 'none';
-        void vid.offsetWidth;
-        vid.style.transition = 'transform 0.3s cubic-bezier(0.2,0.8,0.2,1)';
-        vid.style.transform = 'translate(0,0)';
-        setTimeout(function () {
-          vid.style.transition = '';
-          vid.style.transform = '';
-          vid.style.transformOrigin = '';
-        }, 300);
-      }
     }
 
     function undock() {
@@ -622,64 +589,10 @@
                                   lerp(0, params.ty, e) + 'px) scale(' + lerp(1, params.scale, e) + ')';
         vid.style.borderRadius = lerp(0, 12, e) + 'px';
         if (content) {
-          // Fade out ALL bottom-left content over p 0.00–0.10
-          var contentFade = clamp(p / 0.10, 0, 1);
-          content.style.opacity       = 1 - contentFade;
+          content.style.opacity       = clamp(1 - p / 0.2, 0, 1);
           content.style.pointerEvents = p > 0.05 ? 'none' : '';
         }
-        // Centered text overlay
-        // Headline fades in at p 0.08–0.18, crossfades to mission at p 0.38–0.52
-        if (centerHL) {
-          var hlIn  = ease(clamp((p - 0.08) / 0.10, 0, 1));
-          var hlOut = ease(clamp((p - 0.38) / 0.14, 0, 1));
-          centerHL.style.opacity   = hlIn * (1 - hlOut);
-          centerHL.style.transform = 'translateY(' + lerp(0, -30, hlOut) + 'px)';
-        }
-        // Mission fades in at p 0.38–0.52, stays visible (merge handled separately)
-        if (centerMis && !hasMerged) {
-          var misIn = ease(clamp((p - 0.38) / 0.14, 0, 1));
-          centerMis.style.opacity = misIn;
-          centerMis.style.transform = 'translateY(' + lerp(30, 0, misIn) + 'px)';
-        }
       });
-    }, { passive: true });
-
-    // Mission text merge: overlay → real text seamless handoff
-    var missionText = document.querySelector('.mission-text');
-
-    window.addEventListener('scroll', function () {
-      if (!centerMis || !missionText) return;
-      var mtRect = missionText.getBoundingClientRect();
-      var mtCenter = mtRect.top + mtRect.height / 2;
-      var vpCenter = window.innerHeight / 2;
-
-      if (mtCenter <= vpCenter && !hasMerged) {
-        hasMerged = true;
-        // 1. Instantly show real text as white (same as overlay)
-        missionText.style.transition = 'none';
-        missionText.style.opacity = '1';
-        missionText.style.color = 'var(--cream)';
-        missionText.style.transform = 'translateY(0)';
-        missionText.style.textShadow = '0 2px 32px rgba(0,0,0,0.5)';
-        // 2. Hide overlay (same frame — visually seamless)
-        centerMis.style.opacity = '0';
-        // 3. Force reflow, then transition color to black
-        void missionText.offsetWidth;
-        missionText.style.transition = 'color 1.0s ease, text-shadow 0.8s ease';
-        missionText.style.color = '';
-        missionText.style.textShadow = '';
-        missionText.classList.add('is-revealed');
-      } else if (mtCenter > vpCenter && hasMerged) {
-        // Reverse: restore overlay, hide real text
-        hasMerged = false;
-        missionText.classList.remove('is-revealed');
-        missionText.style.transition = 'none';
-        missionText.style.opacity = '0';
-        missionText.style.color = '';
-        missionText.style.transform = '';
-        missionText.style.textShadow = '';
-        centerMis.style.opacity = '1';
-      }
     }, { passive: true });
   }
 
