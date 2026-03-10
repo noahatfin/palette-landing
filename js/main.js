@@ -164,7 +164,10 @@
       }
 
       var btn = form.querySelector('button[type="submit"]');
-      if (btn) btn.disabled = true;
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add('is-loading');
+      }
 
       fetch('/api/waitlist', {
         method: 'POST',
@@ -173,11 +176,20 @@
       })
         .then(function (res) { return res.ok ? res : Promise.reject(res); })
         .then(function () {
-          form.style.display = 'none';
-          successMsg.classList.add('show');
+          if (btn) {
+            btn.classList.remove('is-loading');
+            btn.classList.add('is-success');
+          }
+          setTimeout(function () {
+            form.style.display = 'none';
+            successMsg.classList.add('show');
+          }, 600);
         })
         .catch(function () {
-          if (btn) btn.disabled = false;
+          if (btn) {
+            btn.classList.remove('is-loading');
+            btn.disabled = false;
+          }
         });
     });
   }
