@@ -150,20 +150,35 @@
     }
   }
 
-  /* ── Contact form ─────────────────────────────────────── */
+  /* ── Waitlist form ────────────────────────────────────── */
   var form = document.getElementById('contact-form');
   var successMsg = document.getElementById('form-success');
 
   if (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      var email = document.getElementById('c-email');
-      if (!email || !email.value.includes('@')) {
-        email.focus();
+      var emailInput = document.getElementById('c-email');
+      if (!emailInput || !emailInput.value.includes('@')) {
+        emailInput && emailInput.focus();
         return;
       }
-      form.style.display = 'none';
-      successMsg.classList.add('show');
+
+      var btn = form.querySelector('button[type="submit"]');
+      if (btn) btn.disabled = true;
+
+      fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailInput.value })
+      })
+        .then(function (res) { return res.ok ? res : Promise.reject(res); })
+        .then(function () {
+          form.style.display = 'none';
+          successMsg.classList.add('show');
+        })
+        .catch(function () {
+          if (btn) btn.disabled = false;
+        });
     });
   }
 
