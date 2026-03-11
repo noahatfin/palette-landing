@@ -5,6 +5,23 @@
 (function () {
   'use strict';
 
+  /* ── Central scroll dispatcher ────────────────────────────
+     All scroll handlers register here so the browser fires only
+     ONE scroll listener and ONE requestAnimationFrame per frame
+     instead of N separate RAF callbacks.
+  ────────────────────────────────────────────────────────── */
+  var _scrollHandlers = [];
+  var _scrollTicking  = false;
+  function addScrollHandler(fn) { _scrollHandlers.push(fn); }
+  window.addEventListener('scroll', function () {
+    if (_scrollTicking) return;
+    _scrollTicking = true;
+    requestAnimationFrame(function () {
+      _scrollTicking = false;
+      for (var i = 0; i < _scrollHandlers.length; i++) _scrollHandlers[i]();
+    });
+  }, { passive: true });
+
   /* ── PhoneFeed ────────────────────────────────────────────── */
   function PhoneFeed(feedEl) {
     this.feed = feedEl;
@@ -178,15 +195,9 @@
       arrow.style.opacity = currentIdx >= sections.length - 1 ? '0' : '1';
     }
 
-    var ticking = false;
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        ticking = false;
-        syncFromScroll(false);
-      });
-    }, { passive: true });
+    addScrollHandler(function () {
+      syncFromScroll(false);
+    });
 
     window.addEventListener('resize', function () {
       syncFromScroll(true);
@@ -199,8 +210,9 @@
 
   /* ── Hero Scroll Shrink ───────────────────────────────────── */
   function setupHeroShrink() {
-    if (window.innerWidth < 810) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var isMobile = window.innerWidth < 810;
 
     var vid      = document.querySelector('.hero-vid');
     var content  = document.querySelector('.hero-content');
@@ -214,8 +226,8 @@
     var heroCTA  = content ? content.querySelector('.btn') : null;
 
     var centerText = document.querySelector('.hero-center-text');
-    var centerHL   = centerText ? centerText.querySelector('.hero-center-headline') : null;
-    var centerMis  = centerText ? centerText.querySelector('.hero-center-mission') : null;
+    var centerHL   = (!isMobile && centerText) ? centerText.querySelector('.hero-center-headline') : null;
+    var centerMis  = (!isMobile && centerText) ? centerText.querySelector('.hero-center-mission') : null;
     var missionSection = document.querySelector('.mission');
     var hasMerged = false;
 
@@ -223,7 +235,7 @@
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
     function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
 
-    var BOTTOM_GAP = 80;
+    var BOTTOM_GAP = isMobile ? 0 : 80;
     var FLY_ENTER = 0.65;   // fly to phone when iphone-screen top < 65% viewport
     var FLY_EXIT  = 0.75;   // restore from phone when iphone-screen top > 75% viewport
     var isDocked = false;
@@ -243,7 +255,7 @@
       var tx = (docLeft + mW / 2) - window.innerWidth / 2;
       var ty = BOTTOM_GAP / 2;
 
-      params = { scrollEnd: scrollEnd, scale: s, tx: tx, ty: ty };
+      params = { scrollEnd: scrollEnd, scale: s, tx: tx, ty: ty, targetW: mW, targetH: mH, targetDocTop: docTop, targetDocLeft: docLeft };
     }
     calcParams();
 
@@ -261,23 +273,40 @@
       // FLIP: capture current visual position before reparent
       var firstRect = vid.getBoundingClientRect();
 
-      var s    = params.scale;
-      var dockedW = window.innerWidth  * s;
-      var dockedH = (window.innerHeight - BOTTOM_GAP) * s;
       var panelW  = target.offsetWidth;
       var panelH  = target.offsetHeight;
-      vid.style.transform    = '';
-      vid.style.borderRadius = '12px';
-      target.appendChild(vid);
-      vid.style.position      = 'absolute';
-      vid.style.inset         = '';
-      vid.style.width         = dockedW + 'px';
-      vid.style.height        = dockedH + 'px';
-      vid.style.left          = ((panelW - dockedW) / 2) + 'px';
-      vid.style.top           = ((panelH - dockedH) / 2) + 'px';
-      vid.style.objectFit     = 'cover';
-      vid.style.zIndex        = '1';
-      vid.style.pointerEvents = 'none';
+
+      if (isMobile) {
+        // On mobile, fill the mockup panel completely
+        vid.style.transform    = '';
+        vid.style.borderRadius = '12px';
+        target.appendChild(vid);
+        vid.style.position      = 'absolute';
+        vid.style.inset         = '0';
+        vid.style.width         = '100%';
+        vid.style.height        = '100%';
+        vid.style.left          = '';
+        vid.style.top           = '';
+        vid.style.objectFit     = 'cover';
+        vid.style.zIndex        = '2';
+        vid.style.pointerEvents = 'none';
+      } else {
+        var s    = params.scale;
+        var dockedW = window.innerWidth  * s;
+        var dockedH = (window.innerHeight - BOTTOM_GAP) * s;
+        vid.style.transform    = '';
+        vid.style.borderRadius = '12px';
+        target.appendChild(vid);
+        vid.style.position      = 'absolute';
+        vid.style.inset         = '';
+        vid.style.width         = dockedW + 'px';
+        vid.style.height        = dockedH + 'px';
+        vid.style.left          = ((panelW - dockedW) / 2) + 'px';
+        vid.style.top           = ((panelH - dockedH) / 2) + 'px';
+        vid.style.objectFit     = 'cover';
+        vid.style.zIndex        = '1';
+        vid.style.pointerEvents = 'none';
+      }
       if (centerHL) centerHL.style.opacity = '0';
 
       // FLIP: animate from old position to docked position
@@ -316,36 +345,45 @@
       vid.style.pointerEvents = '';
       heroWrap.appendChild(vid);
 
-      vid.style.transform = 'none';
-      var rawRect = vid.getBoundingClientRect();
-
-      var firstCenterX = firstRect.left + firstRect.width / 2;
-      var firstCenterY = firstRect.top + firstRect.height / 2;
-      var rawCenterX = rawRect.left + rawRect.width / 2;
-      var rawCenterY = rawRect.top + rawRect.height / 2;
-
-      var dx = firstCenterX - rawCenterX;
-      var dy = firstCenterY - rawCenterY;
-
-      vid.style.transformOrigin = '50% 50%';
-      vid.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + params.scale + ')';
-      vid.style.borderRadius = '12px';
-      vid.style.transition = 'none';
-
-      void vid.offsetWidth;
-
-      isUndocking = true;
-      vid.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
-      
-      clearTimeout(undockTimeout);
-      undockTimeout = setTimeout(function() {
-        isUndocking = false;
-        vid.style.transition = '';
+      if (isMobile) {
+        // On mobile: snap back to scroll-driven state, no transform animation
+        vid.style.transform = '';
+        vid.style.borderRadius = '';
         vid.style.transformOrigin = '';
-      }, 400);
+        isUndocking = false;
+      } else {
+        vid.style.transform = 'none';
+        var rawRect = vid.getBoundingClientRect();
+
+        var firstCenterX = firstRect.left + firstRect.width / 2;
+        var firstCenterY = firstRect.top + firstRect.height / 2;
+        var rawCenterX = rawRect.left + rawRect.width / 2;
+        var rawCenterY = rawRect.top + rawRect.height / 2;
+
+        var dx = firstCenterX - rawCenterX;
+        var dy = firstCenterY - rawCenterY;
+
+        vid.style.transformOrigin = '50% 50%';
+        vid.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + params.scale + ')';
+        vid.style.borderRadius = '12px';
+        vid.style.transition = 'none';
+
+        void vid.offsetWidth;
+
+        isUndocking = true;
+        vid.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
+
+        clearTimeout(undockTimeout);
+        undockTimeout = setTimeout(function() {
+          isUndocking = false;
+          vid.style.transition = '';
+          vid.style.transformOrigin = '';
+        }, 400);
+      }
     }
 
     var phoneScreen = document.querySelector('.products-phone .iphone-screen');
+    var phoneBorderRadius = isMobile ? '28px' : '50px';
     var hasFlewToPhone = false;
     var isFlying = false;
 
@@ -369,7 +407,7 @@
       vid.style.width        = '100%';
       vid.style.height       = '100%';
       vid.style.zIndex       = '100';
-      vid.style.borderRadius = '50px';
+      vid.style.borderRadius = phoneBorderRadius;
       isDocked = false;
 
       var lastRect = vid.getBoundingClientRect();
@@ -388,7 +426,7 @@
 
       vid.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
       vid.style.transform = 'translate(0px, 0px) scale(1, 1)';
-      vid.style.borderRadius = '50px';
+      vid.style.borderRadius = phoneBorderRadius;
 
       setTimeout(function() {
         if (!isFlying) return;
@@ -397,7 +435,7 @@
         vid.style.transformOrigin = '';
         vid.style.borderRadius = '';
         vid.style.zIndex = '1';
-        
+
         if (device) device.style.overflow = '';
         if (phoneScreen) phoneScreen.style.overflow = '';
         if (productsPhone) productsPhone.style.zIndex = '';
@@ -433,7 +471,7 @@
 
       vid.style.transformOrigin = '0 0';
       vid.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + sw + ', ' + sh + ')';
-      vid.style.borderRadius = '50px';
+      vid.style.borderRadius = phoneBorderRadius;
       vid.style.transition = 'none';
 
       void vid.offsetWidth;
@@ -460,12 +498,7 @@
       }, 500);
     }
 
-    var ticking = false;
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        ticking = false;
+    addScrollHandler(function () {
         if (isFlying) return;
 
         var scrollY = window.scrollY;
@@ -485,9 +518,11 @@
 
         // ── DOCKED ───────────────────────────────────────────────
         if (isDocked) {
-          var r = phoneScreen.getBoundingClientRect();
-          if (r.top < window.innerHeight * FLY_ENTER) {
-            flyToPhone(); return;
+          if (phoneScreen) {
+            var r = phoneScreen.getBoundingClientRect();
+            if (r.top < window.innerHeight * FLY_ENTER) {
+              flyToPhone(); return;
+            }
           }
           if (scrollY < params.scrollEnd - window.innerHeight * 0.25) {
             undock(); // fall through to HERO
@@ -499,9 +534,34 @@
         // ── HERO (scroll-driven) ─────────────────────────────────
         p = clamp(scrollY / params.scrollEnd, 0, 1);
         var e  = ease(p);
-        vid.style.transform    = 'translate(' + lerp(0, params.tx, e) + 'px,' +
-                                  lerp(0, params.ty, e) + 'px) scale(' + lerp(1, params.scale, e) + ')';
-        vid.style.borderRadius = lerp(0, 12, e) + 'px';
+
+        if (isMobile) {
+          // Mobile: animate width/height from fullscreen portrait to landscape mockup
+          var vw = window.innerWidth;
+          var vh = window.innerHeight;
+          var tw = params.targetW;
+          var th = params.targetH;
+          // Target center (viewport-relative at scrollEnd)
+          var tCX = params.targetDocLeft + tw / 2;
+          var tCY = params.targetDocTop + th / 2 - params.scrollEnd;
+
+          var curW = lerp(vw, tw, e);
+          var curH = lerp(vh, th, e);
+          var curCX = lerp(vw / 2, tCX, e);
+          var curCY = lerp(vh / 2, tCY, e);
+
+          vid.style.inset = 'auto';
+          vid.style.width  = curW + 'px';
+          vid.style.height = curH + 'px';
+          vid.style.left   = (curCX - curW / 2) + 'px';
+          vid.style.top    = (curCY - curH / 2) + 'px';
+          vid.style.objectFit = 'cover';
+          vid.style.borderRadius = lerp(0, 12, e) + 'px';
+        } else {
+          vid.style.transform    = 'translate(' + lerp(0, params.tx, e) + 'px,' +
+                                    lerp(0, params.ty, e) + 'px) scale(' + lerp(1, params.scale, e) + ')';
+          vid.style.borderRadius = lerp(0, 12, e) + 'px';
+        }
         if (content) {
           // Fade out ALL bottom-left content over p 0.00–0.10
           var contentFade = clamp(p / 0.10, 0, 1);
@@ -528,12 +588,19 @@
           centerMis.style.transform = 'translateY(' + lerp(30, 0, misIn) + 'px)';
         }
       });
-    }, { passive: true });
 
     // Mission text merge: overlay → real text seamless handoff
     var missionText = document.querySelector('.mission-text');
 
-    window.addEventListener('scroll', function () {
+    if (isMobile && missionText) {
+      // Mobile: no center overlay, just show mission text directly
+      missionText.style.opacity = '1';
+      missionText.style.color = '';
+      missionText.style.textShadow = '';
+      missionText.classList.add('is-revealed');
+    }
+
+    addScrollHandler(function () {
       if (!centerMis || !missionText) return;
       var mtRect = missionText.getBoundingClientRect();
       var mtCenter = mtRect.top + mtRect.height / 2;
@@ -566,7 +633,7 @@
         missionText.style.textShadow = '';
         centerMis.style.opacity = '1';
       }
-    }, { passive: true });
+    });
   }
 
   /* ── iPhone Enter Zone ───────────────────────────────────── */
@@ -628,7 +695,9 @@
     var danmakuEl = document.getElementById('products-danmaku');
 
     if (!scrollContainer || !features.length) return;
-    if (window.innerWidth < 810) return; // mobile: no scroll-driven logic
+
+    var isMobileProducts = window.innerWidth < 810;
+    var featureVids = isMobileProducts ? Array.from(document.querySelectorAll('.products-feature-vid video')) : [];
 
     var totalSteps = features.length;
     var currentIdx = 0;
@@ -677,67 +746,85 @@
       if (newIdx === currentIdx) return;
       currentIdx = newIdx;
 
-      // Text crossfade
+      // Text crossfade (works on both mobile and desktop)
       features.forEach(function(f, i) {
         f.classList.toggle('is-active', i === newIdx);
       });
 
-      // Phone feed: hero video = step 0, feedItems[0] = step 1, feedItems[1] = step 2
-      if (heroVid) {
-        if (newIdx === 0) {
-          heroVid.style.transform = '';
+      if (isMobileProducts) {
+        // Mobile: hero video is in the phone at step 0, slide it away for other steps
+        if (heroVid) {
           heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
-        } else {
-          heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
-          heroVid.style.transform = 'translateY(-100%)';
+          heroVid.style.transform = newIdx === 0 ? '' : 'translateY(-100%)';
         }
-      }
+        // Feed items: feedItems[0] = step 1, feedItems[1] = step 2 (same as desktop)
+        feedItems.forEach(function(item, i) {
+          var stepIdx = i + 1;
+          item.classList.remove('is-active', 'is-prev');
+          var vid = item.querySelector('video');
+          if (stepIdx === newIdx) {
+            item.classList.add('is-active');
+            if (vid) { vid.currentTime = 0; vid.play().catch(function(){}); }
+          } else if (stepIdx < newIdx) {
+            item.classList.add('is-prev');
+            if (vid) vid.pause();
+          } else {
+            if (vid) vid.pause();
+          }
+        });
+      } else {
+        // Desktop: phone feed — hero video = step 0, feedItems[0] = step 1, feedItems[1] = step 2
+        if (heroVid) {
+          if (newIdx === 0) {
+            heroVid.style.transform = '';
+            heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
+          } else {
+            heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
+            heroVid.style.transform = 'translateY(-100%)';
+          }
+        }
 
-      feedItems.forEach(function(item, i) {
-        var stepIdx = i + 1; // feedItems[0] maps to step 1, feedItems[1] maps to step 2
-        item.classList.remove('is-active', 'is-prev');
-        var vid = item.querySelector('video');
-        if (stepIdx === newIdx) {
-          item.classList.add('is-active');
-          if (vid) { vid.currentTime = 0; vid.play().catch(function(){}); }
-        } else if (stepIdx < newIdx) {
-          item.classList.add('is-prev');
-          if (vid) vid.pause();
-        } else {
-          if (vid) vid.pause();
+        feedItems.forEach(function(item, i) {
+          var stepIdx = i + 1;
+          item.classList.remove('is-active', 'is-prev');
+          var vid = item.querySelector('video');
+          if (stepIdx === newIdx) {
+            item.classList.add('is-active');
+            if (vid) { vid.currentTime = 0; vid.play().catch(function(){}); }
+          } else if (stepIdx < newIdx) {
+            item.classList.add('is-prev');
+            if (vid) vid.pause();
+          } else {
+            if (vid) vid.pause();
+          }
+        });
+
+        // Hearts burst
+        if (heartsEl) spawnHearts(heartsEl, 6);
+
+        // Like count
+        if (likeEl) {
+          likeEl.textContent = formatCount(likeCounts[newIdx] || 0);
+          likeEl.classList.remove('like-bump');
+          void likeEl.offsetWidth;
+          likeEl.classList.add('like-bump');
         }
-      });
+
+        // Danmaku
+        var msgs = commentSets[newIdx] || [];
+        msgs.forEach(function(msg, i) {
+          if (danmakuEl) setTimeout(spawnComment.bind(null, danmakuEl, msg), i * 800);
+        });
+      }
 
       // Progress dots
       dots.forEach(function(d, i) {
         d.classList.toggle('active', i === newIdx);
       });
-
-      // Hearts burst
-      if (heartsEl) spawnHearts(heartsEl, 6);
-
-      // Like count
-      if (likeEl) {
-        likeEl.textContent = formatCount(likeCounts[newIdx] || 0);
-        likeEl.classList.remove('like-bump');
-        void likeEl.offsetWidth;
-        likeEl.classList.add('like-bump');
-      }
-
-      // Danmaku
-      var msgs = commentSets[newIdx] || [];
-      msgs.forEach(function(msg, i) {
-        if (danmakuEl) setTimeout(spawnComment.bind(null, danmakuEl, msg), i * 800);
-      });
     }
 
     // Scroll handler
-    var ticking = false;
-    window.addEventListener('scroll', function() {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function() {
-        ticking = false;
+    addScrollHandler(function() {
         var rect = scrollContainer.getBoundingClientRect();
         var scrollDistance = rect.height - window.innerHeight;
         if (scrollDistance <= 0) return;
@@ -750,12 +837,22 @@
           hintEl.style.opacity = progress < 0.15 ? '1' : '0';
         }
       });
-    }, { passive: true });
 
-    // Ambient hearts
-    setInterval(function() {
-      if (heartsEl && currentIdx >= 0) spawnHearts(heartsEl, 2);
-    }, 5000);
+    // Ambient hearts — only run while section is visible
+    var ambientHeartsTimer = null;
+    var heartsIO = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting && !ambientHeartsTimer) {
+          ambientHeartsTimer = setInterval(function() {
+            if (heartsEl && currentIdx >= 0) spawnHearts(heartsEl, 2);
+          }, 5000);
+        } else if (!e.isIntersecting && ambientHeartsTimer) {
+          clearInterval(ambientHeartsTimer);
+          ambientHeartsTimer = null;
+        }
+      });
+    }, { threshold: 0.1 });
+    heartsIO.observe(scrollContainer);
   }
 
   /* ── Chat Animation ───────────────────────────────────────── */
@@ -836,14 +933,9 @@
 
     var snappedForward = false;
     var cooldown = false;
-    var ticking = false;
     var BUFFER = 50; // dead-zone buffer to prevent snap loops
 
-    window.addEventListener('scroll', function () {
-      if (ticking || cooldown) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        ticking = false;
+    addScrollHandler(function () {
         if (cooldown) return;
 
         var scrollY = window.scrollY;
@@ -870,7 +962,6 @@
           }
         }
       });
-    }, { passive: true });
   }
 
   /* ── Cinematic Hero Scroll-Shrink ─────────────────────────── */
@@ -903,13 +994,7 @@
       }
     });
 
-    var ticking = false;
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        ticking = false;
-
+    addScrollHandler(function () {
         var rect = section.getBoundingClientRect();
         var scrollDistance = rect.height - window.innerHeight;
         if (scrollDistance <= 0) return;
@@ -946,7 +1031,6 @@
           video.play().catch(function () {});
         }
       });
-    }, { passive: true });
   }
 
   /* ── Research Section Reveal ──────────────────────────────── */
@@ -1060,16 +1144,21 @@
       ensureTicking();
     }
 
-    // Mouse events
+    // Mouse events — listeners are attached only while dragging to avoid
+    // firing onMove on every mouse movement across the whole page.
+    function onMouseMove(e) { onMove(e.clientX, e.clientY); }
+    function onMouseUp() {
+      onEnd();
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    }
     surface.addEventListener('mousedown', function (e) {
       if (e.target.closest('.drag-cta')) return;
       e.preventDefault();
       onStart(e.clientX, e.clientY);
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
     });
-    window.addEventListener('mousemove', function (e) {
-      onMove(e.clientX, e.clientY);
-    });
-    window.addEventListener('mouseup', onEnd);
 
     // Touch events
     surface.addEventListener('touchstart', function (e) {
@@ -1155,7 +1244,7 @@
       btn.classList.toggle('is-light', isLight);
     }
 
-    window.addEventListener('scroll', updateBtn, { passive: true });
+    addScrollHandler(updateBtn);
     updateBtn();
   }
 
