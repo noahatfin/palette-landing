@@ -1,6 +1,6 @@
 /* ============================================================
    PALETTE — palette.js
-   PhoneFeed · TextVideoMask · fp-indicator · Draggable Shapes
+   PhoneFeed · TextVideoMask · fp-indicator
    ============================================================ */
 (function () {
   'use strict';
@@ -104,6 +104,7 @@
     var sectionNames = {
       hero: 'Hero',
       features: 'Studio',
+      cinematic: 'Cinematic',
       how: 'Technology',
       stats: 'Stats',
       access: 'Access'
@@ -194,126 +195,6 @@
     // Detect initial
     currentIdx = findActiveSectionIndex();
     updateIndicator(currentIdx, { silent: true });
-  }
-
-  /* ── Draggable Shapes (spring physics, from legacy) ──────── */
-  function setupDraggableShapes() {
-    var shapes = document.querySelectorAll('.shape');
-
-    shapes.forEach(function (shape) {
-      var offsetX = 0;
-      var offsetY = 0;
-      var startX = 0;
-      var startY = 0;
-      var isDragging = false;
-      var velocityX = 0;
-      var velocityY = 0;
-      var lastX = 0;
-      var lastY = 0;
-      var lastTime = 0;
-      var springAnimId = 0;
-
-      var baseTransform = getComputedStyle(shape).transform;
-      if (baseTransform === 'none') baseTransform = '';
-      var savedAnimation = '';
-      var hasAnimation = !!shape.style.animation || !!getComputedStyle(shape).animationName && getComputedStyle(shape).animationName !== 'none';
-
-      function setTransform(dx, dy) {
-        shape.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) ' + baseTransform;
-      }
-
-      function getPointerPos(e) {
-        if (e.touches) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        return { x: e.clientX, y: e.clientY };
-      }
-
-      function onPointerDown(e) {
-        e.preventDefault();
-        if (springAnimId) { cancelAnimationFrame(springAnimId); springAnimId = 0; }
-        isDragging = true;
-        shape.classList.add('dragging');
-        // Freeze CSS animation: capture current transform, then disable animation
-        baseTransform = getComputedStyle(shape).transform;
-        if (baseTransform === 'none') baseTransform = '';
-        savedAnimation = shape.style.animation;
-        shape.style.animation = 'none';
-        var pos = getPointerPos(e);
-        startX = pos.x - offsetX;
-        startY = pos.y - offsetY;
-        lastX = pos.x;
-        lastY = pos.y;
-        lastTime = Date.now();
-        velocityX = 0;
-        velocityY = 0;
-        document.addEventListener('mousemove', onPointerMove);
-        document.addEventListener('mouseup', onPointerUp);
-        document.addEventListener('touchmove', onPointerMove, { passive: false });
-        document.addEventListener('touchend', onPointerUp);
-      }
-
-      function onPointerMove(e) {
-        if (!isDragging) return;
-        e.preventDefault();
-        var pos = getPointerPos(e);
-        var now = Date.now();
-        var dt = Math.max(now - lastTime, 1);
-        velocityX = (pos.x - lastX) / dt * 1000;
-        velocityY = (pos.y - lastY) / dt * 1000;
-        lastX = pos.x;
-        lastY = pos.y;
-        lastTime = now;
-        offsetX = pos.x - startX;
-        offsetY = pos.y - startY;
-        setTransform(offsetX, offsetY);
-      }
-
-      function onPointerUp() {
-        isDragging = false;
-        shape.classList.remove('dragging');
-        document.removeEventListener('mousemove', onPointerMove);
-        document.removeEventListener('mouseup', onPointerUp);
-        document.removeEventListener('touchmove', onPointerMove);
-        document.removeEventListener('touchend', onPointerUp);
-        doSpringBack();
-      }
-
-      function doSpringBack() {
-        var stiffness = 300;
-        var damping = 25;
-        var mass = 1;
-        var x = offsetX;
-        var y = offsetY;
-        var vx = velocityX;
-        var vy = velocityY;
-        var prev = performance.now();
-
-        function step(now) {
-          var dt = Math.min((now - prev) / 1000, 0.064);
-          prev = now;
-          var fx = -stiffness * x - damping * vx;
-          var fy = -stiffness * y - damping * vy;
-          vx += (fx / mass) * dt;
-          vy += (fy / mass) * dt;
-          x += vx * dt;
-          y += vy * dt;
-          setTransform(x, y);
-          if (Math.abs(x) < 0.5 && Math.abs(y) < 0.5 && Math.abs(vx) < 10 && Math.abs(vy) < 10) {
-            // Restore CSS animation
-            shape.style.animation = savedAnimation;
-            shape.style.transform = '';
-            offsetX = 0;
-            offsetY = 0;
-            springAnimId = 0;
-            return;
-          }
-          springAnimId = requestAnimationFrame(step);
-        }
-        springAnimId = requestAnimationFrame(step);
-      }
-
-      shape.addEventListener('mousedown', onPointerDown);
-      shape.addEventListener('touchstart', onPointerDown, { passive: false });
-    });
   }
 
   /* ── Hero Scroll Shrink ───────────────────────────────────── */
@@ -945,20 +826,144 @@
   // Expose so main.js scroll handler can call it
   window._paletteUpdateNavTheme = updateNavTheme;
 
+  /* ── Cinematic Hero Snap (instant cinema cut) ────────────── */
+  function setupCineHeroSnap() {
+    if (window.innerWidth < 810) return;
+
+    var productsScroll = document.getElementById('products-scroll');
+    var cineSection = document.querySelector('.cine-hero');
+    if (!productsScroll || !cineSection) return;
+
+    var snappedForward = false;
+    var cooldown = false;
+    var ticking = false;
+    var BUFFER = 50; // dead-zone buffer to prevent snap loops
+
+    window.addEventListener('scroll', function () {
+      if (ticking || cooldown) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        ticking = false;
+        if (cooldown) return;
+
+        var scrollY = window.scrollY;
+        var pRect = productsScroll.getBoundingClientRect();
+        var productsEnd = pRect.bottom + scrollY; // document-relative bottom
+        var cineTop = cineSection.getBoundingClientRect().top + scrollY;
+
+        if (!snappedForward) {
+          // Forward snap: products scroll runway fully consumed
+          if (scrollY >= productsEnd - window.innerHeight + BUFFER) {
+            snappedForward = true;
+            cooldown = true;
+            window.scrollTo({ top: cineTop, behavior: 'instant' });
+            setTimeout(function () { cooldown = false; }, 200);
+          }
+        } else {
+          // Backward snap: scrolled above cinematic section top
+          if (scrollY < cineTop) {
+            snappedForward = false;
+            cooldown = true;
+            // Land well before the forward-snap threshold to avoid re-triggering
+            window.scrollTo({ top: productsEnd - window.innerHeight - BUFFER, behavior: 'instant' });
+            setTimeout(function () { cooldown = false; }, 200);
+          }
+        }
+      });
+    }, { passive: true });
+  }
+
+  /* ── Cinematic Hero Scroll-Shrink ─────────────────────────── */
+  function setupCineHeroShrink() {
+    if (window.innerWidth < 810) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var section = document.querySelector('.cine-hero');
+    var frame   = document.querySelector('.cine-hero-frame');
+    var video   = document.querySelector('.cine-hero-vid');
+    var title   = document.querySelector('.cine-hero-title');
+    if (!section || !frame || !video) return;
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+    function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+
+    var FINAL_W = 1200;
+    var FINAL_H = 600;
+    var FINAL_R = 20;
+    var DEAD_ZONE = 0.18; // first 18% of scroll = fullscreen, no shrink
+    var waitingToFreeze = false;
+    var frozen = false;
+
+    // Freeze when video finishes its current playthrough
+    video.addEventListener('ended', function () {
+      if (waitingToFreeze) {
+        frozen = true;
+        video.pause();
+      }
+    });
+
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        ticking = false;
+
+        var rect = section.getBoundingClientRect();
+        var scrollDistance = rect.height - window.innerHeight;
+        if (scrollDistance <= 0) return;
+
+        var progress = clamp(-rect.top / scrollDistance, 0, 1);
+
+        // Remap: 0–DEAD_ZONE = no shrink, DEAD_ZONE–1 = full shrink
+        var shrinkT = clamp((progress - DEAD_ZONE) / (1 - DEAD_ZONE), 0, 1);
+        var e = ease(shrinkT);
+
+        // Interpolate frame dimensions
+        var w = lerp(window.innerWidth, Math.min(FINAL_W, window.innerWidth * 0.9), e);
+        var h = lerp(window.innerHeight, FINAL_H, e);
+        var r = lerp(0, FINAL_R, e);
+
+        frame.style.width        = w + 'px';
+        frame.style.height       = h + 'px';
+        frame.style.borderRadius = r + 'px';
+
+        // Title fade in during 40%–75% of scroll progress (earlier)
+        if (title) {
+          var titleProgress = clamp((progress - 0.4) / 0.35, 0, 1);
+          title.style.opacity = titleProgress;
+        }
+
+        // Freeze: wait for video to finish its current playthrough
+        if (progress >= 1 && !frozen && !waitingToFreeze) {
+          waitingToFreeze = true;
+          video.loop = false; // let current playthrough end naturally
+        } else if (progress < 1 && (frozen || waitingToFreeze)) {
+          waitingToFreeze = false;
+          frozen = false;
+          video.loop = true;
+          video.play().catch(function () {});
+        }
+      });
+    }, { passive: true });
+  }
+
   /* ── Research Section Reveal ──────────────────────────────── */
   function setupResearchReveal() {
     var section = document.querySelector('.research');
     if (!section) return;
 
-    var head    = section.querySelector('.section-head');
-    var label   = section.querySelector('.section-label');
-    var title   = section.querySelector('.section-title');
-    var items   = section.querySelectorAll('.research-item');
+    var label    = section.querySelector('.section-label');
+    var title    = section.querySelector('.section-title');
+    var subtitle = section.querySelector('.section-subtitle');
+    var items    = section.querySelectorAll('.research-item');
 
     // Initial hidden state
     var targets = [];
     if (label) { label.style.opacity = '0'; label.style.transform = 'translateY(24px)'; targets.push(label); }
     if (title) { title.style.opacity = '0'; title.style.transform = 'translateY(32px)'; targets.push(title); }
+    if (subtitle) { subtitle.style.opacity = '0'; subtitle.style.transform = 'translateY(24px)'; targets.push(subtitle); }
     items.forEach(function (item) {
       item.style.opacity = '0';
       item.style.transform = 'translateY(60px) scale(0.97)';
@@ -995,6 +1000,107 @@
     io.observe(section);
   }
 
+  /* ── Drag Surface (heavy damping) ────────────────────────── */
+  function setupDragSurface() {
+    var surface = document.getElementById('drag-surface');
+    var canvas  = document.getElementById('drag-canvas');
+    if (!surface || !canvas) return;
+
+    var isDragging = false;
+    var startX = 0, startY = 0;
+    var offsetX = 0, offsetY = 0;    // canvas pos when drag began
+    var targetX = 0, targetY = 0;    // where the canvas wants to be
+    var currentX = 0, currentY = 0;  // where the canvas actually is
+    var animFrame = 0;
+
+    var DRAG_EASE = 0.10;  // lower = heavier (canvas lerps toward target each frame)
+
+    function tick() {
+      var dx = targetX - currentX;
+      var dy = targetY - currentY;
+      // Settled — stop loop
+      if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1 && !isDragging) {
+        currentX = targetX;
+        currentY = targetY;
+        canvas.style.transform = 'translate(' + currentX + 'px,' + currentY + 'px)';
+        animFrame = 0;
+        return;
+      }
+      currentX += dx * DRAG_EASE;
+      currentY += dy * DRAG_EASE;
+      canvas.style.transform = 'translate(' + currentX + 'px,' + currentY + 'px)';
+      animFrame = requestAnimationFrame(tick);
+    }
+
+    function ensureTicking() {
+      if (!animFrame) animFrame = requestAnimationFrame(tick);
+    }
+
+    function onStart(x, y) {
+      isDragging = true;
+      startX = x;
+      startY = y;
+      offsetX = currentX;
+      offsetY = currentY;
+      surface.classList.add('is-dragging');
+      ensureTicking();
+    }
+
+    function onMove(x, y) {
+      if (!isDragging) return;
+      targetX = offsetX + (x - startX);
+      targetY = offsetY + (y - startY);
+    }
+
+    function onEnd() {
+      if (!isDragging) return;
+      isDragging = false;
+      surface.classList.remove('is-dragging');
+      // No momentum — just settle to final target
+      ensureTicking();
+    }
+
+    // Mouse events
+    surface.addEventListener('mousedown', function (e) {
+      if (e.target.closest('.drag-cta')) return;
+      e.preventDefault();
+      onStart(e.clientX, e.clientY);
+    });
+    window.addEventListener('mousemove', function (e) {
+      onMove(e.clientX, e.clientY);
+    });
+    window.addEventListener('mouseup', onEnd);
+
+    // Touch events
+    surface.addEventListener('touchstart', function (e) {
+      if (e.target.closest('.drag-cta')) return;
+      var t = e.touches[0];
+      onStart(t.clientX, t.clientY);
+    }, { passive: true });
+    surface.addEventListener('touchmove', function (e) {
+      if (!isDragging) return;
+      e.preventDefault();
+      var t = e.touches[0];
+      onMove(t.clientX, t.clientY);
+    }, { passive: false });
+    surface.addEventListener('touchend', onEnd);
+
+    // Video hover play/pause
+    canvas.querySelectorAll('.drag-card').forEach(function (card) {
+      var vid = card.querySelector('video');
+      if (!vid) return;
+      card.addEventListener('mouseenter', function () {
+        vid.play().catch(function () {});
+      });
+      card.addEventListener('mouseleave', function () {
+        vid.pause();
+      });
+    });
+
+    // Show badge
+    surface.classList.add('is-active');
+  }
+
   /* ── Init ─────────────────────────────────────────────────── */
   function init() {
     // Phone feed
@@ -1005,12 +1111,14 @@
 
     setupTextVideoMask();
     setupFpIndicator();
-    setupDraggableShapes();
     setupHeroShrink();
     setupChatAnimation();
     setupIphoneEnter();
     setupProductsScroll();
+    setupCineHeroSnap();
+    setupCineHeroShrink();
     setupResearchReveal();
+    setupDragSurface();
     setupBackToTop();
     // Initial nav theme sync (palette.js loads after main.js's onScroll)
     updateNavTheme();
