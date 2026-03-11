@@ -628,10 +628,10 @@
           content.style.pointerEvents = p > 0.05 ? 'none' : '';
         }
         // Centered text overlay
-        // Headline: delayed entrance at p 0.18–0.32 with float-up + scale, crossfades out at p 0.42–0.56
+        // Headline: entrance at p 0.18–0.32, holds until p 0.58, crossfades out at p 0.58–0.72
         if (centerHL) {
           var hlIn  = ease(clamp((p - 0.18) / 0.14, 0, 1));
-          var hlOut = ease(clamp((p - 0.42) / 0.14, 0, 1));
+          var hlOut = ease(clamp((p - 0.58) / 0.14, 0, 1));
           centerHL.style.opacity   = hlIn * (1 - hlOut);
           var scaleIn = lerp(0.92, 1, hlIn);
           var yIn     = lerp(40, 0, hlIn);
@@ -640,9 +640,9 @@
           if (hlIn > 0.01) centerHL.classList.add('is-visible');
           else centerHL.classList.remove('is-visible');
         }
-        // Mission fades in at p 0.42–0.56, stays visible (merge handled separately)
+        // Mission fades in at p 0.58–0.72, stays visible (merge handled separately)
         if (centerMis && !hasMerged) {
-          var misIn = ease(clamp((p - 0.42) / 0.14, 0, 1));
+          var misIn = ease(clamp((p - 0.58) / 0.14, 0, 1));
           centerMis.style.opacity = misIn;
           centerMis.style.transform = 'translateY(' + lerp(30, 0, misIn) + 'px)';
         }
@@ -945,6 +945,56 @@
   // Expose so main.js scroll handler can call it
   window._paletteUpdateNavTheme = updateNavTheme;
 
+  /* ── Research Section Reveal ──────────────────────────────── */
+  function setupResearchReveal() {
+    var section = document.querySelector('.research');
+    if (!section) return;
+
+    var head    = section.querySelector('.section-head');
+    var label   = section.querySelector('.section-label');
+    var title   = section.querySelector('.section-title');
+    var items   = section.querySelectorAll('.research-item');
+
+    // Initial hidden state
+    var targets = [];
+    if (label) { label.style.opacity = '0'; label.style.transform = 'translateY(24px)'; targets.push(label); }
+    if (title) { title.style.opacity = '0'; title.style.transform = 'translateY(32px)'; targets.push(title); }
+    items.forEach(function (item) {
+      item.style.opacity = '0';
+      item.style.transform = 'translateY(60px) scale(0.97)';
+    });
+
+    var revealed = false;
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting && !revealed) {
+          revealed = true;
+          io.disconnect();
+
+          // Animate header elements
+          var delay = 0;
+          targets.forEach(function (el) {
+            el.style.transition = 'opacity 0.7s cubic-bezier(0.16,1,0.3,1) ' + delay + 's, transform 0.7s cubic-bezier(0.16,1,0.3,1) ' + delay + 's';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+            delay += 0.12;
+          });
+
+          // Animate research items with stagger
+          items.forEach(function (item, i) {
+            var d = delay + i * 0.18;
+            item.style.transition = 'opacity 0.8s cubic-bezier(0.16,1,0.3,1) ' + d + 's, transform 0.8s cubic-bezier(0.16,1,0.3,1) ' + d + 's';
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0) scale(1)';
+          });
+        }
+      });
+    }, { threshold: 0.15 });
+
+    io.observe(section);
+  }
+
   /* ── Init ─────────────────────────────────────────────────── */
   function init() {
     // Phone feed
@@ -960,6 +1010,7 @@
     setupChatAnimation();
     setupIphoneEnter();
     setupProductsScroll();
+    setupResearchReveal();
     setupBackToTop();
     // Initial nav theme sync (palette.js loads after main.js's onScroll)
     updateNavTheme();
