@@ -1,9 +1,26 @@
 /* ============================================================
    PALETTE — palette.js
-   PhoneFeed · TextVideoMask · fp-indicator · Draggable Shapes
+   PhoneFeed · TextVideoMask · fp-indicator
    ============================================================ */
 (function () {
   'use strict';
+
+  /* ── Central scroll dispatcher ────────────────────────────
+     All scroll handlers register here so the browser fires only
+     ONE scroll listener and ONE requestAnimationFrame per frame
+     instead of N separate RAF callbacks.
+  ────────────────────────────────────────────────────────── */
+  var _scrollHandlers = [];
+  var _scrollTicking  = false;
+  function addScrollHandler(fn) { _scrollHandlers.push(fn); }
+  window.addEventListener('scroll', function () {
+    if (_scrollTicking) return;
+    _scrollTicking = true;
+    requestAnimationFrame(function () {
+      _scrollTicking = false;
+      for (var i = 0; i < _scrollHandlers.length; i++) _scrollHandlers[i]();
+    });
+  }, { passive: true });
 
   /* ── PhoneFeed ────────────────────────────────────────────── */
   function PhoneFeed(feedEl) {
@@ -104,6 +121,7 @@
     var sectionNames = {
       hero: 'Hero',
       features: 'Studio',
+      cinematic: 'Cinematic',
       how: 'Technology',
       stats: 'Stats',
       access: 'Access'
@@ -177,15 +195,9 @@
       arrow.style.opacity = currentIdx >= sections.length - 1 ? '0' : '1';
     }
 
-    var ticking = false;
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        ticking = false;
-        syncFromScroll(false);
-      });
-    }, { passive: true });
+    addScrollHandler(function () {
+      syncFromScroll(false);
+    });
 
     window.addEventListener('resize', function () {
       syncFromScroll(true);
@@ -196,130 +208,11 @@
     updateIndicator(currentIdx, { silent: true });
   }
 
-  /* ── Draggable Shapes (spring physics, from legacy) ──────── */
-  function setupDraggableShapes() {
-    var shapes = document.querySelectorAll('.shape');
-
-    shapes.forEach(function (shape) {
-      var offsetX = 0;
-      var offsetY = 0;
-      var startX = 0;
-      var startY = 0;
-      var isDragging = false;
-      var velocityX = 0;
-      var velocityY = 0;
-      var lastX = 0;
-      var lastY = 0;
-      var lastTime = 0;
-      var springAnimId = 0;
-
-      var baseTransform = getComputedStyle(shape).transform;
-      if (baseTransform === 'none') baseTransform = '';
-      var savedAnimation = '';
-      var hasAnimation = !!shape.style.animation || !!getComputedStyle(shape).animationName && getComputedStyle(shape).animationName !== 'none';
-
-      function setTransform(dx, dy) {
-        shape.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) ' + baseTransform;
-      }
-
-      function getPointerPos(e) {
-        if (e.touches) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        return { x: e.clientX, y: e.clientY };
-      }
-
-      function onPointerDown(e) {
-        e.preventDefault();
-        if (springAnimId) { cancelAnimationFrame(springAnimId); springAnimId = 0; }
-        isDragging = true;
-        shape.classList.add('dragging');
-        // Freeze CSS animation: capture current transform, then disable animation
-        baseTransform = getComputedStyle(shape).transform;
-        if (baseTransform === 'none') baseTransform = '';
-        savedAnimation = shape.style.animation;
-        shape.style.animation = 'none';
-        var pos = getPointerPos(e);
-        startX = pos.x - offsetX;
-        startY = pos.y - offsetY;
-        lastX = pos.x;
-        lastY = pos.y;
-        lastTime = Date.now();
-        velocityX = 0;
-        velocityY = 0;
-        document.addEventListener('mousemove', onPointerMove);
-        document.addEventListener('mouseup', onPointerUp);
-        document.addEventListener('touchmove', onPointerMove, { passive: false });
-        document.addEventListener('touchend', onPointerUp);
-      }
-
-      function onPointerMove(e) {
-        if (!isDragging) return;
-        e.preventDefault();
-        var pos = getPointerPos(e);
-        var now = Date.now();
-        var dt = Math.max(now - lastTime, 1);
-        velocityX = (pos.x - lastX) / dt * 1000;
-        velocityY = (pos.y - lastY) / dt * 1000;
-        lastX = pos.x;
-        lastY = pos.y;
-        lastTime = now;
-        offsetX = pos.x - startX;
-        offsetY = pos.y - startY;
-        setTransform(offsetX, offsetY);
-      }
-
-      function onPointerUp() {
-        isDragging = false;
-        shape.classList.remove('dragging');
-        document.removeEventListener('mousemove', onPointerMove);
-        document.removeEventListener('mouseup', onPointerUp);
-        document.removeEventListener('touchmove', onPointerMove);
-        document.removeEventListener('touchend', onPointerUp);
-        doSpringBack();
-      }
-
-      function doSpringBack() {
-        var stiffness = 300;
-        var damping = 25;
-        var mass = 1;
-        var x = offsetX;
-        var y = offsetY;
-        var vx = velocityX;
-        var vy = velocityY;
-        var prev = performance.now();
-
-        function step(now) {
-          var dt = Math.min((now - prev) / 1000, 0.064);
-          prev = now;
-          var fx = -stiffness * x - damping * vx;
-          var fy = -stiffness * y - damping * vy;
-          vx += (fx / mass) * dt;
-          vy += (fy / mass) * dt;
-          x += vx * dt;
-          y += vy * dt;
-          setTransform(x, y);
-          if (Math.abs(x) < 0.5 && Math.abs(y) < 0.5 && Math.abs(vx) < 10 && Math.abs(vy) < 10) {
-            // Restore CSS animation
-            shape.style.animation = savedAnimation;
-            shape.style.transform = '';
-            offsetX = 0;
-            offsetY = 0;
-            springAnimId = 0;
-            return;
-          }
-          springAnimId = requestAnimationFrame(step);
-        }
-        springAnimId = requestAnimationFrame(step);
-      }
-
-      shape.addEventListener('mousedown', onPointerDown);
-      shape.addEventListener('touchstart', onPointerDown, { passive: false });
-    });
-  }
-
   /* ── Hero Scroll Shrink ───────────────────────────────────── */
   function setupHeroShrink() {
-    if (window.innerWidth < 810) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var isMobile = window.innerWidth < 810;
 
     var vid      = document.querySelector('.hero-vid');
     var content  = document.querySelector('.hero-content');
@@ -333,8 +226,8 @@
     var heroCTA  = content ? content.querySelector('.btn') : null;
 
     var centerText = document.querySelector('.hero-center-text');
-    var centerHL   = centerText ? centerText.querySelector('.hero-center-headline') : null;
-    var centerMis  = centerText ? centerText.querySelector('.hero-center-mission') : null;
+    var centerHL   = (!isMobile && centerText) ? centerText.querySelector('.hero-center-headline') : null;
+    var centerMis  = (!isMobile && centerText) ? centerText.querySelector('.hero-center-mission') : null;
     var missionSection = document.querySelector('.mission');
     var hasMerged = false;
 
@@ -342,7 +235,7 @@
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
     function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
 
-    var BOTTOM_GAP = 80;
+    var BOTTOM_GAP = isMobile ? 0 : 80;
     var FLY_ENTER = 0.65;   // fly to phone when iphone-screen top < 65% viewport
     var FLY_EXIT  = 0.75;   // restore from phone when iphone-screen top > 75% viewport
     var isDocked = false;
@@ -362,7 +255,7 @@
       var tx = (docLeft + mW / 2) - window.innerWidth / 2;
       var ty = BOTTOM_GAP / 2;
 
-      params = { scrollEnd: scrollEnd, scale: s, tx: tx, ty: ty };
+      params = { scrollEnd: scrollEnd, scale: s, tx: tx, ty: ty, targetW: mW, targetH: mH, targetDocTop: docTop, targetDocLeft: docLeft };
     }
     calcParams();
 
@@ -380,23 +273,40 @@
       // FLIP: capture current visual position before reparent
       var firstRect = vid.getBoundingClientRect();
 
-      var s    = params.scale;
-      var dockedW = window.innerWidth  * s;
-      var dockedH = (window.innerHeight - BOTTOM_GAP) * s;
       var panelW  = target.offsetWidth;
       var panelH  = target.offsetHeight;
-      vid.style.transform    = '';
-      vid.style.borderRadius = '12px';
-      target.appendChild(vid);
-      vid.style.position      = 'absolute';
-      vid.style.inset         = '';
-      vid.style.width         = dockedW + 'px';
-      vid.style.height        = dockedH + 'px';
-      vid.style.left          = ((panelW - dockedW) / 2) + 'px';
-      vid.style.top           = ((panelH - dockedH) / 2) + 'px';
-      vid.style.objectFit     = 'cover';
-      vid.style.zIndex        = '1';
-      vid.style.pointerEvents = 'none';
+
+      if (isMobile) {
+        // On mobile, fill the mockup panel completely
+        vid.style.transform    = '';
+        vid.style.borderRadius = '12px';
+        target.appendChild(vid);
+        vid.style.position      = 'absolute';
+        vid.style.inset         = '0';
+        vid.style.width         = '100%';
+        vid.style.height        = '100%';
+        vid.style.left          = '';
+        vid.style.top           = '';
+        vid.style.objectFit     = 'cover';
+        vid.style.zIndex        = '2';
+        vid.style.pointerEvents = 'none';
+      } else {
+        var s    = params.scale;
+        var dockedW = window.innerWidth  * s;
+        var dockedH = (window.innerHeight - BOTTOM_GAP) * s;
+        vid.style.transform    = '';
+        vid.style.borderRadius = '12px';
+        target.appendChild(vid);
+        vid.style.position      = 'absolute';
+        vid.style.inset         = '';
+        vid.style.width         = dockedW + 'px';
+        vid.style.height        = dockedH + 'px';
+        vid.style.left          = ((panelW - dockedW) / 2) + 'px';
+        vid.style.top           = ((panelH - dockedH) / 2) + 'px';
+        vid.style.objectFit     = 'cover';
+        vid.style.zIndex        = '1';
+        vid.style.pointerEvents = 'none';
+      }
       if (centerHL) centerHL.style.opacity = '0';
 
       // FLIP: animate from old position to docked position
@@ -435,36 +345,45 @@
       vid.style.pointerEvents = '';
       heroWrap.appendChild(vid);
 
-      vid.style.transform = 'none';
-      var rawRect = vid.getBoundingClientRect();
-
-      var firstCenterX = firstRect.left + firstRect.width / 2;
-      var firstCenterY = firstRect.top + firstRect.height / 2;
-      var rawCenterX = rawRect.left + rawRect.width / 2;
-      var rawCenterY = rawRect.top + rawRect.height / 2;
-
-      var dx = firstCenterX - rawCenterX;
-      var dy = firstCenterY - rawCenterY;
-
-      vid.style.transformOrigin = '50% 50%';
-      vid.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + params.scale + ')';
-      vid.style.borderRadius = '12px';
-      vid.style.transition = 'none';
-
-      void vid.offsetWidth;
-
-      isUndocking = true;
-      vid.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
-      
-      clearTimeout(undockTimeout);
-      undockTimeout = setTimeout(function() {
-        isUndocking = false;
-        vid.style.transition = '';
+      if (isMobile) {
+        // On mobile: snap back to scroll-driven state, no transform animation
+        vid.style.transform = '';
+        vid.style.borderRadius = '';
         vid.style.transformOrigin = '';
-      }, 400);
+        isUndocking = false;
+      } else {
+        vid.style.transform = 'none';
+        var rawRect = vid.getBoundingClientRect();
+
+        var firstCenterX = firstRect.left + firstRect.width / 2;
+        var firstCenterY = firstRect.top + firstRect.height / 2;
+        var rawCenterX = rawRect.left + rawRect.width / 2;
+        var rawCenterY = rawRect.top + rawRect.height / 2;
+
+        var dx = firstCenterX - rawCenterX;
+        var dy = firstCenterY - rawCenterY;
+
+        vid.style.transformOrigin = '50% 50%';
+        vid.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + params.scale + ')';
+        vid.style.borderRadius = '12px';
+        vid.style.transition = 'none';
+
+        void vid.offsetWidth;
+
+        isUndocking = true;
+        vid.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
+
+        clearTimeout(undockTimeout);
+        undockTimeout = setTimeout(function() {
+          isUndocking = false;
+          vid.style.transition = '';
+          vid.style.transformOrigin = '';
+        }, 400);
+      }
     }
 
     var phoneScreen = document.querySelector('.products-phone .iphone-screen');
+    var phoneBorderRadius = isMobile ? '28px' : '50px';
     var hasFlewToPhone = false;
     var isFlying = false;
 
@@ -488,7 +407,7 @@
       vid.style.width        = '100%';
       vid.style.height       = '100%';
       vid.style.zIndex       = '100';
-      vid.style.borderRadius = '50px';
+      vid.style.borderRadius = phoneBorderRadius;
       isDocked = false;
 
       var lastRect = vid.getBoundingClientRect();
@@ -507,7 +426,7 @@
 
       vid.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
       vid.style.transform = 'translate(0px, 0px) scale(1, 1)';
-      vid.style.borderRadius = '50px';
+      vid.style.borderRadius = phoneBorderRadius;
 
       setTimeout(function() {
         if (!isFlying) return;
@@ -516,7 +435,7 @@
         vid.style.transformOrigin = '';
         vid.style.borderRadius = '';
         vid.style.zIndex = '1';
-        
+
         if (device) device.style.overflow = '';
         if (phoneScreen) phoneScreen.style.overflow = '';
         if (productsPhone) productsPhone.style.zIndex = '';
@@ -552,7 +471,7 @@
 
       vid.style.transformOrigin = '0 0';
       vid.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + sw + ', ' + sh + ')';
-      vid.style.borderRadius = '50px';
+      vid.style.borderRadius = phoneBorderRadius;
       vid.style.transition = 'none';
 
       void vid.offsetWidth;
@@ -579,12 +498,7 @@
       }, 500);
     }
 
-    var ticking = false;
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function () {
-        ticking = false;
+    addScrollHandler(function () {
         if (isFlying) return;
 
         var scrollY = window.scrollY;
@@ -604,9 +518,11 @@
 
         // ── DOCKED ───────────────────────────────────────────────
         if (isDocked) {
-          var r = phoneScreen.getBoundingClientRect();
-          if (r.top < window.innerHeight * FLY_ENTER) {
-            flyToPhone(); return;
+          if (phoneScreen) {
+            var r = phoneScreen.getBoundingClientRect();
+            if (r.top < window.innerHeight * FLY_ENTER) {
+              flyToPhone(); return;
+            }
           }
           if (scrollY < params.scrollEnd - window.innerHeight * 0.25) {
             undock(); // fall through to HERO
@@ -618,9 +534,34 @@
         // ── HERO (scroll-driven) ─────────────────────────────────
         p = clamp(scrollY / params.scrollEnd, 0, 1);
         var e  = ease(p);
-        vid.style.transform    = 'translate(' + lerp(0, params.tx, e) + 'px,' +
-                                  lerp(0, params.ty, e) + 'px) scale(' + lerp(1, params.scale, e) + ')';
-        vid.style.borderRadius = lerp(0, 12, e) + 'px';
+
+        if (isMobile) {
+          // Mobile: animate width/height from fullscreen portrait to landscape mockup
+          var vw = window.innerWidth;
+          var vh = window.innerHeight;
+          var tw = params.targetW;
+          var th = params.targetH;
+          // Target center (viewport-relative at scrollEnd)
+          var tCX = params.targetDocLeft + tw / 2;
+          var tCY = params.targetDocTop + th / 2 - params.scrollEnd;
+
+          var curW = lerp(vw, tw, e);
+          var curH = lerp(vh, th, e);
+          var curCX = lerp(vw / 2, tCX, e);
+          var curCY = lerp(vh / 2, tCY, e);
+
+          vid.style.inset = 'auto';
+          vid.style.width  = curW + 'px';
+          vid.style.height = curH + 'px';
+          vid.style.left   = (curCX - curW / 2) + 'px';
+          vid.style.top    = (curCY - curH / 2) + 'px';
+          vid.style.objectFit = 'cover';
+          vid.style.borderRadius = lerp(0, 12, e) + 'px';
+        } else {
+          vid.style.transform    = 'translate(' + lerp(0, params.tx, e) + 'px,' +
+                                    lerp(0, params.ty, e) + 'px) scale(' + lerp(1, params.scale, e) + ')';
+          vid.style.borderRadius = lerp(0, 12, e) + 'px';
+        }
         if (content) {
           // Fade out ALL bottom-left content over p 0.00–0.10
           var contentFade = clamp(p / 0.10, 0, 1);
@@ -628,10 +569,10 @@
           content.style.pointerEvents = p > 0.05 ? 'none' : '';
         }
         // Centered text overlay
-        // Headline: delayed entrance at p 0.18–0.32 with float-up + scale, crossfades out at p 0.42–0.56
+        // Headline: entrance at p 0.18–0.32, holds until p 0.58, crossfades out at p 0.58–0.72
         if (centerHL) {
           var hlIn  = ease(clamp((p - 0.18) / 0.14, 0, 1));
-          var hlOut = ease(clamp((p - 0.42) / 0.14, 0, 1));
+          var hlOut = ease(clamp((p - 0.58) / 0.14, 0, 1));
           centerHL.style.opacity   = hlIn * (1 - hlOut);
           var scaleIn = lerp(0.92, 1, hlIn);
           var yIn     = lerp(40, 0, hlIn);
@@ -640,19 +581,26 @@
           if (hlIn > 0.01) centerHL.classList.add('is-visible');
           else centerHL.classList.remove('is-visible');
         }
-        // Mission fades in at p 0.42–0.56, stays visible (merge handled separately)
+        // Mission fades in at p 0.58–0.72, stays visible (merge handled separately)
         if (centerMis && !hasMerged) {
-          var misIn = ease(clamp((p - 0.42) / 0.14, 0, 1));
+          var misIn = ease(clamp((p - 0.58) / 0.14, 0, 1));
           centerMis.style.opacity = misIn;
           centerMis.style.transform = 'translateY(' + lerp(30, 0, misIn) + 'px)';
         }
       });
-    }, { passive: true });
 
     // Mission text merge: overlay → real text seamless handoff
     var missionText = document.querySelector('.mission-text');
 
-    window.addEventListener('scroll', function () {
+    if (isMobile && missionText) {
+      // Mobile: no center overlay, just show mission text directly
+      missionText.style.opacity = '1';
+      missionText.style.color = '';
+      missionText.style.textShadow = '';
+      missionText.classList.add('is-revealed');
+    }
+
+    addScrollHandler(function () {
       if (!centerMis || !missionText) return;
       var mtRect = missionText.getBoundingClientRect();
       var mtCenter = mtRect.top + mtRect.height / 2;
@@ -685,7 +633,7 @@
         missionText.style.textShadow = '';
         centerMis.style.opacity = '1';
       }
-    }, { passive: true });
+    });
   }
 
   /* ── iPhone Enter Zone ───────────────────────────────────── */
@@ -747,7 +695,9 @@
     var danmakuEl = document.getElementById('products-danmaku');
 
     if (!scrollContainer || !features.length) return;
-    if (window.innerWidth < 810) return; // mobile: no scroll-driven logic
+
+    var isMobileProducts = window.innerWidth < 810;
+    var featureVids = isMobileProducts ? Array.from(document.querySelectorAll('.products-feature-vid video')) : [];
 
     var totalSteps = features.length;
     var currentIdx = 0;
@@ -796,67 +746,85 @@
       if (newIdx === currentIdx) return;
       currentIdx = newIdx;
 
-      // Text crossfade
+      // Text crossfade (works on both mobile and desktop)
       features.forEach(function(f, i) {
         f.classList.toggle('is-active', i === newIdx);
       });
 
-      // Phone feed: hero video = step 0, feedItems[0] = step 1, feedItems[1] = step 2
-      if (heroVid) {
-        if (newIdx === 0) {
-          heroVid.style.transform = '';
+      if (isMobileProducts) {
+        // Mobile: hero video is in the phone at step 0, slide it away for other steps
+        if (heroVid) {
           heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
-        } else {
-          heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
-          heroVid.style.transform = 'translateY(-100%)';
+          heroVid.style.transform = newIdx === 0 ? '' : 'translateY(-100%)';
         }
-      }
+        // Feed items: feedItems[0] = step 1, feedItems[1] = step 2 (same as desktop)
+        feedItems.forEach(function(item, i) {
+          var stepIdx = i + 1;
+          item.classList.remove('is-active', 'is-prev');
+          var vid = item.querySelector('video');
+          if (stepIdx === newIdx) {
+            item.classList.add('is-active');
+            if (vid) { vid.currentTime = 0; vid.play().catch(function(){}); }
+          } else if (stepIdx < newIdx) {
+            item.classList.add('is-prev');
+            if (vid) vid.pause();
+          } else {
+            if (vid) vid.pause();
+          }
+        });
+      } else {
+        // Desktop: phone feed — hero video = step 0, feedItems[0] = step 1, feedItems[1] = step 2
+        if (heroVid) {
+          if (newIdx === 0) {
+            heroVid.style.transform = '';
+            heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
+          } else {
+            heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
+            heroVid.style.transform = 'translateY(-100%)';
+          }
+        }
 
-      feedItems.forEach(function(item, i) {
-        var stepIdx = i + 1; // feedItems[0] maps to step 1, feedItems[1] maps to step 2
-        item.classList.remove('is-active', 'is-prev');
-        var vid = item.querySelector('video');
-        if (stepIdx === newIdx) {
-          item.classList.add('is-active');
-          if (vid) { vid.currentTime = 0; vid.play().catch(function(){}); }
-        } else if (stepIdx < newIdx) {
-          item.classList.add('is-prev');
-          if (vid) vid.pause();
-        } else {
-          if (vid) vid.pause();
+        feedItems.forEach(function(item, i) {
+          var stepIdx = i + 1;
+          item.classList.remove('is-active', 'is-prev');
+          var vid = item.querySelector('video');
+          if (stepIdx === newIdx) {
+            item.classList.add('is-active');
+            if (vid) { vid.currentTime = 0; vid.play().catch(function(){}); }
+          } else if (stepIdx < newIdx) {
+            item.classList.add('is-prev');
+            if (vid) vid.pause();
+          } else {
+            if (vid) vid.pause();
+          }
+        });
+
+        // Hearts burst
+        if (heartsEl) spawnHearts(heartsEl, 6);
+
+        // Like count
+        if (likeEl) {
+          likeEl.textContent = formatCount(likeCounts[newIdx] || 0);
+          likeEl.classList.remove('like-bump');
+          void likeEl.offsetWidth;
+          likeEl.classList.add('like-bump');
         }
-      });
+
+        // Danmaku
+        var msgs = commentSets[newIdx] || [];
+        msgs.forEach(function(msg, i) {
+          if (danmakuEl) setTimeout(spawnComment.bind(null, danmakuEl, msg), i * 800);
+        });
+      }
 
       // Progress dots
       dots.forEach(function(d, i) {
         d.classList.toggle('active', i === newIdx);
       });
-
-      // Hearts burst
-      if (heartsEl) spawnHearts(heartsEl, 6);
-
-      // Like count
-      if (likeEl) {
-        likeEl.textContent = formatCount(likeCounts[newIdx] || 0);
-        likeEl.classList.remove('like-bump');
-        void likeEl.offsetWidth;
-        likeEl.classList.add('like-bump');
-      }
-
-      // Danmaku
-      var msgs = commentSets[newIdx] || [];
-      msgs.forEach(function(msg, i) {
-        if (danmakuEl) setTimeout(spawnComment.bind(null, danmakuEl, msg), i * 800);
-      });
     }
 
     // Scroll handler
-    var ticking = false;
-    window.addEventListener('scroll', function() {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(function() {
-        ticking = false;
+    addScrollHandler(function() {
         var rect = scrollContainer.getBoundingClientRect();
         var scrollDistance = rect.height - window.innerHeight;
         if (scrollDistance <= 0) return;
@@ -869,12 +837,22 @@
           hintEl.style.opacity = progress < 0.15 ? '1' : '0';
         }
       });
-    }, { passive: true });
 
-    // Ambient hearts
-    setInterval(function() {
-      if (heartsEl && currentIdx >= 0) spawnHearts(heartsEl, 2);
-    }, 5000);
+    // Ambient hearts — only run while section is visible
+    var ambientHeartsTimer = null;
+    var heartsIO = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting && !ambientHeartsTimer) {
+          ambientHeartsTimer = setInterval(function() {
+            if (heartsEl && currentIdx >= 0) spawnHearts(heartsEl, 2);
+          }, 5000);
+        } else if (!e.isIntersecting && ambientHeartsTimer) {
+          clearInterval(ambientHeartsTimer);
+          ambientHeartsTimer = null;
+        }
+      });
+    }, { threshold: 0.1 });
+    heartsIO.observe(scrollContainer);
   }
 
   /* ── Chat Animation ───────────────────────────────────────── */
@@ -945,6 +923,273 @@
   // Expose so main.js scroll handler can call it
   window._paletteUpdateNavTheme = updateNavTheme;
 
+  /* ── Cinematic Hero Snap (instant cinema cut) ────────────── */
+  function setupCineHeroSnap() {
+    if (window.innerWidth < 810) return;
+
+    var productsScroll = document.getElementById('products-scroll');
+    var cineSection = document.querySelector('.cine-hero');
+    if (!productsScroll || !cineSection) return;
+
+    var snappedForward = false;
+    var cooldown = false;
+    var BUFFER = 50; // dead-zone buffer to prevent snap loops
+
+    addScrollHandler(function () {
+        if (cooldown) return;
+
+        var scrollY = window.scrollY;
+        var pRect = productsScroll.getBoundingClientRect();
+        var productsEnd = pRect.bottom + scrollY; // document-relative bottom
+        var cineTop = cineSection.getBoundingClientRect().top + scrollY;
+
+        if (!snappedForward) {
+          // Forward snap: products scroll runway fully consumed
+          if (scrollY >= productsEnd - window.innerHeight + BUFFER) {
+            snappedForward = true;
+            cooldown = true;
+            window.scrollTo({ top: cineTop, behavior: 'instant' });
+            setTimeout(function () { cooldown = false; }, 200);
+          }
+        } else {
+          // Backward snap: scrolled above cinematic section top
+          if (scrollY < cineTop) {
+            snappedForward = false;
+            cooldown = true;
+            // Land well before the forward-snap threshold to avoid re-triggering
+            window.scrollTo({ top: productsEnd - window.innerHeight - BUFFER, behavior: 'instant' });
+            setTimeout(function () { cooldown = false; }, 200);
+          }
+        }
+      });
+  }
+
+  /* ── Cinematic Hero Scroll-Shrink ─────────────────────────── */
+  function setupCineHeroShrink() {
+    if (window.innerWidth < 810) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var section = document.querySelector('.cine-hero');
+    var frame   = document.querySelector('.cine-hero-frame');
+    var video   = document.querySelector('.cine-hero-vid');
+    var title   = document.querySelector('.cine-hero-title');
+    if (!section || !frame || !video) return;
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+    function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+
+    var FINAL_W = 1200;
+    var FINAL_H = 600;
+    var FINAL_R = 20;
+    var DEAD_ZONE = 0.18; // first 18% of scroll = fullscreen, no shrink
+    var waitingToFreeze = false;
+    var frozen = false;
+
+    // Freeze when video finishes its current playthrough
+    video.addEventListener('ended', function () {
+      if (waitingToFreeze) {
+        frozen = true;
+        video.pause();
+      }
+    });
+
+    addScrollHandler(function () {
+        var rect = section.getBoundingClientRect();
+        var scrollDistance = rect.height - window.innerHeight;
+        if (scrollDistance <= 0) return;
+
+        var progress = clamp(-rect.top / scrollDistance, 0, 1);
+
+        // Remap: 0–DEAD_ZONE = no shrink, DEAD_ZONE–1 = full shrink
+        var shrinkT = clamp((progress - DEAD_ZONE) / (1 - DEAD_ZONE), 0, 1);
+        var e = ease(shrinkT);
+
+        // Interpolate frame dimensions
+        var w = lerp(window.innerWidth, Math.min(FINAL_W, window.innerWidth * 0.9), e);
+        var h = lerp(window.innerHeight, FINAL_H, e);
+        var r = lerp(0, FINAL_R, e);
+
+        frame.style.width        = w + 'px';
+        frame.style.height       = h + 'px';
+        frame.style.borderRadius = r + 'px';
+
+        // Title fade in during 40%–75% of scroll progress (earlier)
+        if (title) {
+          var titleProgress = clamp((progress - 0.4) / 0.35, 0, 1);
+          title.style.opacity = titleProgress;
+        }
+
+        // Freeze: wait for video to finish its current playthrough
+        if (progress >= 1 && !frozen && !waitingToFreeze) {
+          waitingToFreeze = true;
+          video.loop = false; // let current playthrough end naturally
+        } else if (progress < 1 && (frozen || waitingToFreeze)) {
+          waitingToFreeze = false;
+          frozen = false;
+          video.loop = true;
+          video.play().catch(function () {});
+        }
+      });
+  }
+
+  /* ── Research Section Reveal ──────────────────────────────── */
+  function setupResearchReveal() {
+    var section = document.querySelector('.research');
+    if (!section) return;
+
+    var label    = section.querySelector('.section-label');
+    var title    = section.querySelector('.section-title');
+    var subtitle = section.querySelector('.section-subtitle');
+    var items    = section.querySelectorAll('.research-item');
+
+    // Initial hidden state
+    var targets = [];
+    if (label) { label.style.opacity = '0'; label.style.transform = 'translateY(24px)'; targets.push(label); }
+    if (title) { title.style.opacity = '0'; title.style.transform = 'translateY(32px)'; targets.push(title); }
+    if (subtitle) { subtitle.style.opacity = '0'; subtitle.style.transform = 'translateY(24px)'; targets.push(subtitle); }
+    items.forEach(function (item) {
+      item.style.opacity = '0';
+      item.style.transform = 'translateY(60px) scale(0.97)';
+    });
+
+    var revealed = false;
+
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting && !revealed) {
+          revealed = true;
+          io.disconnect();
+
+          // Animate header elements
+          var delay = 0;
+          targets.forEach(function (el) {
+            el.style.transition = 'opacity 0.7s cubic-bezier(0.16,1,0.3,1) ' + delay + 's, transform 0.7s cubic-bezier(0.16,1,0.3,1) ' + delay + 's';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+            delay += 0.12;
+          });
+
+          // Animate research items with stagger
+          items.forEach(function (item, i) {
+            var d = delay + i * 0.18;
+            item.style.transition = 'opacity 0.8s cubic-bezier(0.16,1,0.3,1) ' + d + 's, transform 0.8s cubic-bezier(0.16,1,0.3,1) ' + d + 's';
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0) scale(1)';
+          });
+        }
+      });
+    }, { threshold: 0.15 });
+
+    io.observe(section);
+  }
+
+  /* ── Drag Surface (heavy damping) ────────────────────────── */
+  function setupDragSurface() {
+    var surface = document.getElementById('drag-surface');
+    var canvas  = document.getElementById('drag-canvas');
+    if (!surface || !canvas) return;
+
+    var isDragging = false;
+    var startX = 0, startY = 0;
+    var offsetX = 0, offsetY = 0;    // canvas pos when drag began
+    var targetX = 0, targetY = 0;    // where the canvas wants to be
+    var currentX = 0, currentY = 0;  // where the canvas actually is
+    var animFrame = 0;
+
+    var DRAG_EASE = 0.10;  // lower = heavier (canvas lerps toward target each frame)
+
+    function tick() {
+      var dx = targetX - currentX;
+      var dy = targetY - currentY;
+      // Settled — stop loop
+      if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1 && !isDragging) {
+        currentX = targetX;
+        currentY = targetY;
+        canvas.style.transform = 'translate(' + currentX + 'px,' + currentY + 'px)';
+        animFrame = 0;
+        return;
+      }
+      currentX += dx * DRAG_EASE;
+      currentY += dy * DRAG_EASE;
+      canvas.style.transform = 'translate(' + currentX + 'px,' + currentY + 'px)';
+      animFrame = requestAnimationFrame(tick);
+    }
+
+    function ensureTicking() {
+      if (!animFrame) animFrame = requestAnimationFrame(tick);
+    }
+
+    function onStart(x, y) {
+      isDragging = true;
+      startX = x;
+      startY = y;
+      offsetX = currentX;
+      offsetY = currentY;
+      surface.classList.add('is-dragging');
+      ensureTicking();
+    }
+
+    function onMove(x, y) {
+      if (!isDragging) return;
+      targetX = offsetX + (x - startX);
+      targetY = offsetY + (y - startY);
+    }
+
+    function onEnd() {
+      if (!isDragging) return;
+      isDragging = false;
+      surface.classList.remove('is-dragging');
+      // No momentum — just settle to final target
+      ensureTicking();
+    }
+
+    // Mouse events — listeners are attached only while dragging to avoid
+    // firing onMove on every mouse movement across the whole page.
+    function onMouseMove(e) { onMove(e.clientX, e.clientY); }
+    function onMouseUp() {
+      onEnd();
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    }
+    surface.addEventListener('mousedown', function (e) {
+      if (e.target.closest('.drag-cta')) return;
+      e.preventDefault();
+      onStart(e.clientX, e.clientY);
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
+
+    // Touch events
+    surface.addEventListener('touchstart', function (e) {
+      if (e.target.closest('.drag-cta')) return;
+      var t = e.touches[0];
+      onStart(t.clientX, t.clientY);
+    }, { passive: true });
+    surface.addEventListener('touchmove', function (e) {
+      if (!isDragging) return;
+      e.preventDefault();
+      var t = e.touches[0];
+      onMove(t.clientX, t.clientY);
+    }, { passive: false });
+    surface.addEventListener('touchend', onEnd);
+
+    // Video hover play/pause
+    canvas.querySelectorAll('.drag-card').forEach(function (card) {
+      var vid = card.querySelector('video');
+      if (!vid) return;
+      card.addEventListener('mouseenter', function () {
+        vid.play().catch(function () {});
+      });
+      card.addEventListener('mouseleave', function () {
+        vid.pause();
+      });
+    });
+
+    // Show badge
+    surface.classList.add('is-active');
+  }
+
   /* ── Init ─────────────────────────────────────────────────── */
   function init() {
     // Phone feed
@@ -955,11 +1200,14 @@
 
     setupTextVideoMask();
     setupFpIndicator();
-    setupDraggableShapes();
     setupHeroShrink();
     setupChatAnimation();
     setupIphoneEnter();
     setupProductsScroll();
+    setupCineHeroSnap();
+    setupCineHeroShrink();
+    setupResearchReveal();
+    setupDragSurface();
     setupBackToTop();
     // Initial nav theme sync (palette.js loads after main.js's onScroll)
     updateNavTheme();
@@ -996,7 +1244,7 @@
       btn.classList.toggle('is-light', isLight);
     }
 
-    window.addEventListener('scroll', updateBtn, { passive: true });
+    addScrollHandler(updateBtn);
     updateBtn();
   }
 

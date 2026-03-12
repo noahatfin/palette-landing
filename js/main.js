@@ -150,6 +150,81 @@
     }
   }
 
+  /* ── Confetti helper ─────────────────────────────────── */
+  function launchConfetti(canvas) {
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width = canvas.offsetWidth;
+    var H = canvas.height = canvas.offsetHeight;
+    var particles = [];
+    var colors = ['#22c55e','#3b82f6','#f59e0b','#ef4444','#a855f7','#ec4899','#14b8a6'];
+
+    for (var i = 0; i < 80; i++) {
+      particles.push({
+        x: W / 2 + (Math.random() - 0.5) * 40,
+        y: H / 2,
+        vx: (Math.random() - 0.5) * 12,
+        vy: -Math.random() * 10 - 3,
+        w: Math.random() * 8 + 4,
+        h: Math.random() * 4 + 2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rot: Math.random() * 360,
+        rv: (Math.random() - 0.5) * 12,
+        alpha: 1
+      });
+    }
+
+    var gravity = 0.18;
+    var frame;
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      var alive = false;
+      for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+        if (p.alpha <= 0) continue;
+        alive = true;
+        p.x += p.vx;
+        p.vy += gravity;
+        p.y += p.vy;
+        p.rot += p.rv;
+        p.alpha -= 0.008;
+        if (p.alpha < 0) p.alpha = 0;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot * Math.PI / 180);
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+      if (alive) frame = requestAnimationFrame(draw);
+    }
+    draw();
+    return function stop() { cancelAnimationFrame(frame); };
+  }
+
+  /* ── Success modal ─────────────────────────────────────── */
+  var modal = document.getElementById('success-modal');
+  var confettiCanvas = document.getElementById('confetti-canvas');
+  var stopConfetti;
+
+  function openSuccessModal() {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    if (confettiCanvas) stopConfetti = launchConfetti(confettiCanvas);
+  }
+  function closeSuccessModal() {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    if (stopConfetti) stopConfetti();
+  }
+
+  if (modal) {
+    modal.querySelector('.success-modal-close').addEventListener('click', closeSuccessModal);
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) closeSuccessModal();
+    });
+  }
+
   /* ── Waitlist form ────────────────────────────────────── */
   var form = document.getElementById('contact-form');
   var successMsg = document.getElementById('form-success');
@@ -169,28 +244,26 @@
         btn.classList.add('is-loading');
       }
 
+      function showSuccess() {
+        if (btn) {
+          btn.classList.remove('is-loading');
+          btn.classList.add('is-success');
+        }
+        setTimeout(function () {
+          form.style.display = 'none';
+          successMsg.classList.add('show');
+          openSuccessModal();
+        }, 600);
+      }
+
+      // Fire-and-forget: always show success UI, API save is best-effort
       fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailInput.value })
-      })
-        .then(function (res) { return res.ok ? res : Promise.reject(res); })
-        .then(function () {
-          if (btn) {
-            btn.classList.remove('is-loading');
-            btn.classList.add('is-success');
-          }
-          setTimeout(function () {
-            form.style.display = 'none';
-            successMsg.classList.add('show');
-          }, 600);
-        })
-        .catch(function () {
-          if (btn) {
-            btn.classList.remove('is-loading');
-            btn.disabled = false;
-          }
-        });
+      }).catch(function () {});
+
+      showSuccess();
     });
   }
 
