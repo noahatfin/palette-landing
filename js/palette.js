@@ -1204,6 +1204,21 @@
     surface.classList.add('is-active');
   }
 
+  /* ── Lazy video play/pause via IntersectionObserver ────────── */
+  function setupLazyVideos() {
+    document.querySelectorAll('video[data-lazy]').forEach(function (video) {
+      new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            e.target.play().catch(function () {});
+          } else {
+            e.target.pause();
+          }
+        });
+      }, { threshold: 0.1 }).observe(video);
+    });
+  }
+
   /* ── Init ─────────────────────────────────────────────────── */
   function init() {
     // Phone feed
@@ -1212,6 +1227,7 @@
       new PhoneFeed(feedEl);
     }
 
+    setupLazyVideos();
     setupTextVideoMask();
     setupFpIndicator();
     setupHeroShrink();

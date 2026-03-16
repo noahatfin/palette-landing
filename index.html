@@ -42,7 +42,7 @@
      ============================================================ -->
 <section class="hero hero-zone section-dark" id="hero">
   <div class="hero-sticky-wrap">
-    <video class="hero-vid" src="videos/hero.mp4" autoplay muted loop playsinline></video>
+    <video class="hero-vid" src="videos/hero.mp4" autoplay muted loop playsinline preload="auto"></video>
     <div class="hero-overlay"></div>
     <div class="hero-center-text">
       <h2 class="hero-center-headline"><span class="hero-brand">Palette</span><br>produces your stories.</h2>
@@ -90,7 +90,7 @@
         </div>
 
         <div class="mockup-video">
-          <video class="mockup-mobile-vid" src="videos/hero.mp4" autoplay muted loop playsinline></video>
+          <video class="mockup-mobile-vid" src="videos/hero.mp4" muted loop playsinline preload="none" data-lazy></video>
           <span class="mockup-video-label">Scene 1 — Morning Arrival</span>
         </div>
 
@@ -182,8 +182,8 @@
             <div class="iphone-notch"></div>
             <div class="iphone-screen">
               <div class="phone-feed">
-                <div class="feed-item"><video src="videos/v6.mp4" muted loop playsinline></video></div>
-                <div class="feed-item"><video src="videos/v2.mp4" muted loop playsinline></video></div>
+                <div class="feed-item"><video src="videos/v6.mp4" muted loop playsinline preload="none"></video></div>
+                <div class="feed-item"><video src="videos/v2.mp4" muted loop playsinline preload="none"></video></div>
               </div>
               <div class="tiktok-overlay">
                 <div class="tiktok-hearts" id="products-hearts"></div>
@@ -208,21 +208,21 @@
         <!-- RIGHT: clean text, crossfade -->
         <div class="products-text">
           <div class="products-feature is-active">
-            <div class="products-feature-vid"><video src="videos/v6.mp4" autoplay muted loop playsinline></video></div>
+            <div class="products-feature-vid"><video src="videos/v6.mp4" muted loop playsinline preload="none" data-lazy></video></div>
             <span class="product-tag">Script AI</span>
             <h3 class="product-name">Story-first scripting</h3>
             <p class="product-desc">Write your idea in plain language. Palette generates a complete script — scene breakdowns, dialogue, character arcs, and cinematic pacing — automatically.</p>
             <a href="#access" class="product-link">Learn more →</a>
           </div>
           <div class="products-feature">
-            <div class="products-feature-vid"><video src="videos/v2.mp4" autoplay muted loop playsinline></video></div>
+            <div class="products-feature-vid"><video src="videos/v2.mp4" muted loop playsinline preload="none" data-lazy></video></div>
             <span class="product-tag">Director AI</span>
             <h3 class="product-name">Cinematic direction</h3>
             <p class="product-desc">Framing, cuts, and visual rhythm tuned for every format. The director model handles every shot decision with your audience in mind.</p>
             <a href="#access" class="product-link">Learn more →</a>
           </div>
           <div class="products-feature">
-            <div class="products-feature-vid"><video src="videos/cinematic.mp4" autoplay muted loop playsinline></video></div>
+            <div class="products-feature-vid"><video src="videos/cinematic.mp4" muted loop playsinline preload="none" data-lazy></video></div>
             <span class="product-tag">Export</span>
             <h3 class="product-name">The agent edits while you think</h3>
             <p class="product-desc">Agents don't just generate — they curate. Pacing gaps get flagged, reshoots get proposed, transitions get suggested. Your cut is nearly polished before you ever touch the timeline.</p>
@@ -252,7 +252,7 @@
 <section class="cine-hero section-dark" id="cinematic">
   <div class="cine-hero-sticky">
     <div class="cine-hero-frame">
-      <video class="cine-hero-vid" src="videos/cinematic.mp4" autoplay muted loop playsinline></video>
+      <video class="cine-hero-vid" src="videos/cinematic.mp4" muted loop playsinline preload="none" data-lazy></video>
       <h2 class="cine-hero-title">Cinematic Performance</h2>
     </div>
   </div>
@@ -549,7 +549,7 @@
         <div class="de-sc"><span class="de-sc-num">4</span><div><div class="de-sc-title">Ambush at Snake Canyon</div><div class="de-sc-dur">0:55</div></div></div>
         <div class="de-sc"><span class="de-sc-num">5</span><div><div class="de-sc-title">The Reckoning</div><div class="de-sc-dur">0:38</div></div></div>
       </div>
-      <div class="de-vid-wrap"><video class="de-vid" src="videos/demo-1.mp4" muted playsinline></video></div>
+      <div class="de-vid-wrap"><video class="de-vid" data-src="videos/demo-1.mp4" muted playsinline preload="none"></video></div>
       <div class="de-chat">
         <div class="de-chat-head"><span class="de-chat-title">Director AI</span><span class="de-chat-badge">PaletteGen 2.0</span></div>
         <div class="de-msgs">
@@ -585,7 +585,7 @@
      TECHNOLOGY / RESEARCH (like Luma "Research")
      ============================================================ -->
 <section class="research section-dark" id="how">
-  <img src="imgs/research-flower.jpg" alt="" class="research-flower" />
+  <img src="imgs/research-flower.jpg" alt="" class="research-flower" loading="lazy" />
   <div class="research-inner">
     <div class="section-head">
       <p class="section-label">Technology</p>
@@ -596,7 +596,7 @@
 
       <div class="research-item">
         <div class="research-visual">
-          <video src="videos/v4.mp4" autoplay muted loop playsinline></video>
+          <video src="videos/v4.mp4" muted loop playsinline preload="none" data-lazy></video>
         </div>
         <div class="research-info">
           <div class="research-info-top">
@@ -610,7 +610,7 @@
 
       <div class="research-item">
         <div class="research-visual">
-          <video src="videos/storymind.mp4" autoplay muted loop playsinline></video>
+          <video src="videos/storymind.mp4" muted loop playsinline preload="none" data-lazy></video>
         </div>
         <div class="research-info">
           <div class="research-info-top">
@@ -637,10 +637,10 @@
         <div class="drag-card-play"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" fill="rgba(255,255,255,0.18)"/><path d="M19 15l14 9-14 9V15z" fill="rgba(255,255,255,0.7)"/></svg></div>
       </div>
       <div class="drag-card" style="--ox:160px; --oy:120px; width:180px; height:180px;">
-        <img src="imgs/gallery/timur.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/timur.jpg" alt="" draggable="false" loading="lazy" />
       </div>
       <div class="drag-card" style="--ox:-50px; --oy:180px; width:240px; height:136px;">
-        <img src="imgs/gallery/andrej.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/andrej.jpg" alt="" draggable="false" loading="lazy" />
       </div>
 
       <!-- Middle ring -->
@@ -661,45 +661,45 @@
         <div class="drag-card-play"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" fill="rgba(255,255,255,0.18)"/><path d="M19 15l14 9-14 9V15z" fill="rgba(255,255,255,0.7)"/></svg></div>
       </div>
       <div class="drag-card" style="--ox:380px; --oy:350px; width:330px; height:220px;">
-        <img src="imgs/gallery/alex.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/alex.jpg" alt="" draggable="false" loading="lazy" />
       </div>
       <div class="drag-card" style="--ox:-620px; --oy:60px; width:220px; height:330px;">
-        <img src="imgs/gallery/alexander.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/alexander.jpg" alt="" draggable="false" loading="lazy" />
       </div>
       <div class="drag-card" style="--ox:-240px; --oy:-460px; width:330px; height:220px;">
-        <img src="imgs/gallery/andrey.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/andrey.jpg" alt="" draggable="false" loading="lazy" />
       </div>
       <div class="drag-card" style="--ox:660px; --oy:-200px; width:220px; height:330px;">
-        <img src="imgs/gallery/diogo.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/diogo.jpg" alt="" draggable="false" loading="lazy" />
       </div>
       <div class="drag-card" style="--ox:-60px; --oy:440px; width:330px; height:220px;">
-        <img src="imgs/gallery/adolfo.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/adolfo.jpg" alt="" draggable="false" loading="lazy" />
       </div>
 
       <!-- Outer ring -->
       <div class="drag-card" style="--ox:-750px; --oy:-420px; width:330px; height:186px;">
-        <img src="imgs/gallery/julius.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/julius.jpg" alt="" draggable="false" loading="lazy" />
       </div>
       <div class="drag-card" style="--ox:-720px; --oy:380px; width:220px; height:330px;">
-        <img src="imgs/gallery/kankan.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/kankan.jpg" alt="" draggable="false" loading="lazy" />
       </div>
       <div class="drag-card" style="--ox:760px; --oy:320px; width:220px; height:330px;">
-        <img src="imgs/gallery/slav.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/slav.jpg" alt="" draggable="false" loading="lazy" />
       </div>
       <div class="drag-card" style="--ox:680px; --oy:-470px; width:330px; height:186px;">
-        <img src="imgs/gallery/dipqi.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/dipqi.jpg" alt="" draggable="false" loading="lazy" />
       </div>
       <div class="drag-card" style="--ox:-880px; --oy:80px; width:300px; height:200px;">
-        <img src="imgs/gallery/fadhil.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/fadhil.jpg" alt="" draggable="false" loading="lazy" />
       </div>
       <div class="drag-card" style="--ox:900px; --oy:40px; width:300px; height:200px;">
-        <img src="imgs/gallery/revaldo.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/revaldo.jpg" alt="" draggable="false" loading="lazy" />
       </div>
       <div class="drag-card" style="--ox:420px; --oy:560px; width:300px; height:200px;">
-        <img src="imgs/gallery/ali.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/ali.jpg" alt="" draggable="false" loading="lazy" />
       </div>
       <div class="drag-card" style="--ox:-420px; --oy:-670px; width:280px; height:186px;">
-        <img src="imgs/gallery/yoghi.jpg" alt="" draggable="false" />
+        <img src="imgs/gallery/yoghi.jpg" alt="" draggable="false" loading="lazy" />
       </div>
     </div>
 

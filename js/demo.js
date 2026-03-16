@@ -342,8 +342,13 @@
   function showEditor() {
     if (!editorOverlay) return;
     editorOverlay.classList.add('vis');
-    // Play video after 700ms
-    if (editorVideo) setTimeout(function() { editorVideo.play().catch(function(){}); }, 700);
+    // Load deferred video src and play after 700ms
+    if (editorVideo) {
+      if (!editorVideo.src && editorVideo.dataset.src) {
+        editorVideo.src = editorVideo.dataset.src;
+      }
+      setTimeout(function() { editorVideo.play().catch(function(){}); }, 700);
+    }
     // Stagger chat messages (1500 + i*1800, exact)
     if (editorMsgs) {
       $$('.de-msg', editorMsgs).forEach(function(m, i) {
