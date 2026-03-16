@@ -36,7 +36,7 @@
 
 .demo-showcase-head {
   max-width: 1400px;
-  margin: 0 auto 32px;
+  margin: 0 auto 8px;
   padding: 0 24px;
   text-align: center;
 }
@@ -48,7 +48,7 @@
   color: rgba(161,161,170,0.7);
   line-height: 1.6;
   max-width: 520px;
-  margin: 12px auto 0;
+  margin: 8px auto 0;
 }
 
 .demo-app {
@@ -58,7 +58,7 @@
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  height: min(720px, calc(100vh - 200px));
+  height: min(680px, calc(100vh - 160px));
   border-radius: 16px;
   overflow: hidden;
   background: #09090b;
@@ -462,70 +462,141 @@
 }
 
 /* ════════════════════════════════════════════════
-   Chat Input
+   Chat Input — always white
    ════════════════════════════════════════════════ */
 .demo-chat-input {
-  position: absolute; bottom: 0; left: 50%;
-  transform: translateX(-50%);
-  z-index: 10; padding-bottom: 8px;
-  width: 75%; max-width: 520px;
+  position: absolute;
+  top: calc(100% - 8px); left: 35%;
+  transform: translateX(-50%) translateY(-100%);
+  z-index: 10;
+  width: 52.5%; max-width: 520px;
+  transition: top 0.8s cubic-bezier(0.22,1,0.36,1),
+              left 0.8s cubic-bezier(0.22,1,0.36,1),
+              transform 0.8s cubic-bezier(0.22,1,0.36,1),
+              width 0.8s cubic-bezier(0.22,1,0.36,1),
+              max-width 0.8s cubic-bezier(0.22,1,0.36,1);
 }
 .demo-chat-bar {
   border-radius: 16px;
-  background: rgba(24,24,27,0.95);
-  border: 1px solid rgba(63,63,70,0.3);
+  background: rgba(255,255,255,0.97);
+  border: 1px solid rgba(228,228,231,0.5);
   backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
-.demo-chat-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 6px 12px;
-}
-.demo-chat-attach {
-  width: 24px; height: 24px; border-radius: 6px;
-  background: rgba(39,39,42,0.8);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.demo-chat-attach svg { width: 12px; height: 12px; stroke: #71717a; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .demo-chat-text {
   flex: 1; min-width: 0;
-  font-size: 13px; color: #e4e4e7; line-height: 1.5;
+  font-size: 13px; color: #18181b; line-height: 1.5;
   white-space: nowrap; overflow: hidden;
 }
-.demo-chat-placeholder { color: #52525b; }
+.demo-chat-placeholder { color: #a1a1aa; }
 .demo-chat-mention {
   font-family: 'DM Mono', monospace;
-  color: rgba(165,180,252,1);
+  color: #6366f1;
   background: rgba(99,102,241,0.1);
   padding: 0 4px; border-radius: 3px;
 }
 .demo-chat-cursor {
   display: inline-block; width: 2px; height: 14px;
-  background: #a1a1aa; margin-left: 2px;
+  background: #18181b; margin-left: 2px;
   vertical-align: text-bottom;
   animation: demo-blink 1s step-end infinite;
 }
-@keyframes demo-blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-.demo-chat-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.demo-chat-attach {
+  width: 24px; height: 24px; border-radius: 6px;
+  background: rgba(228,228,231,0.6);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.demo-chat-attach svg { width: 12px; height: 12px; stroke: #71717a; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .demo-chat-min {
   width: 24px; height: 24px; border-radius: 6px;
-  background: rgba(39,39,42,0.8);
+  background: rgba(228,228,231,0.6);
   display: flex; align-items: center; justify-content: center;
 }
-.demo-chat-min svg { width: 10px; height: 10px; stroke: #71717a; fill: none; stroke-width: 1.5; }
+.demo-chat-min svg { width: 10px; height: 10px; stroke: #a1a1aa; fill: none; stroke-width: 1.5; }
 .demo-chat-send {
   padding: 4px 10px; border-radius: 8px;
   font-size: 11px; font-weight: 500; border: none; cursor: default;
-  background: rgba(39,39,42,0.8); color: #71717a;
+  background: rgba(228,228,231,0.6); color: #a1a1aa;
   transition: all 0.3s;
 }
-.demo-chat-send.active { background: #f4f4f5; color: #18181b; }
+.demo-chat-send.active { background: #18181b; color: #fafafa; }
 .demo-chat-hints {
   padding: 0 12px 6px;
-  font-size: 8px; color: #52525b; letter-spacing: 0.08em;
+  font-size: 8px; color: #a1a1aa; letter-spacing: 0.08em;
 }
+
+/* ── Hero focused state (centered, large, shimmer) ── */
+.demo-chat-input.focused {
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(1.15);
+  width: 50%; max-width: 800px;
+  z-index: 30;
+}
+.demo-chat-input.focused .demo-chat-bar {
+  border: none;
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  box-shadow: 0 0 60px rgba(255,255,255,0.15), 0 0 120px rgba(255,255,255,0.05), 0 8px 32px rgba(0,0,0,0.3);
+}
+.demo-chat-input.focused .demo-chat-bar::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 300%; height: 300%;
+  background: conic-gradient(from 0deg, rgba(255,255,255,0.9), rgba(212,212,216,0.3), rgba(255,255,255,0.9), rgba(228,228,231,0.25), rgba(255,255,255,0.9));
+  transform-origin: center;
+  animation: demo-shimmer-spin 2.5s linear infinite;
+  z-index: 0;
+}
+.demo-chat-input.focused .demo-chat-bar::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: rgba(255,255,255,0.97);
+  border-radius: 20px;
+  z-index: 0;
+}
+.demo-chat-input.focused .demo-chat-row,
+.demo-chat-input.focused .demo-chat-hints {
+  position: relative;
+  z-index: 1;
+}
+.demo-chat-input.focused .demo-chat-row {
+  padding: 12px 18px;
+}
+.demo-chat-input.focused .demo-chat-text {
+  font-size: 16px;
+}
+@keyframes demo-shimmer-spin {
+  from { transform: translate(-50%,-50%) rotate(0deg); }
+  to   { transform: translate(-50%,-50%) rotate(360deg); }
+}
+
+/* ── Intro state: hide header + panel ── */
+.demo-app.demo-intro .demo-header {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.demo-app.demo-intro .demo-panel {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.demo-app.demo-intro .demo-canvas::after {
+  opacity: 0;
+}
+.demo-header,
+.demo-panel {
+  transition: opacity 0.5s ease;
+}
+/* (chat styles defined above in Chat Input section) */
+.demo-chat-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 12px;
+}
+.demo-chat-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+@keyframes demo-blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
 /* ════════════════════════════════════════════════
    RIGHT PANEL

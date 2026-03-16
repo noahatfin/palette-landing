@@ -82,43 +82,44 @@
 
   /* ── Timeline (exact from useDemoSequence.ts TIMELINE) ── */
   var TIMELINE = [
-    { delay:0,     phase:0,  stats:[0,0,0,0], rightPanel:'overview', scriptPhase:0, statsCollapsed:false },
-    { delay:600,   phase:0,  stats:[0,0,0,0], startTyping:MSG_SCRIPT },
-    { delay:3800,  phase:1,  stats:[0,0,0,0], scriptPhase:1, message:{role:'user',content:MSG_SCRIPT}, clearInput:true, rightPanel:'script', camera:'script' },
-    { delay:4400,  phase:1,  stats:[0,0,0,0], scriptPhase:2, message:{role:'ai',content:'Generating your Western script...'} },
-    { delay:5600,  phase:1,  stats:[0,0,0,0], scriptPhase:3 },
-    { delay:8000,  phase:1,  stats:[5,0,0,0], message:{role:'ai',content:'Script complete \u2014 5 scenes, 891 words.'}, rightPanel:'overview', scriptPhase:3, camera:'fit', statsCollapsed:false },
-    { delay:10000, phase:1,  stats:[5,0,0,0], startTyping:MSG_CHARS, statsCollapsed:true },
-    { delay:12700, phase:1,  stats:[5,0,0,0], message:{role:'user',content:MSG_CHARS}, clearInput:true },
-    { delay:13300, phase:2,  stats:[5,0,0,0], message:{role:'ai',content:'Generating characters with AI portraits...'} },
-    { delay:13700, phase:3,  stats:[5,1,0,0], camera:'characters' },
-    { delay:14000, phase:4,  stats:[5,2,0,0] },
-    { delay:14300, phase:5,  stats:[5,3,0,0] },
-    { delay:14600, phase:6,  stats:[5,4,0,0] },
-    { delay:15800, phase:6,  stats:[5,4,0,0], startTyping:MSG_SCENES },
-    { delay:18300, phase:6,  stats:[5,4,0,0], message:{role:'user',content:MSG_SCENES}, clearInput:true },
-    { delay:18800, phase:7,  stats:[5,4,1,0], message:{role:'ai',content:'Creating scene references and props...'}, camera:'scenes' },
-    { delay:19100, phase:8,  stats:[5,4,2,0] },
-    { delay:19400, phase:9,  stats:[5,4,3,0] },
-    { delay:20100, phase:10, stats:[5,4,3,1], camera:'props' },
-    { delay:20400, phase:11, stats:[5,4,3,2] },
-    { delay:21700, phase:12, stats:[5,4,3,2], message:{role:'ai',content:'Storyboard ready \u2014 5 scenes with rising tension.'}, camera:'arc', statsCollapsed:false },
-    { delay:23500, phase:12, stats:[5,4,3,2], hoveredArc:0, camera:'arc-0', statsCollapsed:true },
-    { delay:24500, phase:12, stats:[5,4,3,2], hoveredArc:1, camera:'arc-1' },
-    { delay:25500, phase:12, stats:[5,4,3,2], hoveredArc:2, camera:'arc-2' },
-    { delay:26500, phase:12, stats:[5,4,3,2], hoveredArc:3, camera:'arc-3' },
-    { delay:28500, phase:12, stats:[5,4,3,2], hoveredArc:4, camera:'arc-4' },
-    { delay:29700, phase:12, stats:[5,4,3,2], hoveredArc:-1 },
-    { delay:30500, phase:13, stats:[5,4,3,2], message:{role:'ai',content:"All assets ready \u2014 let's preview the final video."}, camera:'overview', statsCollapsed:false },
-    { delay:32000, phase:13, stats:[5,4,3,2], camera:'editor' },
-    { delay:33500, phase:13, stats:[5,4,3,2], showEditor:true }
+    { delay:0,     phase:0,  stats:[0,0,0,0], rightPanel:'overview', scriptPhase:0, statsCollapsed:false, chatFocus:true },
+    { delay:800,   phase:0,  stats:[0,0,0,0], startTyping:MSG_SCRIPT },
+    { delay:2600,  phase:0,  stats:[0,0,0,0], chatUnfocus:true },
+    { delay:4200,  phase:1,  stats:[0,0,0,0], scriptPhase:1, message:{role:'user',content:MSG_SCRIPT}, clearInput:true, rightPanel:'script', camera:'script' },
+    { delay:4800,  phase:1,  stats:[0,0,0,0], scriptPhase:2, message:{role:'ai',content:'Generating your Western script...'} },
+    { delay:6000,  phase:1,  stats:[0,0,0,0], scriptPhase:3 },
+    { delay:8400,  phase:1,  stats:[5,0,0,0], message:{role:'ai',content:'Script complete \u2014 5 scenes, 891 words.'}, rightPanel:'overview', scriptPhase:3, camera:'fit', statsCollapsed:false },
+    { delay:10400, phase:1,  stats:[5,0,0,0], startTyping:MSG_CHARS, statsCollapsed:true },
+    { delay:13100, phase:1,  stats:[5,0,0,0], message:{role:'user',content:MSG_CHARS}, clearInput:true },
+    { delay:13700, phase:2,  stats:[5,0,0,0], message:{role:'ai',content:'Generating characters with AI portraits...'} },
+    { delay:14100, phase:3,  stats:[5,1,0,0], camera:'characters' },
+    { delay:14400, phase:4,  stats:[5,2,0,0] },
+    { delay:14700, phase:5,  stats:[5,3,0,0] },
+    { delay:15000, phase:6,  stats:[5,4,0,0] },
+    { delay:16200, phase:6,  stats:[5,4,0,0], startTyping:MSG_SCENES },
+    { delay:18700, phase:6,  stats:[5,4,0,0], message:{role:'user',content:MSG_SCENES}, clearInput:true },
+    { delay:19200, phase:7,  stats:[5,4,1,0], message:{role:'ai',content:'Creating scene references and props...'}, camera:'scenes' },
+    { delay:19500, phase:8,  stats:[5,4,2,0] },
+    { delay:19800, phase:9,  stats:[5,4,3,0] },
+    { delay:20500, phase:10, stats:[5,4,3,1], camera:'props' },
+    { delay:20800, phase:11, stats:[5,4,3,2] },
+    { delay:22100, phase:12, stats:[5,4,3,2], message:{role:'ai',content:'Storyboard ready \u2014 5 scenes with rising tension.'}, camera:'arc', statsCollapsed:false },
+    { delay:23900, phase:12, stats:[5,4,3,2], hoveredArc:0, camera:'arc-0', statsCollapsed:true },
+    { delay:24900, phase:12, stats:[5,4,3,2], hoveredArc:1, camera:'arc-1' },
+    { delay:25900, phase:12, stats:[5,4,3,2], hoveredArc:2, camera:'arc-2' },
+    { delay:26900, phase:12, stats:[5,4,3,2], hoveredArc:3, camera:'arc-3' },
+    { delay:28900, phase:12, stats:[5,4,3,2], hoveredArc:4, camera:'arc-4' },
+    { delay:30100, phase:12, stats:[5,4,3,2], hoveredArc:-1 },
+    { delay:30900, phase:13, stats:[5,4,3,2], message:{role:'ai',content:"All assets ready \u2014 let's preview the final video."}, camera:'overview', statsCollapsed:false },
+    { delay:32400, phase:13, stats:[5,4,3,2], camera:'editor' },
+    { delay:33900, phase:13, stats:[5,4,3,2], showEditor:true }
   ];
 
   var LOOP_DURATION = 49000;
 
   /* ── DOM refs ── */
   var section, viewport, world;
-  var chatTextEl, chatSendEl, chatPlaceholder;
+  var chatInputEl, chatTextEl, chatSendEl, chatPlaceholder;
   var panelScript, panelOverview;
   var dspConcept, dspGen, dspSettings, dspStory, dspStoryText, dspStoryScroll, dspChars, dspCollapsed;
   var dopStats, dopScene, dopConvBody;
@@ -134,6 +135,24 @@
   function $(s, c) { return (c || document).querySelector(s); }
   function $$(s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); }
   function renderMentions(t) { return t.replace(/@(\w+)/g, '<span class="demo-chat-mention">@$1</span>'); }
+
+  /* ── Chat focus (hero centered state on empty canvas) ── */
+  var appEl, canvasEl;
+
+  function chatFocus() {
+    if (!chatInputEl || !appEl) return;
+    appEl.classList.add('demo-intro');
+    chatInputEl.classList.add('focused');
+  }
+
+  function chatUnfocus() {
+    if (!chatInputEl || !appEl) return;
+    chatInputEl.classList.remove('focused');
+    // Stagger: header + panel fade in after input starts moving
+    setTimeout(function() {
+      appEl.classList.remove('demo-intro');
+    }, 400);
+  }
 
   /* ── Camera ── */
   function moveCamera(target) {
@@ -225,6 +244,8 @@
     }
     dopConvBody.appendChild(d);
     dopConvBody.scrollTop = dopConvBody.scrollHeight;
+    // Ensure scroll after render
+    setTimeout(function() { dopConvBody.scrollTop = dopConvBody.scrollHeight; }, 50);
   }
 
   /* ── Panel switching ── */
@@ -326,7 +347,10 @@
     // Stagger chat messages (1500 + i*1800, exact)
     if (editorMsgs) {
       $$('.de-msg', editorMsgs).forEach(function(m, i) {
-        setTimeout(function() { m.classList.add('vis'); }, 1500 + i * 1800);
+        setTimeout(function() {
+          m.classList.add('vis');
+          editorMsgs.scrollTop = editorMsgs.scrollHeight;
+        }, 1500 + i * 1800);
       });
     }
     // Playhead tracking
@@ -347,6 +371,8 @@
     $$('.dn', world).forEach(function(el) { el.classList.remove('vis'); });
     $$('.dn-step', world).forEach(function(el) { el.classList.remove('complete'); });
     $$('.de', world).forEach(function(el) { el.classList.remove('vis'); });
+    if (chatInputEl) chatInputEl.classList.remove('focused');
+    if (appEl) appEl.classList.remove('demo-intro');
     if (chatTextEl) chatTextEl.innerHTML = '';
     if (chatPlaceholder) chatPlaceholder.style.display = '';
     if (chatSendEl) chatSendEl.classList.remove('active');
@@ -383,7 +409,9 @@
         if (step.rightPanel) setPanel(step.rightPanel);
         if (step.scriptPhase !== undefined) setScriptPhase(step.scriptPhase);
         if (step.statsCollapsed !== undefined) setStatsCollapsed(step.statsCollapsed);
+        if (step.chatFocus) chatFocus();
         if (step.startTyping) startTyping(step.startTyping);
+        if (step.chatUnfocus) chatUnfocus();
         if (step.clearInput) clearInput();
         if (step.message) addMessage(step.message);
         if (step.hoveredArc !== undefined) setArcHover(step.hoveredArc);
@@ -401,6 +429,11 @@
     if (!section) return;
     viewport = $('.demo-canvas-viewport', section);
     world = $('.demo-canvas-world', section);
+    appEl = $('.demo-app', section);
+    canvasEl = $('.demo-canvas', section);
+    chatInputEl = $('.demo-chat-input', section);
+    // Move chat input to demo-app level permanently (for seamless focus animation)
+    if (appEl && chatInputEl) appEl.appendChild(chatInputEl);
     chatTextEl = $('.demo-chat-typed', section);
     chatSendEl = $('.demo-chat-send', section);
     chatPlaceholder = $('.demo-chat-placeholder', section);
