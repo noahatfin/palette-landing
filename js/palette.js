@@ -979,12 +979,16 @@
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
     function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
 
-    var FINAL_W = 1200;
-    var FINAL_H = 600;
+    var FINAL_W = 918;
+    var FINAL_H = 459;
     var FINAL_R = 20;
-    var DEAD_ZONE = 0.18; // first 18% of scroll = fullscreen, no shrink
+    var DEAD_ZONE = 0.05;
+    var SHRINK_END = 0.25;  // shrink completes at 25%
+    var FADE_START = 0.55;  // crossfade starts at 55% — long pause after shrink
+    var FADE_END = 0.62;    // crossfade ends
     var waitingToFreeze = false;
     var frozen = false;
+    var demoSection = document.getElementById('demo');
 
     // Freeze when video finishes its current playthrough
     video.addEventListener('ended', function () {
@@ -1001,8 +1005,8 @@
 
         var progress = clamp(-rect.top / scrollDistance, 0, 1);
 
-        // Remap: 0–DEAD_ZONE = no shrink, DEAD_ZONE–1 = full shrink
-        var shrinkT = clamp((progress - DEAD_ZONE) / (1 - DEAD_ZONE), 0, 1);
+        // Remap: DEAD_ZONE–SHRINK_END = full shrink
+        var shrinkT = clamp((progress - DEAD_ZONE) / (SHRINK_END - DEAD_ZONE), 0, 1);
         var e = ease(shrinkT);
 
         // Interpolate frame dimensions
@@ -1014,10 +1018,20 @@
         frame.style.height       = h + 'px';
         frame.style.borderRadius = r + 'px';
 
-        // Title fade in during 40%–75% of scroll progress (earlier)
+        // Title fade in during shrink
         if (title) {
-          var titleProgress = clamp((progress - 0.4) / 0.35, 0, 1);
+          var titleProgress = clamp((progress - 0.15) / 0.2, 0, 1);
           title.style.opacity = titleProgress;
+        }
+
+        // Crossfade: cine-hero fades out, demo fades in
+        if (progress >= FADE_START) {
+          var fadeT = clamp((progress - FADE_START) / (FADE_END - FADE_START), 0, 1);
+          frame.style.opacity = 1 - fadeT;
+          if (demoSection) demoSection.classList.add('active');
+        } else {
+          frame.style.opacity = 1;
+          if (demoSection) demoSection.classList.remove('active');
         }
 
         // Freeze: wait for video to finish its current playthrough
