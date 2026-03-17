@@ -101,8 +101,14 @@ body {
   font-family: "Cinzel Decorative", serif;
   font-weight: 700;
   font-style: normal;
-  font-size: 22px;
+  font-size: 26px;
   letter-spacing: 0.02em;
+}
+.nav-links a {
+  font-size: 16px;
+}
+.nav .btn-outline {
+  font-size: 16px;
 }
 
 /* ── Buttons ──────────────────────────────────────────────── */
@@ -110,7 +116,7 @@ body {
   background: var(--cream);
   color: var(--bg-dark);
   font-family: var(--f-sans);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   padding: 13px 28px;
   border-radius: 100px;
@@ -209,7 +215,7 @@ body {
 }
 .hero-center-headline {
   font-family: var(--f-display);
-  font-size: clamp(30px, 3.5vw, 52px);
+  font-size: clamp(35px, 4vw, 60px);
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.12;
@@ -225,7 +231,7 @@ body {
 }
 .hero-center-mission {
   font-family: var(--f-sans);
-  font-size: clamp(22px, 2.8vw, 38px);
+  font-size: clamp(25px, 3.2vw, 44px);
   font-weight: 500;
   line-height: 1.45;
   letter-spacing: -0.02em;
@@ -287,7 +293,7 @@ body {
 
 .hero-eyebrow {
   font-family: var(--f-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: rgba(255,255,255,0.50);
@@ -296,7 +302,7 @@ body {
 
 .hero-headline {
   font-family: var(--f-display);
-  font-size: clamp(26px, 3vw, 44px);
+  font-size: clamp(30px, 3.5vw, 51px);
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.12;
@@ -312,7 +318,7 @@ body {
 
 .hero-sub {
   font-family: var(--f-sans);
-  font-size: 13px;
+  font-size: 20px;
   line-height: 1.6;
   color: rgba(255,255,255,0.55);
   max-width: 360px;
@@ -1258,7 +1264,7 @@ body {
   line-height: 1.2;
 }
 .product-desc {
-  font-size: 14px;
+  font-size: 18px;
   line-height: 1.7;
   color: var(--muted);
   max-width: 380px;
@@ -1381,7 +1387,7 @@ body {
 }
 .section-subtitle {
   font-family: var(--f-sans);
-  font-size: 16px;
+  font-size: 21px;
   line-height: 1.7;
   color: var(--muted);
   max-width: 640px;
@@ -1512,7 +1518,7 @@ body {
   line-height: 1.1;
 }
 .research-desc {
-  font-size: 15px;
+  font-size: 20px;
   line-height: 1.75;
   color: var(--muted);
   max-width: 420px;
@@ -2649,12 +2655,6 @@ body {
   .drag-title { text-shadow: 0 4px 30px rgba(0,0,0,0.7); }
   .drag-sub { text-shadow: 0 2px 12px rgba(0,0,0,0.6); }
 
-  .footer-grid {
-    grid-template-columns: 1fr;
-    padding: 60px 20px 40px;
-    gap: 32px;
-  }
-  .footer-wordmark { height: 10vw; padding-top: 2vw; }
 }
 
 @media (prefers-reduced-motion: reduce) {
