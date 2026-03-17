@@ -2,20 +2,13 @@
    DEMO SHOWCASE — 1:1 Port from palette-saas React/Tailwind
    ============================================================ */
 
-/* ── Section (overlay mode: lives inside cine-hero-sticky) ── */
+/* ── Section (normal flow section) ── */
 .demo-showcase {
-  position: absolute;
-  inset: 0;
+  position: relative;
   z-index: 2;
   background: #09090b;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.5s ease;
   overflow: hidden;
-}
-.demo-showcase.active {
-  opacity: 1;
-  pointer-events: auto;
+  padding: 0 24px 80px;
 }
 
 .demo-showcase-sticky {
@@ -27,11 +20,6 @@
 
 .demo-showcase-content {
   width: 100%;
-  transform: scale(0.95);
-  transition: transform 0.6s cubic-bezier(0.22,1,0.36,1);
-}
-.demo-showcase.active .demo-showcase-content {
-  transform: scale(1);
 }
 
 .demo-showcase-head {
@@ -168,7 +156,7 @@
   border: 1px solid;
 }
 .dn-step-icon svg { width: 16px; height: 16px; }
-.dn-step-label { font-size: 14px; font-weight: 500; color: #fafafa; }
+.dn-step-label { font-size: 16px; font-weight: 500; color: #fafafa; }
 .dn-step-subtitle { font-size: 10px; color: #a1a1aa; margin-top: 2px; }
 .dn-step-check {
   width: 20px; height: 20px;
@@ -347,7 +335,7 @@
 }
 .dn-entity-name svg { width: 12px; height: 12px; flex-shrink: 0; }
 .dn-entity-name-text {
-  font-size: 12px; font-weight: 600; color: #fafafa;
+  font-size: 14px; font-weight: 600; color: #fafafa;
   flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .dn-entity-name-type {
@@ -485,7 +473,7 @@
 }
 .demo-chat-text {
   flex: 1; min-width: 0;
-  font-size: 13px; color: #18181b; line-height: 1.5;
+  font-size: 15px; color: #18181b; line-height: 1.5;
   white-space: nowrap; overflow: hidden;
 }
 .demo-chat-placeholder { color: #a1a1aa; }
@@ -567,7 +555,7 @@
   padding: 12px 18px;
 }
 .demo-chat-input.focused .demo-chat-text {
-  font-size: 16px;
+  font-size: 18px;
 }
 @keyframes demo-shimmer-spin {
   from { transform: translate(-50%,-50%) rotate(0deg); }
@@ -829,12 +817,12 @@
   border: 1px solid rgba(63,63,70,0.3);
   border-radius: 12px;
   padding: 8px 12px; margin-left: 24px;
-  font-size: 12px; color: #d4d4d8; line-height: 1.5;
+  font-size: 14px; color: #d4d4d8; line-height: 1.5;
 }
 .dm-ai {
   border-left: 2px solid rgba(63,63,70,0.4);
   padding-left: 10px; margin-right: 12px;
-  font-size: 12px; color: #a1a1aa; line-height: 1.5;
+  font-size: 14px; color: #a1a1aa; line-height: 1.5;
 }
 
 /* ════════════════════════════════════════════════

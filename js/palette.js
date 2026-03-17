@@ -208,430 +208,137 @@
     updateIndicator(currentIdx, { silent: true });
   }
 
-  /* ── Hero Scroll Shrink ───────────────────────────────────── */
+  /* ── Hero Scroll Shrink ─────────────────────────────────────
+     Hero zone = 160vh (60vh scroll runway).
+     Video shrinks non-linearly (t³), keeping its cinema aspect ratio.
+     Near the bottom it's a small rounded rectangle. Then it quickly
+     cross-fades into the Demo's centered shimmer input box — feels
+     like the video "lands" into the input.
+
+     Scroll map (60vh runway):
+       0–8%    text + overlay fade out, 80px bottom gap closes
+       0–100%  non-linear shrink (t³): full-screen → ~550×140 rounded card
+       88–100% video opacity → 0, demo input shimmer visible beneath
+  ──────────────────────────────────────────────────────────── */
   function setupHeroShrink() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.innerWidth < 810) return;
 
-    var isMobile = window.innerWidth < 810;
-
-    var vid      = document.querySelector('.hero-vid');
-    var content  = document.querySelector('.hero-content');
-    var target   = document.querySelector('.mockup-video');
-    var heroWrap = document.querySelector('.hero-sticky-wrap');
-    if (!vid || !target || !heroWrap) return;
-
-    var headline = content ? content.querySelector('.hero-headline') : null;
-    var eyebrow  = content ? content.querySelector('.hero-eyebrow') : null;
-    var heroSub  = content ? content.querySelector('.hero-sub') : null;
-    var heroCTA  = content ? content.querySelector('.btn') : null;
-
+    var vid = document.querySelector('.hero-vid');
+    var heroSection = document.querySelector('.hero.hero-zone');
+    var content = document.querySelector('.hero-content');
+    var overlay = document.querySelector('.hero-overlay');
     var centerText = document.querySelector('.hero-center-text');
-    var centerHL   = (!isMobile && centerText) ? centerText.querySelector('.hero-center-headline') : null;
-    var centerMis  = (!isMobile && centerText) ? centerText.querySelector('.hero-center-mission') : null;
-    var missionSection = document.querySelector('.mission');
-    var hasMerged = false;
+    var demoApp = document.querySelector('.demo-app');
+    var demoChatInput = document.querySelector('.demo-chat-input');
+    if (!vid || !heroSection || !demoApp || !demoChatInput) return;
 
     function lerp(a, b, t) { return a + (b - a) * t; }
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-    function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
 
-    var BOTTOM_GAP = isMobile ? 0 : 80;
-    var FLY_ENTER = 0.65;   // fly to phone when iphone-screen top < 65% viewport
-    var FLY_EXIT  = 0.75;   // restore from phone when iphone-screen top > 75% viewport
-    var isDocked = false;
-    var isUndocking = false;
-    var undockTimeout = 0;
+    var TEXT_FADE = 0.08;
+    var XFADE_START = 0.88;
+    var XFADE_END = 1.0;
 
-    var params = {};
-    function calcParams() {
-      var r = target.getBoundingClientRect();
-      var docTop  = r.top  + window.scrollY;
-      var docLeft = r.left + window.scrollX;
-      var mW = r.width, mH = r.height;
-      var vidH = window.innerHeight - BOTTOM_GAP;
+    // Get initial dimensions of the video (full screen)
+    var initialVidWidth = window.innerWidth;
+    var initialVidHeight = window.innerHeight;
 
-      var scrollEnd = docTop + mH / 2 - window.innerHeight / 2;
-      var s  = Math.min(mW / window.innerWidth, mH / vidH);
-      var tx = (docLeft + mW / 2) - window.innerWidth / 2;
-      var ty = BOTTOM_GAP / 2;
+    // Get target dimensions and position of demoChatInput (relative to viewport)
+    // This needs to be done once, but after demo.js has potentially set up demo-intro
+    // To get the correct target position, we need to ensure demoApp is in its 'demo-intro' state
+    // temporarily to measure.
+    demoApp.classList.add('demo-intro'); // Apply demo-intro to get correct target rect
+    var targetRect = demoChatInput.getBoundingClientRect();
+    demoApp.classList.remove('demo-intro'); // Remove it immediately after measurement
 
-      params = { scrollEnd: scrollEnd, scale: s, tx: tx, ty: ty, targetW: mW, targetH: mH, targetDocTop: docTop, targetDocLeft: docLeft };
-    }
-    calcParams();
+    var LAND_W = targetRect.width;
+    var LAND_H = targetRect.height;
+    var LAND_R = 16; // From .demo-chat-bar border-radius
 
-    window.addEventListener('resize', calcParams);
+    var targetLeft = targetRect.left;
+    var targetTop = targetRect.top;
 
-    // Dock: reparent into .mockup-video, keep shrunk size (centered in panel)
-    function dock() {
-      if (isDocked) return;
-      isDocked = true;
+    // Store initial video styles to restore later
+    var originalVidStyles = {
+      position: vid.style.position,
+      top: vid.style.top,
+      left: vid.style.left,
+      width: vid.style.width,
+      height: vid.style.height,
+      transform: vid.style.transform,
+      borderRadius: vid.style.borderRadius,
+      opacity: vid.style.opacity,
+      pointerEvents: vid.style.pointerEvents
+    };
 
-      clearTimeout(undockTimeout);
-      isUndocking = false;
-      vid.style.transition = '';
+    // Initial setup for demoChatInput
+    demoChatInput.style.opacity = 0;
+    demoChatInput.style.transition = 'opacity 0.2s ease-out'; // Add transition for smooth fade-in
 
-      // FLIP: capture current visual position before reparent
-      var firstRect = vid.getBoundingClientRect();
-
-      var panelW  = target.offsetWidth;
-      var panelH  = target.offsetHeight;
-
-      if (isMobile) {
-        // On mobile, fill the mockup panel completely
-        vid.style.transform    = '';
-        vid.style.borderRadius = '12px';
-        target.appendChild(vid);
-        vid.style.position      = 'absolute';
-        vid.style.inset         = '0';
-        vid.style.width         = '100%';
-        vid.style.height        = '100%';
-        vid.style.left          = '';
-        vid.style.top           = '';
-        vid.style.objectFit     = 'cover';
-        vid.style.zIndex        = '2';
+    addScrollHandler(function () {
+      var rect = heroSection.getBoundingClientRect();
+      var scrollDist = rect.height - window.innerHeight;
+      if (scrollDist <= 0) { // After the animation zone
+        // Ensure final states are correct and restore video styles
+        vid.style.opacity = 0;
         vid.style.pointerEvents = 'none';
-      } else {
-        var s    = params.scale;
-        var dockedW = window.innerWidth  * s;
-        var dockedH = (window.innerHeight - BOTTOM_GAP) * s;
-        vid.style.transform    = '';
-        vid.style.borderRadius = '12px';
-        target.appendChild(vid);
-        vid.style.position      = 'absolute';
-        vid.style.inset         = '';
-        vid.style.width         = dockedW + 'px';
-        vid.style.height        = dockedH + 'px';
-        vid.style.left          = ((panelW - dockedW) / 2) + 'px';
-        vid.style.top           = ((panelH - dockedH) / 2) + 'px';
-        vid.style.objectFit     = 'cover';
-        vid.style.zIndex        = '1';
-        vid.style.pointerEvents = 'none';
+        vid.style.position = originalVidStyles.position;
+        vid.style.top = originalVidStyles.top;
+        vid.style.left = originalVidStyles.left;
+        vid.style.width = originalVidStyles.width;
+        vid.style.height = originalVidStyles.height;
+        vid.style.transform = originalVidStyles.transform;
+        vid.style.borderRadius = originalVidStyles.borderRadius;
+
+        demoChatInput.style.opacity = 1;
+        demoApp.classList.remove('demo-intro'); // Let demo.js take over
+        return;
       }
-      if (centerHL) centerHL.style.opacity = '0';
 
-      // FLIP: animate from old position to docked position
-      var lastRect = vid.getBoundingClientRect();
-      var dx = firstRect.left - lastRect.left;
-      var dy = firstRect.top  - lastRect.top;
-      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-        vid.style.transformOrigin = '0 0';
-        vid.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
-        vid.style.transition = 'none';
-        void vid.offsetWidth;
-        vid.style.transition = 'transform 0.3s cubic-bezier(0.2,0.8,0.2,1)';
-        vid.style.transform = 'translate(0,0)';
-        setTimeout(function () {
-          vid.style.transition = '';
-          vid.style.transform = '';
-          vid.style.transformOrigin = '';
-        }, 300);
+      var progress = clamp(-rect.top / scrollDist, 0, 1);
+
+      /* ── Text fade-out ── */
+      var textAlpha = 1 - clamp(progress / TEXT_FADE, 0, 1);
+      if (content) {
+        content.style.opacity = textAlpha;
+        content.style.pointerEvents = textAlpha < 0.1 ? 'none' : '';
       }
-    }
+      if (centerText) centerText.style.opacity = textAlpha;
+      if (overlay)    overlay.style.opacity = textAlpha;
 
-    function undock() {
-      if (!isDocked) return;
-      isDocked = false;
+      /* ── Video positioning and scaling ── */
+      // Temporarily make video fixed to control its position relative to viewport
+      vid.style.position = 'fixed';
+      vid.style.top = '0';
+      vid.style.left = '0';
+      vid.style.width = '100%';
+      vid.style.height = '100%';
 
-      var firstRect = vid.getBoundingClientRect();
+      // Calculate current scale and position
+      var currentScaleX = lerp(1, LAND_W / initialVidWidth, progress);
+      var currentScaleY = lerp(1, LAND_H / initialVidHeight, progress);
+      var currentRadius = lerp(0, LAND_R, progress);
 
-      vid.style.position      = '';
-      vid.style.inset         = '';
-      vid.style.width         = '';
-      vid.style.height        = '';
-      vid.style.left          = '';
-      vid.style.top           = '';
-      vid.style.objectFit     = '';
-      vid.style.zIndex        = '';
+      var currentLeft = lerp(0, targetLeft, progress);
+      var currentTop = lerp(0, targetTop, progress);
+
+      vid.style.transformOrigin = 'top left'; // Change origin for easier positioning
+      vid.style.transform = 'translate(' + currentLeft + 'px, ' + currentTop + 'px) scale(' + currentScaleX + ', ' + currentScaleY + ')';
+      vid.style.borderRadius = currentRadius + 'px';
       vid.style.pointerEvents = '';
-      heroWrap.appendChild(vid);
 
-      if (isMobile) {
-        // On mobile: snap back to scroll-driven state, no transform animation
-        vid.style.transform = '';
-        vid.style.borderRadius = '';
-        vid.style.transformOrigin = '';
-        isUndocking = false;
-      } else {
-        vid.style.transform = 'none';
-        var rawRect = vid.getBoundingClientRect();
+      /* ── Crossfade & land: video → demo chat input ── */
+      var fadeProgress = clamp((progress - XFADE_START) / (XFADE_END - XFADE_START), 0, 1);
+      
+      vid.style.opacity = 1 - fadeProgress;
+      demoChatInput.style.opacity = fadeProgress;
 
-        var firstCenterX = firstRect.left + firstRect.width / 2;
-        var firstCenterY = firstRect.top + firstRect.height / 2;
-        var rawCenterX = rawRect.left + rawRect.width / 2;
-        var rawCenterY = rawRect.top + rawRect.height / 2;
-
-        var dx = firstCenterX - rawCenterX;
-        var dy = firstCenterY - rawCenterY;
-
-        vid.style.transformOrigin = '50% 50%';
-        vid.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + params.scale + ')';
-        vid.style.borderRadius = '12px';
-        vid.style.transition = 'none';
-
-        void vid.offsetWidth;
-
-        isUndocking = true;
-        vid.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
-
-        clearTimeout(undockTimeout);
-        undockTimeout = setTimeout(function() {
-          isUndocking = false;
-          vid.style.transition = '';
-          vid.style.transformOrigin = '';
-        }, 400);
-      }
-    }
-
-    var phoneScreen = document.querySelector('.products-phone .iphone-screen');
-    var phoneBorderRadius = isMobile ? '28px' : '50px';
-    var hasFlewToPhone = false;
-    var isFlying = false;
-
-    function flyToPhone() {
-      if (hasFlewToPhone || isFlying || !phoneScreen) return;
-      hasFlewToPhone = true;
-      isFlying = true;
-
-      var firstRect = vid.getBoundingClientRect();
-      var device = document.querySelector('.iphone-device');
-      var productsPhone = document.querySelector('.products-phone');
-
-      if (device) device.style.overflow = 'visible';
-      if (phoneScreen) phoneScreen.style.overflow = 'visible';
-      if (productsPhone) productsPhone.style.zIndex = '100';
-
-      phoneScreen.insertBefore(vid, phoneScreen.firstChild);
-      vid.style.transform    = '';
-      vid.style.position     = 'absolute';
-      vid.style.inset        = '0';
-      vid.style.width        = '100%';
-      vid.style.height       = '100%';
-      vid.style.zIndex       = '100';
-      vid.style.borderRadius = phoneBorderRadius;
-      isDocked = false;
-
-      var lastRect = vid.getBoundingClientRect();
-
-      var dx = firstRect.left - lastRect.left;
-      var dy = firstRect.top - lastRect.top;
-      var sw = firstRect.width / lastRect.width;
-      var sh = firstRect.height / lastRect.height;
-
-      vid.style.transformOrigin = '0 0';
-      vid.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + sw + ', ' + sh + ')';
-      vid.style.borderRadius = '12px';
-      vid.style.transition = 'none';
-
-      void vid.offsetWidth;
-
-      vid.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
-      vid.style.transform = 'translate(0px, 0px) scale(1, 1)';
-      vid.style.borderRadius = phoneBorderRadius;
-
-      setTimeout(function() {
-        if (!isFlying) return;
-        vid.style.transition = '';
-        vid.style.transform = '';
-        vid.style.transformOrigin = '';
-        vid.style.borderRadius = '';
-        vid.style.zIndex = '1';
-
-        if (device) device.style.overflow = '';
-        if (phoneScreen) phoneScreen.style.overflow = '';
-        if (productsPhone) productsPhone.style.zIndex = '';
-        isFlying = false;
-      }, 500);
-    }
-
-    function flyFromPhone() {
-      if (!hasFlewToPhone || isFlying) return;
-      hasFlewToPhone = false;
-      isFlying = true;
-
-      var firstRect = vid.getBoundingClientRect();
-      var device = document.querySelector('.iphone-device');
-      var productsPhone = document.querySelector('.products-phone');
-
-      if (device) device.style.overflow = 'visible';
-      if (phoneScreen) phoneScreen.style.overflow = 'visible';
-      if (productsPhone) productsPhone.style.zIndex = '100';
-      if (target) {
-        target.style.overflow = 'visible';
-        target.style.zIndex = '100';
-      }
-
-      dock(); // Sets isDocked = true and puts vid into target
-
-      var lastRect = vid.getBoundingClientRect();
-
-      var dx = firstRect.left - lastRect.left;
-      var dy = firstRect.top - lastRect.top;
-      var sw = firstRect.width / lastRect.width;
-      var sh = firstRect.height / lastRect.height;
-
-      vid.style.transformOrigin = '0 0';
-      vid.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + sw + ', ' + sh + ')';
-      vid.style.borderRadius = phoneBorderRadius;
-      vid.style.transition = 'none';
-
-      void vid.offsetWidth;
-
-      vid.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
-      vid.style.transform = 'translate(0px, 0px) scale(1, 1)';
-      vid.style.borderRadius = '12px';
-
-      setTimeout(function() {
-        if (!isFlying) return;
-        vid.style.transition = '';
-        vid.style.transform = '';
-        vid.style.transformOrigin = '';
-        vid.style.borderRadius = '12px';
-        
-        if (device) device.style.overflow = '';
-        if (phoneScreen) phoneScreen.style.overflow = '';
-        if (productsPhone) productsPhone.style.zIndex = '';
-        if (target) {
-          target.style.overflow = '';
-          target.style.zIndex = '';
-        }
-        isFlying = false;
-      }, 500);
-    }
-
-    addScrollHandler(function () {
-        if (isFlying) return;
-
-        var scrollY = window.scrollY;
-
-        // ── IN_PHONE: restore when phone exits viewport below ────
-        if (hasFlewToPhone) {
-          var r = phoneScreen.getBoundingClientRect();
-          if (r.top > window.innerHeight * FLY_EXIT) {
-            flyFromPhone();   // → DOCKED or HERO
-          }
-          return;
-        }
-
-        // ── Ensure docked if past scrollEnd (handles fast-scroll) ─
-        var p = clamp(scrollY / params.scrollEnd, 0, 1);
-        if (p >= 1 && !isDocked) { dock(); }
-
-        // ── DOCKED ───────────────────────────────────────────────
-        if (isDocked) {
-          if (phoneScreen) {
-            var r = phoneScreen.getBoundingClientRect();
-            if (r.top < window.innerHeight * FLY_ENTER) {
-              flyToPhone(); return;
-            }
-          }
-          if (scrollY < params.scrollEnd - window.innerHeight * 0.25) {
-            undock(); // fall through to HERO
-          } else {
-            return;   // snap: stay docked
-          }
-        }
-
-        // ── HERO (scroll-driven) ─────────────────────────────────
-        p = clamp(scrollY / params.scrollEnd, 0, 1);
-        var e  = ease(p);
-
-        if (isMobile) {
-          // Mobile: animate width/height from fullscreen portrait to landscape mockup
-          var vw = window.innerWidth;
-          var vh = window.innerHeight;
-          var tw = params.targetW;
-          var th = params.targetH;
-          // Target center (viewport-relative at scrollEnd)
-          var tCX = params.targetDocLeft + tw / 2;
-          var tCY = params.targetDocTop + th / 2 - params.scrollEnd;
-
-          var curW = lerp(vw, tw, e);
-          var curH = lerp(vh, th, e);
-          var curCX = lerp(vw / 2, tCX, e);
-          var curCY = lerp(vh / 2, tCY, e);
-
-          vid.style.inset = 'auto';
-          vid.style.width  = curW + 'px';
-          vid.style.height = curH + 'px';
-          vid.style.left   = (curCX - curW / 2) + 'px';
-          vid.style.top    = (curCY - curH / 2) + 'px';
-          vid.style.objectFit = 'cover';
-          vid.style.borderRadius = lerp(0, 12, e) + 'px';
-        } else {
-          vid.style.transform    = 'translate(' + lerp(0, params.tx, e) + 'px,' +
-                                    lerp(0, params.ty, e) + 'px) scale(' + lerp(1, params.scale, e) + ')';
-          vid.style.borderRadius = lerp(0, 12, e) + 'px';
-        }
-        if (content) {
-          // Fade out ALL bottom-left content over p 0.00–0.10
-          var contentFade = clamp(p / 0.10, 0, 1);
-          content.style.opacity       = 1 - contentFade;
-          content.style.pointerEvents = p > 0.05 ? 'none' : '';
-        }
-        // Centered text overlay
-        // Headline: entrance at p 0.18–0.32, holds until p 0.58, crossfades out at p 0.58–0.72
-        if (centerHL) {
-          var hlIn  = ease(clamp((p - 0.18) / 0.14, 0, 1));
-          var hlOut = ease(clamp((p - 0.58) / 0.14, 0, 1));
-          centerHL.style.opacity   = hlIn * (1 - hlOut);
-          var scaleIn = lerp(0.92, 1, hlIn);
-          var yIn     = lerp(40, 0, hlIn);
-          var yOut    = lerp(0, -30, hlOut);
-          centerHL.style.transform = 'translateY(' + (yIn + yOut) + 'px) scale(' + scaleIn * (1 - hlOut * 0.08) + ')';
-          if (hlIn > 0.01) centerHL.classList.add('is-visible');
-          else centerHL.classList.remove('is-visible');
-        }
-        // Mission fades in at p 0.58–0.72, stays visible (merge handled separately)
-        if (centerMis && !hasMerged) {
-          var misIn = ease(clamp((p - 0.58) / 0.14, 0, 1));
-          centerMis.style.opacity = misIn;
-          centerMis.style.transform = 'translateY(' + lerp(30, 0, misIn) + 'px)';
-        }
-      });
-
-    // Mission text merge: overlay → real text seamless handoff
-    var missionText = document.querySelector('.mission-text');
-
-    if (isMobile && missionText) {
-      // Mobile: no center overlay, just show mission text directly
-      missionText.style.opacity = '1';
-      missionText.style.color = '';
-      missionText.style.textShadow = '';
-      missionText.classList.add('is-revealed');
-    }
-
-    addScrollHandler(function () {
-      if (!centerMis || !missionText) return;
-      var mtRect = missionText.getBoundingClientRect();
-      var mtCenter = mtRect.top + mtRect.height / 2;
-      var vpCenter = window.innerHeight / 2;
-
-      if (mtCenter <= vpCenter && !hasMerged) {
-        hasMerged = true;
-        // 1. Instantly show real text as white (same as overlay)
-        missionText.style.transition = 'none';
-        missionText.style.opacity = '1';
-        missionText.style.color = 'var(--cream)';
-        missionText.style.transform = 'translateY(0)';
-        missionText.style.textShadow = '0 2px 32px rgba(0,0,0,0.5)';
-        // 2. Hide overlay (same frame — visually seamless)
-        centerMis.style.opacity = '0';
-        // 3. Force reflow, then transition color to black
-        void missionText.offsetWidth;
-        missionText.style.transition = 'color 1.0s ease, text-shadow 0.8s ease';
-        missionText.style.color = '';
-        missionText.style.textShadow = '';
-        missionText.classList.add('is-revealed');
-      } else if (mtCenter > vpCenter && hasMerged) {
-        // Reverse: restore overlay, hide real text
-        hasMerged = false;
-        missionText.classList.remove('is-revealed');
-        missionText.style.transition = 'none';
-        missionText.style.opacity = '0';
-        missionText.style.color = '';
-        missionText.style.transform = '';
-        missionText.style.textShadow = '';
-        centerMis.style.opacity = '1';
+      // Ensure demoApp has demo-intro class during the transition
+      if (progress > XFADE_START && progress < XFADE_END) {
+        demoApp.classList.add('demo-intro');
+      } else if (progress >= XFADE_END) {
+        demoApp.classList.remove('demo-intro');
       }
     });
   }
@@ -738,8 +445,7 @@
       setTimeout(function() { c.remove(); }, 4000);
     }
 
-    // Hero video is the first "feed" — it's already in the phone via flyToPhone.
-    // feedItems (from .phone-feed) are only the 2nd and 3rd videos.
+    // Hero video reference for step 0 in the phone feed.
     var heroVid = document.querySelector('.hero-vid');
 
     function setStep(newIdx) {
@@ -988,7 +694,6 @@
     var FADE_END = 0.62;    // crossfade ends
     var waitingToFreeze = false;
     var frozen = false;
-    var demoSection = document.getElementById('demo');
 
     // Freeze when video finishes its current playthrough
     video.addEventListener('ended', function () {
@@ -1028,10 +733,8 @@
         if (progress >= FADE_START) {
           var fadeT = clamp((progress - FADE_START) / (FADE_END - FADE_START), 0, 1);
           frame.style.opacity = 1 - fadeT;
-          if (demoSection) demoSection.classList.add('active');
         } else {
           frame.style.opacity = 1;
-          if (demoSection) demoSection.classList.remove('active');
         }
 
         // Freeze: wait for video to finish its current playthrough
