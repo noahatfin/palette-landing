@@ -477,19 +477,58 @@
       wf.appendChild(b);
     }
 
-    // Activate demo when section scrolls into view
+    // Start collapsed (only chat-input visible at bottom)
+    if (appEl) appEl.classList.add('collapsed');
+
+    // Expose resetAll globally for palette.js morph reverse
+    window._demoReset = resetAll;
+
+    // Track whether the morph explosion has happened
+    var hasExploded = false;
+
+    // Activate demo when section scrolls into view (visibility only, not initial activation)
     var demoIO = new IntersectionObserver(function(entries) {
       entries.forEach(function(entry) {
         if (entry.isIntersecting) {
-          section.classList.add('active');
-          if (!isVisible) { isVisible = true; runSequence(); }
+          // Only resume if already exploded (don't auto-start)
+          if (hasExploded) {
+            section.classList.add('active');
+            if (!isVisible) { isVisible = true; runSequence(); }
+          }
         } else {
-          section.classList.remove('active');
-          if (isVisible) { isVisible = false; resetAll(); }
+          if (hasExploded) {
+            section.classList.remove('active');
+            if (isVisible) { isVisible = false; resetAll(); }
+          }
         }
       });
     }, { threshold: 0.3 });
     demoIO.observe(section);
+
+    // Morph complete: initial explosion
+    window.addEventListener('hero-morph-complete', function() {
+      if (!appEl) return;
+      hasExploded = true;
+      appEl.classList.remove('collapsed');
+      appEl.classList.add('expanded');
+
+      // After explosion animation completes, start the demo sequence
+      setTimeout(function() {
+        section.classList.add('active');
+        isVisible = true;
+        runSequence();
+      }, 800);
+    });
+
+    // Morph reverse: collapse back
+    window.addEventListener('hero-morph-reverse', function() {
+      if (!appEl) return;
+      hasExploded = false;
+      appEl.classList.remove('expanded');
+      appEl.classList.add('collapsed');
+      section.classList.remove('active');
+      if (isVisible) { isVisible = false; resetAll(); }
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
