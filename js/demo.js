@@ -477,25 +477,19 @@
       wf.appendChild(b);
     }
 
-    // Move demo into cine-hero-sticky as overlay
-    var cineSticky = document.querySelector('.cine-hero-sticky');
-    if (cineSticky) {
-      cineSticky.appendChild(section);
-    }
-
-    // Play/pause based on .active class (set by palette.js crossfade)
-    var demoActive = false;
-    var observer = new MutationObserver(function() {
-      var nowActive = section.classList.contains('active');
-      if (nowActive && !demoActive) {
-        demoActive = true;
-        if (!isVisible) { isVisible = true; runSequence(); }
-      } else if (!nowActive && demoActive) {
-        demoActive = false;
-        if (isVisible) { isVisible = false; resetAll(); }
-      }
-    });
-    observer.observe(section, { attributes: true, attributeFilter: ['class'] });
+    // Activate demo when section scrolls into view
+    var demoIO = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          section.classList.add('active');
+          if (!isVisible) { isVisible = true; runSequence(); }
+        } else {
+          section.classList.remove('active');
+          if (isVisible) { isVisible = false; resetAll(); }
+        }
+      });
+    }, { threshold: 0.3 });
+    demoIO.observe(section);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

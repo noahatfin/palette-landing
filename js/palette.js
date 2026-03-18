@@ -621,11 +621,10 @@
     var FINAL_R = 20;
     var DEAD_ZONE = 0.05;
     var SHRINK_END = 0.25;  // shrink completes at 25%
-    var FADE_START = 0.55;  // crossfade starts at 55% — long pause after shrink
-    var FADE_END = 0.62;    // crossfade ends
+    var FADE_START = 0.55;  // fade starts at 55% — long pause after shrink
+    var FADE_END = 0.62;    // fade ends
     var waitingToFreeze = false;
     var frozen = false;
-    var demoSection = document.getElementById('demo');
 
     // Freeze when video finishes its current playthrough
     video.addEventListener('ended', function () {
@@ -661,14 +660,12 @@
           title.style.opacity = titleProgress;
         }
 
-        // Crossfade: cine-hero fades out, demo fades in
+        // Fade out cine-hero frame
         if (progress >= FADE_START) {
           var fadeT = clamp((progress - FADE_START) / (FADE_END - FADE_START), 0, 1);
           frame.style.opacity = 1 - fadeT;
-          if (demoSection) demoSection.classList.add('active');
         } else {
           frame.style.opacity = 1;
-          if (demoSection) demoSection.classList.remove('active');
         }
 
         // Freeze: wait for video to finish its current playthrough

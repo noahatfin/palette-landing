@@ -2,20 +2,13 @@
    DEMO SHOWCASE — 1:1 Port from palette-saas React/Tailwind
    ============================================================ */
 
-/* ── Section (overlay mode: lives inside cine-hero-sticky) ── */
+/* ── Section (self-contained, lives between Mission and Products) ── */
 .demo-showcase {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
+  position: relative;
+  width: 100%;
+  height: 100vh;
   background: #09090b;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.5s ease;
   overflow: hidden;
-}
-.demo-showcase.active {
-  opacity: 1;
-  pointer-events: auto;
 }
 
 .demo-showcase-sticky {
