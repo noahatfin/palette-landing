@@ -1005,6 +1005,16 @@
 /* ════════════════════════════════════════════════
    MOBILE
    ════════════════════════════════════════════════ */
+.demo-chat-input.morph-landed .demo-chat-bar {
+  box-shadow: 0 0 60px rgba(255,255,255,0.1), 0 4px 20px rgba(0,0,0,0.3);
+  animation: morph-land-pulse 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes morph-land-pulse {
+  0% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
 @media (max-width: 810px) {
   .demo-showcase { display: none; }
 }

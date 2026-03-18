@@ -228,6 +228,17 @@
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
     function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
 
+    var MORPH_START = 0.85;
+    var MORPH_END = 1.0;
+    var morphComplete = false;
+    var chatInput = document.querySelector('.demo-chat-input');
+    var demoApp = document.querySelector('.demo-app');
+
+    // Exponential easing: almost nothing until 0.7, then rockets to 1
+    function morphEase(t) {
+      return Math.pow(t, 4); // t^4 gives dramatic non-linear curve
+    }
+
     // scrollEnd: the hero zone is 300vh, so the scroll distance for the hero animation
     // is 2 viewports (300vh - 100vh sticky = 200vh of scroll)
     var scrollEnd = window.innerHeight * 2;
@@ -241,9 +252,76 @@
 
         // Scale down the video as user scrolls
         if (!isMobile) {
-          var scale = lerp(1, 0.6, e);
-          vid.style.transform    = 'scale(' + scale + ')';
-          vid.style.borderRadius = lerp(0, 12, e) + 'px';
+          if (p >= MORPH_START && chatInput) {
+            // ── MORPH PHASE: non-linear snap into chat input ──
+            var mp = clamp((p - MORPH_START) / (MORPH_END - MORPH_START), 0, 1);
+            var me = morphEase(mp);
+
+            // Get chat input position (relative to viewport since vid is fixed)
+            var targetRect = chatInput.getBoundingClientRect();
+            var vw = window.innerWidth;
+            var vh = window.innerHeight;
+
+            // Start state: current scaled video (scale 0.6 from normal easing at p=0.85)
+            // End state: chat input bar dimensions and position
+            var startScale = lerp(1, 0.6, ease(MORPH_START));
+            var startRadius = lerp(0, 12, ease(MORPH_START));
+
+            // Target dimensions relative to viewport
+            var endW = targetRect.width;
+            var endH = targetRect.height;
+            var endCX = targetRect.left + endW / 2;
+            var endCY = targetRect.top + endH / 2;
+
+            // Video starts at center of viewport (minus bottom gap)
+            var startCX = vw / 2;
+            var startCY = vh / 2;
+
+            // Interpolate scale (from startScale to tiny)
+            var endScaleX = endW / vw;
+            var endScaleY = endH / vh;
+            var scaleX = lerp(startScale, endScaleX, me);
+            var scaleY = lerp(startScale, endScaleY, me);
+
+            // Interpolate position
+            var tx = lerp(0, endCX - startCX, me);
+            var ty = lerp(0, endCY - startCY, me);
+
+            // Interpolate border-radius (scale-compensated)
+            var endRadius = 12; // chat input border-radius
+            var radius = lerp(startRadius, endRadius / Math.min(scaleX, scaleY), me);
+
+            vid.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scaleX + ',' + scaleY + ')';
+            vid.style.borderRadius = radius + 'px';
+            vid.style.opacity = lerp(1, 0.7, me);
+
+            // At completion: hide video, mark chat input
+            if (mp >= 0.97 && !morphComplete) {
+              morphComplete = true;
+              vid.style.visibility = 'hidden';
+              chatInput.classList.add('morph-landed');
+              // Dispatch custom event for demo.js to pick up
+              window.dispatchEvent(new CustomEvent('hero-morph-complete'));
+            }
+          } else {
+            // ── NORMAL PHASE: gentle scale down ──
+            var scale = lerp(1, 0.6, e);
+            vid.style.transform = 'scale(' + scale + ')';
+            vid.style.borderRadius = lerp(0, 12, e) + 'px';
+            vid.style.opacity = '';
+
+            // Reverse morph if scrolled back
+            if (morphComplete) {
+              morphComplete = false;
+              vid.style.visibility = '';
+              if (chatInput) chatInput.classList.remove('morph-landed');
+              if (demoApp) {
+                demoApp.classList.remove('expanded');
+                demoApp.classList.add('collapsed');
+              }
+              window.dispatchEvent(new CustomEvent('hero-morph-reverse'));
+            }
+          }
         }
 
         if (content) {
