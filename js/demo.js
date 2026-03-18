@@ -478,13 +478,18 @@
     }
 
     // Start collapsed (only chat-input visible at bottom)
-    if (appEl) appEl.classList.add('collapsed');
+    // On mobile, skip collapse since there's no morph to trigger the explosion
+    var isMobile = window.innerWidth < 810;
+    if (!isMobile && appEl) {
+      appEl.classList.add('collapsed');
+    }
 
     // Expose resetAll globally for palette.js morph reverse
     window._demoReset = resetAll;
 
     // Track whether the morph explosion has happened
-    var hasExploded = false;
+    // Mobile: always active (no morph), Desktop: wait for morph
+    var hasExploded = isMobile;
 
     // Activate demo when section scrolls into view (visibility only, not initial activation)
     var demoIO = new IntersectionObserver(function(entries) {

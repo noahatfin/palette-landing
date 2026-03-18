@@ -1054,6 +1054,16 @@
   }
 }
 
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .demo-app.collapsed { clip-path: none !important; transition: none !important; }
+  .demo-app.expanded { transition: none !important; }
+  .demo-app.expanded .demo-header,
+  .demo-app.expanded .demo-canvas,
+  .demo-app.expanded .demo-panel { animation: none !important; }
+  .demo-chat-input.morph-landed .demo-chat-bar { animation: none !important; }
+}
+
 @media (max-width: 810px) {
   .demo-showcase { display: none; }
 }
