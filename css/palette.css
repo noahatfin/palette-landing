@@ -152,9 +152,9 @@ body {
   min-height: 560px;
 }
 
-/* Scroll-shrink zone: 3 screens of scroll space for the shrink animation */
+/* Scroll-shrink zone: enough scroll distance for video shrink + text hold + morph */
 .hero.hero-zone {
-  height: 300vh;
+  height: 260vh;
   min-height: auto;
 }
 
@@ -251,7 +251,29 @@ body {
   object-fit: cover;
   opacity: 1;
   transform-origin: center center;
-  will-change: transform, border-radius, opacity;
+  will-change: transform, border-radius, opacity, filter;
+}
+
+/* Glow orb — appears at video collapse point, radiates outward */
+.morph-glow-orb {
+  position: fixed;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255,255,255,1) 0%,
+    rgba(255,255,255,0.8) 15%,
+    rgba(220,232,255,0.35) 35%,
+    rgba(200,215,255,0.08) 55%,
+    transparent 70%
+  );
+  box-shadow:
+    0 0 40px 20px rgba(255,255,255,0.3),
+    0 0 80px 40px rgba(210,225,255,0.1);
+  pointer-events: none;
+  z-index: 55;
+  opacity: 0;
 }
 
 .hero-overlay {
@@ -324,33 +346,6 @@ body {
 /* ============================================================
    MISSION STATEMENT — light section
    ============================================================ */
-.mission {
-  padding: 120px 40px;
-  display: flex;
-  justify-content: center;
-  border-top: 1px solid var(--border);
-  position: relative;
-  z-index: 3;
-}
-.mission-text {
-  font-family: var(--f-sans);
-  font-size: clamp(22px, 2.8vw, 38px);
-  font-weight: 500;
-  line-height: 1.45;
-  letter-spacing: -0.02em;
-  color: var(--cream);
-  text-shadow: 0 2px 32px rgba(0,0,0,0.5);
-  max-width: 780px;
-  text-align: center;
-  opacity: 0;
-  transition: color 1.0s ease, text-shadow 0.8s ease;
-}
-.mission-text.is-revealed {
-  opacity: 1;
-  color: var(--fg);
-  text-shadow: none;
-}
-
 /* ============================================================
    IPHONE DEVICE SHELL
    ============================================================ */
@@ -2052,8 +2047,6 @@ body {
   }
   .hero-sub { max-width: none; }
 
-  .mission { padding: 72px 24px; }
-  .mission-text { font-size: clamp(20px, 5vw, 26px); }
 
   .creator-strip { padding: 36px 0; }
   .creator-name { font-size: 17px; }

@@ -222,26 +222,13 @@
     var centerText = document.querySelector('.hero-center-text');
     var centerHL   = (!isMobile && centerText) ? centerText.querySelector('.hero-center-headline') : null;
     var centerMis  = (!isMobile && centerText) ? centerText.querySelector('.hero-center-mission') : null;
-    var hasMerged = false;
-
     function lerp(a, b, t) { return a + (b - a) * t; }
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
     function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
 
-    var MORPH_START = 0.85;
-    var MORPH_END = 1.0;
-    var morphComplete = false;
-    var chatInput = document.querySelector('.demo-chat-input');
-    var demoApp = document.querySelector('.demo-app');
-
-    // Exponential easing: almost nothing until 0.7, then rockets to 1
-    function morphEase(t) {
-      return Math.pow(t, 4); // t^4 gives dramatic non-linear curve
-    }
-
-    // scrollEnd: the hero zone is 300vh, so the scroll distance for the hero animation
-    // is 2 viewports (300vh - 100vh sticky = 200vh of scroll)
-    var scrollEnd = window.innerHeight * 2;
+    // scrollEnd: hero zone height minus viewport = actual scroll distance
+    var heroEl = document.querySelector('.hero.hero-zone');
+    var scrollEnd = heroEl ? (heroEl.offsetHeight - window.innerHeight) : window.innerHeight;
 
     addScrollHandler(function () {
         var scrollY = window.scrollY;
@@ -250,78 +237,18 @@
         var p = clamp(scrollY / scrollEnd, 0, 1);
         var e  = ease(p);
 
-        // Scale down the video as user scrolls
-        if (!isMobile) {
-          if (p >= MORPH_START && chatInput) {
-            // ── MORPH PHASE: non-linear snap into chat input ──
-            var mp = clamp((p - MORPH_START) / (MORPH_END - MORPH_START), 0, 1);
-            var me = morphEase(mp);
-
-            // Get chat input position (relative to viewport since vid is fixed)
-            var targetRect = chatInput.getBoundingClientRect();
-            var vw = window.innerWidth;
-            var vh = window.innerHeight;
-
-            // Start state: current scaled video (scale 0.6 from normal easing at p=0.85)
-            // End state: chat input bar dimensions and position
-            var startScale = lerp(1, 0.6, ease(MORPH_START));
-            var startRadius = lerp(0, 12, ease(MORPH_START));
-
-            // Target dimensions relative to viewport
-            var endW = targetRect.width;
-            var endH = targetRect.height;
-            var endCX = targetRect.left + endW / 2;
-            var endCY = targetRect.top + endH / 2;
-
-            // Video starts at center of viewport (minus bottom gap)
-            var startCX = vw / 2;
-            var startCY = vh / 2;
-
-            // Interpolate scale (from startScale to tiny)
-            var endScaleX = endW / vw;
-            var endScaleY = endH / vh;
-            var scaleX = lerp(startScale, endScaleX, me);
-            var scaleY = lerp(startScale, endScaleY, me);
-
-            // Interpolate position
-            var tx = lerp(0, endCX - startCX, me);
-            var ty = lerp(0, endCY - startCY, me);
-
-            // Interpolate border-radius (scale-compensated)
-            var endRadius = 12; // chat input border-radius
-            var radius = lerp(startRadius, endRadius / Math.min(scaleX, scaleY), me);
-
-            vid.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scaleX + ',' + scaleY + ')';
-            vid.style.borderRadius = radius + 'px';
-            vid.style.opacity = lerp(1, 0.7, me);
-
-            // At completion: hide video, mark chat input
-            if (mp >= 0.97 && !morphComplete) {
-              morphComplete = true;
-              vid.style.visibility = 'hidden';
-              chatInput.classList.add('morph-landed');
-              // Dispatch custom event for demo.js to pick up
-              window.dispatchEvent(new CustomEvent('hero-morph-complete'));
-            }
-          } else {
-            // ── NORMAL PHASE: gentle scale down ──
-            var scale = lerp(1, 0.6, e);
-            vid.style.transform = 'scale(' + scale + ')';
-            vid.style.borderRadius = lerp(0, 12, e) + 'px';
-            vid.style.opacity = '';
-
-            // Reverse morph if scrolled back
-            if (morphComplete) {
-              morphComplete = false;
-              vid.style.visibility = '';
-              if (chatInput) chatInput.classList.remove('morph-landed');
-              if (demoApp) {
-                demoApp.classList.remove('expanded');
-                demoApp.classList.add('collapsed');
-              }
-              window.dispatchEvent(new CustomEvent('hero-morph-reverse'));
-            }
-          }
+        // Scale down the video as user scrolls (capped at scale 0.6)
+        // Dead zone: video stays full-scale for first 20% of scroll,
+        // then shrinks over the remaining 80%
+        // Skip if morph handler has taken over the transform
+        if (!isMobile && !window._heroMorphActive) {
+          var shrinkP = clamp((p - 0.2) / 0.8, 0, 1);
+          var shrinkE = ease(shrinkP);
+          var scale = lerp(1, 0.6, shrinkE);
+          vid.style.transform = 'scale(' + scale + ')';
+          vid.style.borderRadius = lerp(0, 12, shrinkE) + 'px';
+          // Brief fade only at the very end of hero zone
+          vid.style.opacity = p > 0.96 ? lerp(1, 0.7, clamp((p - 0.96) / 0.06, 0, 1)) : '';
         }
 
         if (content) {
@@ -331,10 +258,10 @@
           content.style.pointerEvents = p > 0.05 ? 'none' : '';
         }
         // Centered text overlay
-        // Headline: entrance at p 0.18–0.32, holds until p 0.58, crossfades out at p 0.58–0.72
+        // Headline: entrance at p 0.08–0.20, long hold, crossfades out at p 0.75–0.87
         if (centerHL) {
-          var hlIn  = ease(clamp((p - 0.18) / 0.14, 0, 1));
-          var hlOut = ease(clamp((p - 0.58) / 0.14, 0, 1));
+          var hlIn  = ease(clamp((p - 0.08) / 0.12, 0, 1));
+          var hlOut = ease(clamp((p - 0.75) / 0.12, 0, 1));
           centerHL.style.opacity   = hlIn * (1 - hlOut);
           var scaleIn = lerp(0.92, 1, hlIn);
           var yIn     = lerp(40, 0, hlIn);
@@ -343,57 +270,238 @@
           if (hlIn > 0.01) centerHL.classList.add('is-visible');
           else centerHL.classList.remove('is-visible');
         }
-        // Mission fades in at p 0.58–0.72, stays visible (merge handled separately)
-        if (centerMis && !hasMerged) {
-          var misIn = ease(clamp((p - 0.58) / 0.14, 0, 1));
-          centerMis.style.opacity = misIn;
+        // Mission crossfades in at p 0.75–0.87, fades out at p 0.92–1.0 (exits before video)
+        if (centerMis) {
+          var misIn  = ease(clamp((p - 0.75) / 0.12, 0, 1));
+          var misOut = ease(clamp((p - 0.92) / 0.08, 0, 1));
+          centerMis.style.opacity = misIn * (1 - misOut);
           centerMis.style.transform = 'translateY(' + lerp(30, 0, misIn) + 'px)';
         }
       });
 
-    // Mission text merge: overlay → real text seamless handoff
-    var missionText = document.querySelector('.mission-text');
+  }
 
-    if (isMobile && missionText) {
-      // Mobile: no center overlay, just show mission text directly
-      missionText.style.opacity = '1';
-      missionText.style.color = '';
-      missionText.style.textShadow = '';
-      missionText.classList.add('is-revealed');
+  /* ── Hero → Demo Morph (triggered by demo entering viewport) ── */
+  function setupHeroDemoMorph() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.innerWidth < 810) return;
+
+    var vid        = document.querySelector('.hero-vid');
+    var chatInput  = document.querySelector('.demo-chat-input');
+    var demoApp    = document.querySelector('.demo-app');
+    var demoSection = document.getElementById('demo');
+    if (!vid || !chatInput || !demoSection) return;
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    var BOTTOM_GAP    = 80;   // hero-vid CSS inset bottom
+    var SNAP_TRIGGER  = 0.5;  // demoVis where page snaps to center demo
+    var MORPH_START   = 0.55; // demoVis where scroll-driven video morph begins
+    var END_SCALE     = 0.15; // video scale at end of scroll-driven phase
+
+    var isSnapping     = false;
+    var morphTriggered = false;
+    var morphComplete  = false;
+    var collapseAnim   = null;
+    var curTx = 0, curTy = 0, curScale = 0.6, curRadius = 12;
+
+    // Glow orb element (reused)
+    var orbEl = document.createElement('div');
+    orbEl.className = 'morph-glow-orb';
+    document.body.appendChild(orbEl);
+
+    // Scroll lock helpers
+    var lockHandler = function (e) { e.preventDefault(); };
+    function lockScroll() {
+      window.addEventListener('wheel', lockHandler, { passive: false });
+      window.addEventListener('touchmove', lockHandler, { passive: false });
+    }
+    function unlockScroll() {
+      window.removeEventListener('wheel', lockHandler);
+      window.removeEventListener('touchmove', lockHandler);
     }
 
-    addScrollHandler(function () {
-      if (!centerMis || !missionText) return;
-      var mtRect = missionText.getBoundingClientRect();
-      var mtCenter = mtRect.top + mtRect.height / 2;
-      var vpCenter = window.innerHeight / 2;
+    function getTarget() {
+      var r = chatInput.getBoundingClientRect();
+      return { cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
+    }
 
-      if (mtCenter <= vpCenter && !hasMerged) {
-        hasMerged = true;
-        // 1. Instantly show real text as white (same as overlay)
-        missionText.style.transition = 'none';
-        missionText.style.opacity = '1';
-        missionText.style.color = 'var(--cream)';
-        missionText.style.transform = 'translateY(0)';
-        missionText.style.textShadow = '0 2px 32px rgba(0,0,0,0.5)';
-        // 2. Hide overlay (same frame — visually seamless)
-        centerMis.style.opacity = '0';
-        // 3. Force reflow, then transition color to black
-        void missionText.offsetWidth;
-        missionText.style.transition = 'color 1.0s ease, text-shadow 0.8s ease';
-        missionText.style.color = '';
-        missionText.style.textShadow = '';
-        missionText.classList.add('is-revealed');
-      } else if (mtCenter > vpCenter && hasMerged) {
-        // Reverse: restore overlay, hide real text
-        hasMerged = false;
-        missionText.classList.remove('is-revealed');
-        missionText.style.transition = 'none';
-        missionText.style.opacity = '0';
-        missionText.style.color = '';
-        missionText.style.transform = '';
-        missionText.style.textShadow = '';
-        centerMis.style.opacity = '1';
+    /* ── Step 1: Smooth scroll snap to center demo section ── */
+    function snapToDemo() {
+      if (isSnapping) return;
+      isSnapping = true;
+      lockScroll();
+
+      var targetY   = demoSection.offsetTop;
+      var startY    = window.scrollY;
+      var diff      = targetY - startY;
+      var duration  = Math.min(700, Math.max(400, Math.abs(diff) * 0.4));
+      var startTime = performance.now();
+
+      function tick(now) {
+        var t = Math.min((now - startTime) / duration, 1);
+        var e = 1 - Math.pow(1 - t, 3); // ease-out cubic
+        window.scrollTo(0, startY + diff * e);
+        if (t < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          // Snap complete — fire the collapse
+          triggerCollapse();
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+
+    /* ── Step 2: Water-drop collapse into light point ── */
+    var centerTextEl = document.querySelector('.hero-center-text');
+
+    function triggerCollapse() {
+      if (morphTriggered) return;
+      morphTriggered = true;
+
+      // Hide center text
+      if (centerTextEl) {
+        centerTextEl.style.transition = 'opacity 0.25s ease';
+        centerTextEl.style.opacity = '0';
+      }
+
+      var vw = window.innerWidth;
+      var vh = window.innerHeight;
+      var originCX = vw / 2;
+      var originCY = (vh - BOTTOM_GAP) / 2;
+      var tgt = getTarget();
+      var finalTx = tgt.cx - originCX;
+      var finalTy = tgt.cy - originCY;
+      var startOpacity = parseFloat(vid.style.opacity) || 1;
+
+      // ── Single seamless morph: video shrinks → flash → becomes chat input ──
+      var MORPH_DUR = 480;
+      var FLASH_AT = 0.45; // flash fires at 45% of morph
+
+      // Video morphs toward the chat input position and shape
+      collapseAnim = vid.animate([
+        {
+          transform: 'translate(' + curTx + 'px,' + curTy + 'px) scale(' + curScale + ')',
+          borderRadius: curRadius + 'px',
+          filter: 'brightness(1)',
+          opacity: startOpacity
+        },
+        {
+          // Converging on chat input — flash point
+          transform: 'translate(' + finalTx + 'px,' + finalTy + 'px) scale(0.08)',
+          borderRadius: '18px',
+          filter: 'brightness(3)',
+          opacity: 0.8,
+          offset: FLASH_AT
+        },
+        {
+          // Dissolve into the chat input shape
+          transform: 'translate(' + finalTx + 'px,' + finalTy + 'px) scale(0.04)',
+          borderRadius: '16px',
+          filter: 'brightness(2)',
+          opacity: 0
+        }
+      ], {
+        duration: MORPH_DUR,
+        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        fill: 'forwards'
+      });
+
+      // Glow + chat input materialize at the flash point (simultaneous, not sequential)
+      setTimeout(function () {
+        var tgt2 = getTarget();
+        orbEl.style.left = tgt2.cx + 'px';
+        orbEl.style.top  = tgt2.cy + 'px';
+        orbEl.animate([
+          { transform: 'translate(-50%,-50%) scale(0.4)', opacity: 1 },
+          { transform: 'translate(-50%,-50%) scale(1.5)', opacity: 0.4, offset: 0.4 },
+          { transform: 'translate(-50%,-50%) scale(2)', opacity: 0 }
+        ], { duration: 250, easing: 'cubic-bezier(0.16,1,0.3,1)', fill: 'forwards' });
+
+        // Chat input emerges from the flash
+        chatInput.classList.add('morph-landed');
+      }, MORPH_DUR * FLASH_AT);
+
+      collapseAnim.onfinish = function () {
+        vid.style.visibility = 'hidden';
+        morphComplete = true;
+        unlockScroll();
+        window.dispatchEvent(new CustomEvent('hero-morph-complete'));
+      };
+    }
+
+    /* ── Reset everything (scroll-back) ── */
+    function resetMorph() {
+      if (collapseAnim) { collapseAnim.cancel(); collapseAnim = null; }
+      isSnapping     = false;
+      morphTriggered = false;
+      morphComplete  = false;
+      unlockScroll();
+      vid.style.visibility   = '';
+      vid.style.opacity      = '';
+      vid.style.filter       = '';
+      vid.style.borderRadius = '';
+      vid.style.transform    = '';
+      chatInput.classList.remove('morph-landed');
+      // Restore center text (scroll handler will recompute opacity)
+      if (centerTextEl) {
+        centerTextEl.style.transition = '';
+        centerTextEl.style.opacity = '';
+      }
+      if (demoApp) {
+        demoApp.classList.remove('expanded');
+        demoApp.classList.add('collapsed');
+      }
+      window._heroMorphActive = false;
+      window.dispatchEvent(new CustomEvent('hero-morph-reverse'));
+    }
+
+    /* ── Scroll handler ── */
+    addScrollHandler(function () {
+      var demoRect = demoSection.getBoundingClientRect();
+      var vh = window.innerHeight;
+      var demoVis = clamp(1 - demoRect.top / vh, 0, 1);
+
+      // If collapse in progress or complete, only watch for scroll-back
+      if (morphTriggered) {
+        if (demoVis < 0.3) resetMorph();
+        return;
+      }
+
+      // Before snap zone — hand control back to hero shrink
+      if (demoVis < SNAP_TRIGGER) {
+        window._heroMorphActive = false;
+        return;
+      }
+
+      // Trigger snap (once)
+      if (!isSnapping) {
+        snapToDemo();
+      }
+
+      // Scroll-driven morph (continues during snap scroll)
+      if (demoVis >= MORPH_START) {
+        window._heroMorphActive = true;
+        var vw = window.innerWidth;
+        var originCX = vw / 2;
+        var originCY = (vh - BOTTOM_GAP) / 2;
+        var tgt = getTarget();
+
+        // mp maps MORPH_START→1.0 (full demoVis range)
+        var mp = clamp((demoVis - MORPH_START) / (1.0 - MORPH_START), 0, 1);
+        var me = 1 - Math.pow(1 - mp, 2); // ease-out quad — settles smoothly
+
+        curScale  = lerp(0.6, END_SCALE, me);
+        curTx     = lerp(0, tgt.cx - originCX, me);
+        curTy     = lerp(0, tgt.cy - originCY, me);
+        curRadius = lerp(12, 50, me);
+
+        vid.style.transform    = 'translate(' + curTx + 'px,' + curTy + 'px) scale(' + curScale + ')';
+        vid.style.borderRadius = curRadius + 'px';
+        vid.style.filter       = 'brightness(' + lerp(1, 1.3, me) + ')';
+        // Continue the brief fade from hero shrink (0.7 at p=1) → dissolve
+        vid.style.opacity      = lerp(0.7, 0.05, me);
       }
     });
   }
@@ -943,6 +1051,7 @@
     setupTextVideoMask();
     setupFpIndicator();
     setupHeroShrink();
+    setupHeroDemoMorph();
     setupIphoneEnter();
     setupProductsScroll();
     setupCineHeroSnap();

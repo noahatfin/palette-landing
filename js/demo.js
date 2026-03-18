@@ -83,39 +83,39 @@
   /* ── Timeline (exact from useDemoSequence.ts TIMELINE) ── */
   var TIMELINE = [
     { delay:0,     phase:0,  stats:[0,0,0,0], rightPanel:'overview', scriptPhase:0, statsCollapsed:false, chatFocus:true },
-    { delay:800,   phase:0,  stats:[0,0,0,0], startTyping:MSG_SCRIPT },
-    { delay:2600,  phase:0,  stats:[0,0,0,0], chatUnfocus:true },
-    { delay:4200,  phase:1,  stats:[0,0,0,0], scriptPhase:1, message:{role:'user',content:MSG_SCRIPT}, clearInput:true, rightPanel:'script', camera:'script' },
-    { delay:4800,  phase:1,  stats:[0,0,0,0], scriptPhase:2, message:{role:'ai',content:'Generating your Western script...'} },
-    { delay:6000,  phase:1,  stats:[0,0,0,0], scriptPhase:3 },
-    { delay:8400,  phase:1,  stats:[5,0,0,0], message:{role:'ai',content:'Script complete \u2014 5 scenes, 891 words.'}, rightPanel:'overview', scriptPhase:3, camera:'fit', statsCollapsed:false },
-    { delay:10400, phase:1,  stats:[5,0,0,0], startTyping:MSG_CHARS, statsCollapsed:true },
-    { delay:13100, phase:1,  stats:[5,0,0,0], message:{role:'user',content:MSG_CHARS}, clearInput:true },
-    { delay:13700, phase:2,  stats:[5,0,0,0], message:{role:'ai',content:'Generating characters with AI portraits...'} },
-    { delay:14100, phase:3,  stats:[5,1,0,0], camera:'characters' },
-    { delay:14400, phase:4,  stats:[5,2,0,0] },
-    { delay:14700, phase:5,  stats:[5,3,0,0] },
-    { delay:15000, phase:6,  stats:[5,4,0,0] },
-    { delay:16200, phase:6,  stats:[5,4,0,0], startTyping:MSG_SCENES },
-    { delay:18700, phase:6,  stats:[5,4,0,0], message:{role:'user',content:MSG_SCENES}, clearInput:true },
-    { delay:19200, phase:7,  stats:[5,4,1,0], message:{role:'ai',content:'Creating scene references and props...'}, camera:'scenes' },
-    { delay:19500, phase:8,  stats:[5,4,2,0] },
-    { delay:19800, phase:9,  stats:[5,4,3,0] },
-    { delay:20500, phase:10, stats:[5,4,3,1], camera:'props' },
-    { delay:20800, phase:11, stats:[5,4,3,2] },
-    { delay:22100, phase:12, stats:[5,4,3,2], message:{role:'ai',content:'Storyboard ready \u2014 5 scenes with rising tension.'}, camera:'arc', statsCollapsed:false },
-    { delay:23900, phase:12, stats:[5,4,3,2], hoveredArc:0, camera:'arc-0', statsCollapsed:true },
-    { delay:24900, phase:12, stats:[5,4,3,2], hoveredArc:1, camera:'arc-1' },
-    { delay:25900, phase:12, stats:[5,4,3,2], hoveredArc:2, camera:'arc-2' },
-    { delay:26900, phase:12, stats:[5,4,3,2], hoveredArc:3, camera:'arc-3' },
-    { delay:28900, phase:12, stats:[5,4,3,2], hoveredArc:4, camera:'arc-4' },
-    { delay:30100, phase:12, stats:[5,4,3,2], hoveredArc:-1 },
-    { delay:30900, phase:13, stats:[5,4,3,2], message:{role:'ai',content:"All assets ready \u2014 let's preview the final video."}, camera:'overview', statsCollapsed:false },
-    { delay:32400, phase:13, stats:[5,4,3,2], camera:'editor' },
-    { delay:33900, phase:13, stats:[5,4,3,2], showEditor:true }
+    { delay:200,   phase:0,  stats:[0,0,0,0], startTyping:MSG_SCRIPT },
+    { delay:700,   phase:0,  stats:[0,0,0,0], chatUnfocus:true },
+    { delay:1200,  phase:1,  stats:[0,0,0,0], scriptPhase:1, message:{role:'user',content:MSG_SCRIPT}, clearInput:true, rightPanel:'script', camera:'script' },
+    { delay:1600,  phase:1,  stats:[0,0,0,0], scriptPhase:2, message:{role:'ai',content:'Generating your Western script...'} },
+    { delay:2400,  phase:1,  stats:[0,0,0,0], scriptPhase:3 },
+    { delay:4000,  phase:1,  stats:[5,0,0,0], message:{role:'ai',content:'Script complete \u2014 5 scenes, 891 words.'}, rightPanel:'overview', scriptPhase:3, camera:'fit', statsCollapsed:false },
+    { delay:5400,  phase:1,  stats:[5,0,0,0], startTyping:MSG_CHARS, statsCollapsed:true },
+    { delay:7290,  phase:1,  stats:[5,0,0,0], message:{role:'user',content:MSG_CHARS}, clearInput:true },
+    { delay:7710,  phase:2,  stats:[5,0,0,0], message:{role:'ai',content:'Generating characters with AI portraits...'} },
+    { delay:7990,  phase:3,  stats:[5,1,0,0], camera:'characters' },
+    { delay:8200,  phase:4,  stats:[5,2,0,0] },
+    { delay:8410,  phase:5,  stats:[5,3,0,0] },
+    { delay:8620,  phase:6,  stats:[5,4,0,0] },
+    { delay:9460,  phase:6,  stats:[5,4,0,0], startTyping:MSG_SCENES },
+    { delay:11210, phase:6,  stats:[5,4,0,0], message:{role:'user',content:MSG_SCENES}, clearInput:true },
+    { delay:11560, phase:7,  stats:[5,4,1,0], message:{role:'ai',content:'Creating scene references and props...'}, camera:'scenes' },
+    { delay:11770, phase:8,  stats:[5,4,2,0] },
+    { delay:11980, phase:9,  stats:[5,4,3,0] },
+    { delay:12470, phase:10, stats:[5,4,3,1], camera:'props' },
+    { delay:12680, phase:11, stats:[5,4,3,2] },
+    { delay:13590, phase:12, stats:[5,4,3,2], message:{role:'ai',content:'Storyboard ready \u2014 5 scenes with rising tension.'}, camera:'arc', statsCollapsed:false },
+    { delay:14850, phase:12, stats:[5,4,3,2], hoveredArc:0, camera:'arc-0', statsCollapsed:true },
+    { delay:15550, phase:12, stats:[5,4,3,2], hoveredArc:1, camera:'arc-1' },
+    { delay:16250, phase:12, stats:[5,4,3,2], hoveredArc:2, camera:'arc-2' },
+    { delay:16950, phase:12, stats:[5,4,3,2], hoveredArc:3, camera:'arc-3' },
+    { delay:18350, phase:12, stats:[5,4,3,2], hoveredArc:4, camera:'arc-4' },
+    { delay:19190, phase:12, stats:[5,4,3,2], hoveredArc:-1 },
+    { delay:19750, phase:13, stats:[5,4,3,2], message:{role:'ai',content:"All assets ready \u2014 let's preview the final video."}, camera:'overview', statsCollapsed:false },
+    { delay:20800, phase:13, stats:[5,4,3,2], camera:'editor' },
+    { delay:21850, phase:13, stats:[5,4,3,2], showEditor:true }
   ];
 
-  var LOOP_DURATION = 49000;
+  var LOOP_DURATION = 35000;
 
   /* ── DOM refs ── */
   var section, viewport, world;
@@ -151,7 +151,7 @@
     // Stagger: header + panel fade in after input starts moving
     setTimeout(function() {
       appEl.classList.remove('demo-intro');
-    }, 400);
+    }, 150);
   }
 
   /* ── Camera ── */
@@ -220,7 +220,7 @@
         chatTextEl.innerHTML = renderMentions(text);
         chatSendEl.classList.add('active');
       }
-    }, 35);
+    }, 20);
   }
   function clearInput() {
     if (typingIv) { clearInterval(typingIv); typingIv = null; }
@@ -403,8 +403,15 @@
   }
 
   /* ── Sequence ── */
+  var skipFirstReset = false;
   function runSequence() {
-    resetAll();
+    if (skipFirstReset) {
+      // First run after morph — state already set up, just clear timers
+      skipFirstReset = false;
+      timeouts.forEach(clearTimeout); timeouts = [];
+    } else {
+      resetAll();
+    }
     moveCamera('fit');
     TIMELINE.forEach(function(step) {
       var t = setTimeout(function() {
@@ -510,19 +517,24 @@
     }, { threshold: 0.3 });
     demoIO.observe(section);
 
-    // Morph complete: initial explosion
+    // Morph complete: transition into demo sequence
     window.addEventListener('hero-morph-complete', function() {
       if (!appEl) return;
       hasExploded = true;
-      appEl.classList.remove('collapsed');
-      appEl.classList.add('expanded');
 
-      // After explosion animation completes, start the demo sequence
-      setTimeout(function() {
-        section.classList.add('active');
-        isVisible = true;
-        runSequence();
-      }, 800);
+      // Pre-apply focused state BEFORE removing collapsed
+      // so chat input stays centered (no shrink-then-enlarge flash)
+      if (chatInputEl) chatInputEl.classList.add('focused');
+      appEl.classList.add('demo-intro');
+
+      // Now remove collapsed — chat stays centered via .focused
+      appEl.classList.remove('collapsed');
+      section.classList.add('active');
+
+      // Skip resetAll on first runSequence since state is pre-applied
+      skipFirstReset = true;
+      isVisible = true;
+      runSequence();
     });
 
     // Morph reverse: collapse back
