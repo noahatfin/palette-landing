@@ -276,26 +276,6 @@ body {
   opacity: 0;
 }
 
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(10,10,10,0.30) 0%,
-    rgba(10,10,10,0.0) 35%,
-    rgba(10,10,10,0.0) 55%,
-    rgba(10,10,10,0.72) 100%
-  );
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  pointer-events: none;
-}
-
-/* Show overlay only when hovering the text block */
-.hero:has(.hero-content:hover) .hero-overlay {
-  opacity: 1;
-}
-
 .hero-content {
   position: absolute;
   bottom: 64px;
@@ -363,6 +343,8 @@ body {
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
+  transform-origin: center center;
+  will-change: transform;
 }
 .iphone-notch {
   position: absolute;
@@ -526,23 +508,36 @@ body {
 /* ============================================================
    PRODUCTS / STUDIO — scroll-driven sticky section
    ============================================================ */
+
 .products {
   position: relative;
   z-index: 3;
+  margin-top: -168vh;
+  background: transparent !important;
+}
+.products-bg-fader {
+  position: absolute;
+  inset: 0;
+  background: var(--bg-light);
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
 }
 
-/* Header: scrolls away naturally */
+/* Header: starts hidden, revealed by scroll JS */
 .products-header {
   width: 100%;
   max-width: var(--max-w);
   margin: 0 auto;
   padding: 0 40px;
   flex-shrink: 0;
+  opacity: 0;
+  transform: translateY(20px);
 }
 
-/* Scroll runway — tall container that gives scroll distance */
+/* Scroll runway — carousel only (entrance is time-based, not scroll-driven) */
 .products-scroll {
-  height: 240vh;
+  height: 300vh;
   position: relative;
 }
 
@@ -604,10 +599,14 @@ body {
   display: block;
 }
 
-/* ── Text area (crossfade) ──────────────────────────────── */
+/* Hero clone in phone: same translateY as other feed-items (no special opacity) */
+
+/* ── Text area (crossfade) — starts hidden, revealed by scroll JS ── */
 .products-text {
   position: relative;
   display: grid;
+  opacity: 0;
+  transform: translateY(40px);
 }
 .products-feature {
   grid-area: 1 / 1;
@@ -2051,8 +2050,11 @@ body {
   .creator-strip { padding: 36px 0; }
   .creator-name { font-size: 17px; }
 
-  .products-header { padding: 0; margin-top: 72px; }
+  .products-header { padding: 0; margin-top: 72px; opacity: 1; transform: none; }
   .products-header .section-title { font-size: clamp(24px, 6vw, 34px); }
+  .products-text { opacity: 1; transform: none; }
+  .products { margin-top: 0; background: var(--bg-light) !important; }
+  .products-bg-fader { display: none; }
   .products-scroll {
     height: 240vh;
   }

@@ -247,8 +247,7 @@
           var scale = lerp(1, 0.6, shrinkE);
           vid.style.transform = 'scale(' + scale + ')';
           vid.style.borderRadius = lerp(0, 12, shrinkE) + 'px';
-          // Brief fade only at the very end of hero zone
-          vid.style.opacity = p > 0.96 ? lerp(1, 0.7, clamp((p - 0.96) / 0.06, 0, 1)) : '';
+          vid.style.opacity = '1';
         }
 
         if (content) {
@@ -281,35 +280,30 @@
 
   }
 
-  /* ── Hero → Demo Morph (triggered by demo entering viewport) ── */
+  /* ── Hero → Demo Morph (UI Assemble - Scheme A) ── */
   function setupHeroDemoMorph() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     if (window.innerWidth < 810) return;
 
     var vid        = document.querySelector('.hero-vid');
-    var chatInput  = document.querySelector('.demo-chat-input');
     var demoApp    = document.querySelector('.demo-app');
     var demoSection = document.getElementById('demo');
-    if (!vid || !chatInput || !demoSection) return;
+    var centerTextEl = document.querySelector('.hero-center-text');
+    var demoCanvas   = document.querySelector('.demo-canvas');
+    if (!vid || !demoApp || !demoSection || !demoCanvas) return;
 
     function lerp(a, b, t) { return a + (b - a) * t; }
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-    var BOTTOM_GAP    = 80;   // hero-vid CSS inset bottom
-    var SNAP_TRIGGER  = 0.5;  // demoVis where page snaps to center demo
-    var MORPH_START   = 0.55; // demoVis where scroll-driven video morph begins
-    var END_SCALE     = 0.15; // video scale at end of scroll-driven phase
+    var BOTTOM_GAP    = 80;
+    var SNAP_TRIGGER  = 0.35;
+    var MORPH_START   = 0.45; 
 
     var isSnapping     = false;
     var morphTriggered = false;
     var morphComplete  = false;
     var collapseAnim   = null;
     var curTx = 0, curTy = 0, curScale = 0.6, curRadius = 12;
-
-    // Glow orb element (reused)
-    var orbEl = document.createElement('div');
-    orbEl.className = 'morph-glow-orb';
-    document.body.appendChild(orbEl);
 
     // Scroll lock helpers
     var lockHandler = function (e) { e.preventDefault(); };
@@ -323,11 +317,10 @@
     }
 
     function getTarget() {
-      var r = chatInput.getBoundingClientRect();
-      return { cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
+      var r = demoCanvas.getBoundingClientRect();
+      return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, width: r.width, height: r.height };
     }
 
-    /* ── Step 1: Smooth scroll snap to center demo section ── */
     function snapToDemo() {
       if (isSnapping) return;
       isSnapping = true;
@@ -341,26 +334,21 @@
 
       function tick(now) {
         var t = Math.min((now - startTime) / duration, 1);
-        var e = 1 - Math.pow(1 - t, 3); // ease-out cubic
+        var e = 1 - Math.pow(1 - t, 3);
         window.scrollTo(0, startY + diff * e);
         if (t < 1) {
           requestAnimationFrame(tick);
         } else {
-          // Snap complete — fire the collapse
-          triggerCollapse();
+          triggerAssemble();
         }
       }
       requestAnimationFrame(tick);
     }
 
-    /* ── Step 2: Water-drop collapse into light point ── */
-    var centerTextEl = document.querySelector('.hero-center-text');
-
-    function triggerCollapse() {
+    function triggerAssemble() {
       if (morphTriggered) return;
       morphTriggered = true;
 
-      // Hide center text
       if (centerTextEl) {
         centerTextEl.style.transition = 'opacity 0.25s ease';
         centerTextEl.style.opacity = '0';
@@ -368,70 +356,66 @@
 
       var vw = window.innerWidth;
       var vh = window.innerHeight;
-      var originCX = vw / 2;
-      var originCY = (vh - BOTTOM_GAP) / 2;
       var tgt = getTarget();
-      var finalTx = tgt.cx - originCX;
-      var finalTy = tgt.cy - originCY;
-      var startOpacity = parseFloat(vid.style.opacity) || 1;
 
-      // ── Single seamless morph: video shrinks → flash → becomes chat input ──
-      var MORPH_DUR = 480;
-      var FLASH_AT = 0.45; // flash fires at 45% of morph
+      var targetScale = Math.max(tgt.width / vw, tgt.height / (vh - BOTTOM_GAP));
 
-      // Video morphs toward the chat input position and shape
-      collapseAnim = vid.animate([
+      var MORPH_DUR = 450;
+
+      window._heroCollapseAnim = collapseAnim = vid.animate([
         {
-          transform: 'translate(' + curTx + 'px,' + curTy + 'px) scale(' + curScale + ')',
+          transform: 'translate(0px, 0px) scale(' + curScale + ')',
           borderRadius: curRadius + 'px',
-          filter: 'brightness(1)',
-          opacity: startOpacity
+          boxShadow: '0 0 0 rgba(0,0,0,0)',
+          opacity: 1
         },
         {
-          // Converging on chat input — flash point
-          transform: 'translate(' + finalTx + 'px,' + finalTy + 'px) scale(0.08)',
-          borderRadius: '18px',
-          filter: 'brightness(3)',
-          opacity: 0.8,
-          offset: FLASH_AT
-        },
-        {
-          // Dissolve into the chat input shape
-          transform: 'translate(' + finalTx + 'px,' + finalTy + 'px) scale(0.04)',
+          transform: 'translate(0px, 0px) scale(' + (targetScale * 0.96) + ')',
           borderRadius: '16px',
-          filter: 'brightness(2)',
-          opacity: 0
+          boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+          opacity: 1,
+          offset: 0.4
+        },
+        {
+          transform: 'translate(0px, 0px) scale(' + (targetScale * 1.02) + ')',
+          borderRadius: '16px',
+          boxShadow: '0 40px 80px rgba(0,0,0,0.8)',
+          opacity: 1,
+          offset: 0.65
+        },
+        {
+          transform: 'translate(0px, 0px) scale(' + targetScale + ')',
+          borderRadius: '16px',
+          boxShadow: '0 10px 20px rgba(0,0,0,0.3)',
+          opacity: 0, // Video dissolves smoothly to reveal storyboard
+          offset: 1
         }
       ], {
         duration: MORPH_DUR,
-        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
         fill: 'forwards'
       });
 
-      // Glow + chat input materialize at the flash point (simultaneous, not sequential)
-      setTimeout(function () {
-        var tgt2 = getTarget();
-        orbEl.style.left = tgt2.cx + 'px';
-        orbEl.style.top  = tgt2.cy + 'px';
-        orbEl.animate([
-          { transform: 'translate(-50%,-50%) scale(0.4)', opacity: 1 },
-          { transform: 'translate(-50%,-50%) scale(1.5)', opacity: 0.4, offset: 0.4 },
-          { transform: 'translate(-50%,-50%) scale(2)', opacity: 0 }
-        ], { duration: 250, easing: 'cubic-bezier(0.16,1,0.3,1)', fill: 'forwards' });
-
-        // Chat input emerges from the flash
-        chatInput.classList.add('morph-landed');
-      }, MORPH_DUR * FLASH_AT);
+      // At offset 0.65 (the bounce peak), fade in the UI
+      setTimeout(function() {
+        demoApp.classList.add('demo-intro');
+        demoApp.classList.remove('collapsed');
+        var chatInputEl = document.querySelector('.demo-chat-input');
+        if (chatInputEl) {
+          chatInputEl.classList.add('focused');
+          chatInputEl.classList.add('morph-landed');
+        }
+        
+        window.dispatchEvent(new CustomEvent('hero-morph-complete'));
+      }, MORPH_DUR * 0.65);
 
       collapseAnim.onfinish = function () {
         vid.style.visibility = 'hidden';
         morphComplete = true;
         unlockScroll();
-        window.dispatchEvent(new CustomEvent('hero-morph-complete'));
       };
     }
 
-    /* ── Reset everything (scroll-back) ── */
     function resetMorph() {
       if (collapseAnim) { collapseAnim.cancel(); collapseAnim = null; }
       isSnapping     = false;
@@ -443,8 +427,14 @@
       vid.style.filter       = '';
       vid.style.borderRadius = '';
       vid.style.transform    = '';
-      chatInput.classList.remove('morph-landed');
-      // Restore center text (scroll handler will recompute opacity)
+      vid.style.boxShadow    = '';
+      
+      var chatInputEl = document.querySelector('.demo-chat-input');
+      if (chatInputEl) {
+        chatInputEl.classList.remove('focused');
+        chatInputEl.classList.remove('morph-landed');
+      }
+
       if (centerTextEl) {
         centerTextEl.style.transition = '';
         centerTextEl.style.opacity = '';
@@ -463,49 +453,43 @@
       var vh = window.innerHeight;
       var demoVis = clamp(1 - demoRect.top / vh, 0, 1);
 
-      // If collapse in progress or complete, only watch for scroll-back
       if (morphTriggered) {
         if (demoVis < 0.3) resetMorph();
         return;
       }
 
-      // Before snap zone — hand control back to hero shrink
       if (demoVis < SNAP_TRIGGER) {
         window._heroMorphActive = false;
         return;
       }
 
-      // Trigger snap (once)
       if (!isSnapping) {
         snapToDemo();
       }
 
-      // Scroll-driven morph (continues during snap scroll)
       if (demoVis >= MORPH_START) {
         window._heroMorphActive = true;
         var vw = window.innerWidth;
-        var originCX = vw / 2;
-        var originCY = (vh - BOTTOM_GAP) / 2;
+        
         var tgt = getTarget();
 
-        // mp maps MORPH_START→1.0 (full demoVis range)
         var mp = clamp((demoVis - MORPH_START) / (1.0 - MORPH_START), 0, 1);
-        var me = 1 - Math.pow(1 - mp, 2); // ease-out quad — settles smoothly
+        var me = 1 - Math.pow(1 - mp, 2); 
 
-        curScale  = lerp(0.6, END_SCALE, me);
-        curTx     = lerp(0, tgt.cx - originCX, me);
-        curTy     = lerp(0, tgt.cy - originCY, me);
-        curRadius = lerp(12, 50, me);
+        var targetScale = Math.max(tgt.width / vw, tgt.height / (vh - BOTTOM_GAP));
 
-        vid.style.transform    = 'translate(' + curTx + 'px,' + curTy + 'px) scale(' + curScale + ')';
+        curScale  = lerp(0.6, targetScale * 1.05, me);
+        curTx     = 0;
+        curTy     = 0;
+        curRadius = lerp(12, 16, me);
+
+        vid.style.transform    = 'translate(0px, 0px) scale(' + curScale + ')';
         vid.style.borderRadius = curRadius + 'px';
-        vid.style.filter       = 'brightness(' + lerp(1, 1.3, me) + ')';
-        // Continue the brief fade from hero shrink (0.7 at p=1) → dissolve
-        vid.style.opacity      = lerp(0.7, 0.05, me);
+        vid.style.filter       = 'none';
+        vid.style.opacity      = '1';
       }
     });
   }
-
   /* ── iPhone Enter Zone ───────────────────────────────────── */
   function setupIphoneEnter() {
     if (window.innerWidth < 810) return;
@@ -553,22 +537,271 @@
     io.observe(zone);
   }
 
-  /* ── Products Section — scroll-driven ────────────────────── */
-  function setupProductsScroll() {
+  /* ── Demo → Phone Entrance (trigger-based) + Products Carousel (scroll-driven) ── */
+  function setupDemoToPhone() {
+    if (window.innerWidth < 810) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var demoApp        = document.querySelector('.demo-app');
+    var demoSection    = document.getElementById('demo');
+    var productsSection = document.getElementById('features');
     var scrollContainer = document.getElementById('products-scroll');
-    var features = Array.from(document.querySelectorAll('.products-feature'));
+    var device         = document.querySelector('.iphone-device');
+    var phoneContainer = document.querySelector('.products-phone');
+    var productsText   = document.querySelector('.products-text');
+    var bgFader        = document.querySelector('.products-bg-fader');
+    var heroClone      = document.querySelector('.feed-item-hero');
+    var productsHeader = document.querySelector('.products-header');
+    var productsLayout = document.querySelector('.products-layout');
+
+    if (!demoApp || !demoSection || !productsSection || !scrollContainer || !device || !phoneContainer || !productsText) return;
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    // Hero visibility is controlled by is-active/is-prev like all feed items.
+    // The whole phone is hidden via device translateY(200vh) until entrance.
+
+    // ── Hide products UI until entrance triggers ──
+    // The products section overlaps demo (margin-top: -240vh, z-index:3),
+    // so without this the phone would be visible during demo scroll.
+    device.style.transform = 'translateY(200vh)';
+    if (bgFader) bgFader.style.opacity = '0';
+    if (productsHeader) {
+      productsHeader.style.opacity = '0';
+      productsHeader.style.transform = 'translateY(20px)';
+    }
+    productsText.style.opacity = '0';
+    productsText.style.transform = 'translateY(40px)';
+
+    /* ── Scroll lock helpers ── */
+    var lockHandler = function (e) { e.preventDefault(); };
+    function lockScroll() {
+      window.addEventListener('wheel', lockHandler, { passive: false });
+      window.addEventListener('touchmove', lockHandler, { passive: false });
+    }
+    function unlockScroll() {
+      window.removeEventListener('wheel', lockHandler);
+      window.removeEventListener('touchmove', lockHandler);
+    }
+
+    /* ── Entrance state ── */
+    var entranceTriggered = false;
+    var entranceComplete  = false;
+    var triggerScrollY    = 0; // scrollY when entrance fired
+    var reverseCooldown   = false; // prevent re-trigger right after reverse
+    var lastScrollY       = window.scrollY; // for scroll direction detection
+
+    /* ── Trigger: detect when demo sticky zone is near its end ── */
+    function checkTrigger() {
+      if (entranceTriggered) return;
+      if (reverseCooldown) return;
+
+      // Only trigger when scrolling DOWN
+      var currentY = window.scrollY;
+      var scrollingDown = currentY > lastScrollY;
+      lastScrollY = currentY;
+      if (!scrollingDown) return;
+
+      var demoRect = demoSection.getBoundingClientRect();
+      var vh = window.innerHeight;
+      if (demoRect.bottom <= vh * 1.3) {
+        triggerEntrance();
+      }
+    }
+
+    function triggerEntrance() {
+      if (entranceTriggered) return;
+      entranceTriggered = true;
+      triggerScrollY = window.scrollY;
+      lockScroll();
+
+      // Start hero clone video playing
+      var cloneVid = heroClone ? heroClone.querySelector('video') : null;
+      if (cloneVid) cloneVid.play().catch(function(){});
+
+      // Step 1: Snap-scroll to products section
+      var targetY = productsSection.offsetTop;
+      var startY  = window.scrollY;
+      var diff    = targetY - startY;
+      var snapDur = Math.min(600, Math.max(300, Math.abs(diff) * 0.3));
+      var snapStart = performance.now();
+
+      function snapTick(now) {
+        var t = Math.min((now - snapStart) / snapDur, 1);
+        var e = 1 - Math.pow(1 - t, 3); // ease-out cubic
+        window.scrollTo(0, startY + diff * e);
+        if (t < 1) {
+          requestAnimationFrame(snapTick);
+        } else {
+          playEntrance();
+        }
+      }
+      requestAnimationFrame(snapTick);
+    }
+
+    function playEntrance() {
+      var vw = window.innerWidth;
+      var vh = window.innerHeight;
+
+      // Compute positions
+      var pRect = phoneContainer.getBoundingClientRect();
+      var devW  = device.offsetWidth;
+      var natDevL    = pRect.left + (pRect.width - devW) / 2;
+      var centerDevL = (vw - devW) / 2;
+      var offsetTx   = centerDevL - natDevL;
+      var SCALE_BIG  = 1.8;
+
+      // Initial state: phone below viewport, centered, large
+      device.style.transition = 'none';
+      device.style.transform  = 'translate(' + offsetTx + 'px, ' + vh + 'px) scale(' + SCALE_BIG + ')';
+
+      // Force reflow so initial state applies
+      void device.offsetWidth;
+
+      // ── Phase 1 (0ms): Demo fades out ──
+      demoApp.style.transition = 'opacity 0.4s ease, transform 0.5s ease';
+      demoApp.style.opacity = '0';
+      demoApp.style.transform = 'scale(1.08)';
+      demoApp.style.pointerEvents = 'none';
+
+      // ── Phase 2 (100ms): Phone rises to center ──
+      setTimeout(function() {
+        device.style.transition = 'transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)';
+        device.style.transform  = 'translate(' + offsetTx + 'px, 0px) scale(' + SCALE_BIG + ')';
+      }, 100);
+
+      // ── Phase 3 (1100ms): Hold, then phone slides left + shrinks ──
+      setTimeout(function() {
+        device.style.transition = 'transform 0.7s cubic-bezier(0.22, 1, 0.36, 1)';
+        device.style.transform  = 'translate(0px, 0px) scale(1)';
+      }, 1100);
+
+      // ── Phase 4 (1200ms): Background fades to white ──
+      setTimeout(function() {
+        if (bgFader) {
+          bgFader.style.transition = 'opacity 0.6s ease';
+          bgFader.style.opacity = '1';
+        }
+      }, 1200);
+
+      // ── Phase 5 (1500ms): Header + text appear ──
+      setTimeout(function() {
+        if (productsHeader) {
+          productsHeader.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+          productsHeader.style.opacity   = '1';
+          productsHeader.style.transform = 'translateY(0)';
+        }
+      }, 1500);
+
+      setTimeout(function() {
+        productsText.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        productsText.style.opacity   = '1';
+        productsText.style.transform = 'translateY(0)';
+      }, 1650);
+
+      // ── Phase 6 (2200ms): Entrance complete, unlock scroll ──
+      setTimeout(function() {
+        entranceComplete = true;
+        unlockScroll();
+        // Clean up inline transitions so carousel scroll doesn't conflict
+        device.style.transition = '';
+      }, 2200);
+    }
+
+    /* ── Reverse entrance: phone flies back down, demo reappears ── */
+    var reverseTriggered = false;
+
+    function triggerReverse() {
+      if (reverseTriggered) return;
+      reverseTriggered = true;
+      lockScroll();
+
+      var vw = window.innerWidth;
+      var vh = window.innerHeight;
+
+      // Compute center offset (same math as playEntrance)
+      var pRect = phoneContainer.getBoundingClientRect();
+      var devW  = device.offsetWidth;
+      var natDevL    = pRect.left + (pRect.width - devW) / 2;
+      var centerDevL = (vw - devW) / 2;
+      var offsetTx   = centerDevL - natDevL;
+      var SCALE_BIG  = 1.8;
+
+      // Phase 1 (T+0): Hide text + header + bg fades to dark
+      productsText.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+      productsText.style.opacity   = '0';
+      productsText.style.transform = 'translateY(30px)';
+      if (productsHeader) {
+        productsHeader.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        productsHeader.style.opacity   = '0';
+        productsHeader.style.transform = 'translateY(15px)';
+      }
+      if (bgFader) {
+        bgFader.style.transition = 'opacity 0.35s ease';
+        bgFader.style.opacity = '0';
+      }
+
+      // Phase 2 (T+100): Phone centers + grows (0.5s, finishes at T+600)
+      setTimeout(function() {
+        device.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+        device.style.transform  = 'translate(' + offsetTx + 'px, 0px) scale(' + SCALE_BIG + ')';
+      }, 100);
+
+      // Phase 3 (T+620): Snap scroll (hidden behind big centered phone), then phone slides down
+      setTimeout(function() {
+        // Snap scroll while phone covers viewport
+        window.scrollTo(0, triggerScrollY);
+
+        // Start phone slide-down (no overlap with phase 2)
+        void device.offsetWidth; // force reflow so new transition applies cleanly
+        device.style.transition = 'transform 0.55s cubic-bezier(0.4, 0, 1, 1)';
+        device.style.transform  = 'translate(' + offsetTx + 'px, ' + vh + 'px) scale(' + SCALE_BIG + ')';
+      }, 620);
+
+      // Phase 4 (T+700): Demo fades in (while phone slides away)
+      setTimeout(function() {
+        demoApp.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        demoApp.style.opacity = '1';
+        demoApp.style.transform = 'scale(1)';
+        demoApp.style.pointerEvents = '';
+      }, 700);
+
+      // Phase 5 (T+1250): All done, reset state
+      setTimeout(function() {
+        device.style.transition = 'none';
+        device.style.transform  = 'translateY(200vh)';
+
+        entranceTriggered = false;
+        entranceComplete  = false;
+        reverseTriggered  = false;
+        currentIdx = 0;
+
+        // Reset carousel feed items
+        feedItems.forEach(function(item, i) {
+          item.classList.remove('is-active', 'is-prev');
+          if (i === 0) item.classList.add('is-active');
+        });
+        features.forEach(function(f, i) { f.classList.toggle('is-active', i === 0); });
+        dots.forEach(function(d, i) { d.classList.toggle('active', i === 0); });
+
+        unlockScroll();
+
+        // Cooldown: prevent checkTrigger() from re-firing immediately
+        reverseCooldown = true;
+        lastScrollY = window.scrollY;
+        setTimeout(function() { reverseCooldown = false; }, 600);
+      }, 1250);
+    }
+
+    /* ── Carousel state ── */
+    var features  = Array.from(document.querySelectorAll('.products-feature'));
     var feedItems = Array.from(document.querySelectorAll('.phone-feed .feed-item'));
-    var dots = Array.from(document.querySelectorAll('.progress-dot'));
-    var hintEl = document.getElementById('products-scroll-hint');
-    var heartsEl = document.getElementById('products-hearts');
-    var likeEl   = document.getElementById('products-like-count');
+    var dots      = Array.from(document.querySelectorAll('.progress-dot'));
+    var heartsEl  = document.getElementById('products-hearts');
+    var likeEl    = document.getElementById('products-like-count');
     var danmakuEl = document.getElementById('products-danmaku');
-
-    if (!scrollContainer || !features.length) return;
-
-    var isMobileProducts = window.innerWidth < 810;
-    var featureVids = isMobileProducts ? Array.from(document.querySelectorAll('.products-feature-vid video')) : [];
-
+    var hintEl    = document.getElementById('products-scroll-hint');
     var totalSteps = features.length;
     var currentIdx = 0;
 
@@ -578,10 +811,7 @@
       ['The cinematography is insane', 'Director mode is fire', 'Bookmarked!'],
       ['One-click export?', 'The future is here', 'Game changer']
     ];
-
-    function formatCount(n) {
-      return n >= 10000 ? (n / 10000).toFixed(1) + 'w' : n.toString();
-    }
+    function formatCount(n) { return n >= 10000 ? (n / 10000).toFixed(1) + 'w' : n.toString(); }
 
     function spawnHearts(container, count) {
       for (var i = 0; i < count; i++) {
@@ -598,7 +828,6 @@
         })(i);
       }
     }
-
     function spawnComment(container, text) {
       var c = document.createElement('div');
       c.className = 'tiktok-danmaku-item';
@@ -608,117 +837,77 @@
       setTimeout(function() { c.remove(); }, 4000);
     }
 
-    // Hero video is the first "feed" in the phone.
-    // feedItems (from .phone-feed) are only the 2nd and 3rd videos.
-    var heroVid = document.querySelector('.hero-vid');
-
     function setStep(newIdx) {
       if (newIdx === currentIdx) return;
       currentIdx = newIdx;
-
-      // Text crossfade (works on both mobile and desktop)
-      features.forEach(function(f, i) {
-        f.classList.toggle('is-active', i === newIdx);
+      features.forEach(function(f, i) { f.classList.toggle('is-active', i === newIdx); });
+      feedItems.forEach(function(item, i) {
+        item.classList.remove('is-active', 'is-prev');
+        var vid = item.querySelector('video');
+        if (i === newIdx) {
+          item.classList.add('is-active');
+          if (vid) { vid.currentTime = 0; vid.play().catch(function(){}); }
+        } else if (i < newIdx) {
+          item.classList.add('is-prev');
+          if (vid) vid.pause();
+        } else {
+          if (vid) vid.pause();
+        }
       });
-
-      if (isMobileProducts) {
-        // Mobile: hero video is in the phone at step 0, slide it away for other steps
-        if (heroVid) {
-          heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
-          heroVid.style.transform = newIdx === 0 ? '' : 'translateY(-100%)';
-        }
-        // Feed items: feedItems[0] = step 1, feedItems[1] = step 2 (same as desktop)
-        feedItems.forEach(function(item, i) {
-          var stepIdx = i + 1;
-          item.classList.remove('is-active', 'is-prev');
-          var vid = item.querySelector('video');
-          if (stepIdx === newIdx) {
-            item.classList.add('is-active');
-            if (vid) { vid.currentTime = 0; vid.play().catch(function(){}); }
-          } else if (stepIdx < newIdx) {
-            item.classList.add('is-prev');
-            if (vid) vid.pause();
-          } else {
-            if (vid) vid.pause();
-          }
-        });
-      } else {
-        // Desktop: phone feed — hero video = step 0, feedItems[0] = step 1, feedItems[1] = step 2
-        if (heroVid) {
-          if (newIdx === 0) {
-            heroVid.style.transform = '';
-            heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
-          } else {
-            heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
-            heroVid.style.transform = 'translateY(-100%)';
-          }
-        }
-
-        feedItems.forEach(function(item, i) {
-          var stepIdx = i + 1;
-          item.classList.remove('is-active', 'is-prev');
-          var vid = item.querySelector('video');
-          if (stepIdx === newIdx) {
-            item.classList.add('is-active');
-            if (vid) { vid.currentTime = 0; vid.play().catch(function(){}); }
-          } else if (stepIdx < newIdx) {
-            item.classList.add('is-prev');
-            if (vid) vid.pause();
-          } else {
-            if (vid) vid.pause();
-          }
-        });
-
-        // Hearts burst
-        if (heartsEl) spawnHearts(heartsEl, 6);
-
-        // Like count
-        if (likeEl) {
-          likeEl.textContent = formatCount(likeCounts[newIdx] || 0);
-          likeEl.classList.remove('like-bump');
-          void likeEl.offsetWidth;
-          likeEl.classList.add('like-bump');
-        }
-
-        // Danmaku
-        var msgs = commentSets[newIdx] || [];
-        msgs.forEach(function(msg, i) {
-          if (danmakuEl) setTimeout(spawnComment.bind(null, danmakuEl, msg), i * 800);
-        });
+      if (heartsEl) spawnHearts(heartsEl, 6);
+      if (likeEl) {
+        likeEl.textContent = formatCount(likeCounts[newIdx] || 0);
+        likeEl.classList.remove('like-bump');
+        void likeEl.offsetWidth;
+        likeEl.classList.add('like-bump');
       }
-
-      // Progress dots
-      dots.forEach(function(d, i) {
-        d.classList.toggle('active', i === newIdx);
+      var msgs = commentSets[newIdx] || [];
+      msgs.forEach(function(msg, i) {
+        if (danmakuEl) setTimeout(spawnComment.bind(null, danmakuEl, msg), i * 800);
       });
+      dots.forEach(function(d, i) { d.classList.toggle('active', i === newIdx); });
     }
 
-    // Scroll handler
-    addScrollHandler(function() {
-        var rect = scrollContainer.getBoundingClientRect();
-        var scrollDistance = rect.height - window.innerHeight;
-        if (scrollDistance <= 0) return;
-        var progress = Math.max(0, Math.min(1, -rect.top / scrollDistance));
-        var newIdx = Math.min(Math.floor(progress * totalSteps), totalSteps - 1);
-        setStep(newIdx);
+    /* ── Scroll handler: trigger detection + carousel ── */
+    addScrollHandler(function () {
+      // Check for entrance trigger
+      if (!entranceTriggered) {
+        checkTrigger();
+        return;
+      }
 
-        // Fade hint after first step
-        if (hintEl) {
-          hintEl.style.opacity = progress < 0.15 ? '1' : '0';
-        }
-      });
+      // Block carousel changes during reverse animation
+      if (!entranceComplete || reverseTriggered) return;
 
-    // Ambient hearts — only run while section is visible
-    var ambientHeartsTimer = null;
+      var rect = scrollContainer.getBoundingClientRect();
+      var scrollDistance = rect.height - window.innerHeight;
+      if (scrollDistance <= 0) return;
+      var progress = clamp(-rect.top / scrollDistance, 0, 1);
+      var newIdx = Math.min(Math.floor(progress * totalSteps), totalSteps - 1);
+
+      // Reverse: at first video and scrolled above products-scroll top
+      // Check BEFORE setStep to avoid video 2 flashing during transition
+      if (newIdx === 0 && rect.top > 0) {
+        triggerReverse();
+        return;
+      }
+
+      setStep(newIdx);
+
+      if (hintEl) hintEl.style.opacity = progress < 0.1 ? '1' : '0';
+    });
+
+    // Ambient hearts
+    var ambientTimer = null;
     var heartsIO = new IntersectionObserver(function(entries) {
       entries.forEach(function(e) {
-        if (e.isIntersecting && !ambientHeartsTimer) {
-          ambientHeartsTimer = setInterval(function() {
-            if (heartsEl && currentIdx >= 0) spawnHearts(heartsEl, 2);
+        if (e.isIntersecting && !ambientTimer) {
+          ambientTimer = setInterval(function() {
+            if (heartsEl) spawnHearts(heartsEl, 2);
           }, 5000);
-        } else if (!e.isIntersecting && ambientHeartsTimer) {
-          clearInterval(ambientHeartsTimer);
-          ambientHeartsTimer = null;
+        } else if (!e.isIntersecting && ambientTimer) {
+          clearInterval(ambientTimer);
+          ambientTimer = null;
         }
       });
     }, { threshold: 0.1 });
@@ -1052,8 +1241,8 @@
     setupFpIndicator();
     setupHeroShrink();
     setupHeroDemoMorph();
+    setupDemoToPhone();
     setupIphoneEnter();
-    setupProductsScroll();
     setupCineHeroSnap();
     setupCineHeroShrink();
     setupResearchReveal();
