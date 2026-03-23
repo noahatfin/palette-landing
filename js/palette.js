@@ -981,11 +981,12 @@
     if (window.innerWidth < 810) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    var section = document.querySelector('.cine-hero');
-    var frame   = document.querySelector('.cine-hero-frame');
-    var video   = document.querySelector('.cine-hero-vid');
-    var title   = document.querySelector('.cine-hero-title');
-    if (!section || !frame || !video) return;
+    var section  = document.querySelector('.cine-hero');
+    var stickyEl = document.querySelector('.cine-hero-sticky');
+    var frame    = document.querySelector('.cine-hero-frame');
+    var video    = document.querySelector('.cine-hero-vid');
+    var title    = document.querySelector('.cine-hero-title');
+    if (!section || !stickyEl || !frame || !video) return;
 
     function lerp(a, b, t) { return a + (b - a) * t; }
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
@@ -994,10 +995,10 @@
     var FINAL_W = 918;
     var FINAL_H = 459;
     var FINAL_R = 20;
-    var DEAD_ZONE = 0.05;
-    var SHRINK_END = 0.25;  // shrink completes at 25%
-    var FADE_START = 0.55;  // fade starts at 55% — long pause after shrink
-    var FADE_END = 0.62;    // fade ends
+    var DEAD_ZONE = 0.0;
+    var SHRINK_END = 0.35;  // shrink in first 35%
+    var FADE_START = 0.40;  // fade starts right after shrink
+    var FADE_END = 0.75;    // fully transparent — research visible behind
     var waitingToFreeze = false;
     var frozen = false;
 
@@ -1031,16 +1032,18 @@
 
         // Title fade in during shrink
         if (title) {
-          var titleProgress = clamp((progress - 0.15) / 0.2, 0, 1);
+          var titleProgress = clamp((progress - 0.10) / 0.15, 0, 1);
           title.style.opacity = titleProgress;
         }
 
-        // Fade out cine-hero frame
+        // Fade out entire sticky (frame + black background) — reveals research behind
         if (progress >= FADE_START) {
           var fadeT = clamp((progress - FADE_START) / (FADE_END - FADE_START), 0, 1);
-          frame.style.opacity = 1 - fadeT;
+          stickyEl.style.opacity = 1 - fadeT;
+          stickyEl.style.pointerEvents = fadeT > 0.5 ? 'none' : '';
         } else {
-          frame.style.opacity = 1;
+          stickyEl.style.opacity = 1;
+          stickyEl.style.pointerEvents = '';
         }
 
         // Freeze: wait for video to finish its current playthrough

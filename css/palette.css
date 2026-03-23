@@ -837,12 +837,13 @@ body {
    CINEMATIC HERO — scroll-shrink video module
    ============================================================ */
 .cine-hero {
-  height: 300vh;
-  background: var(--bg-dark);
+  height: 140vh;
+  background: transparent;
   position: relative;
   z-index: 3;
 }
 .cine-hero-sticky {
+  background: var(--bg-dark);
   position: sticky;
   top: 0;
   height: 100vh;
@@ -887,7 +888,7 @@ body {
 @media (max-width: 809px) {
   .cine-hero {
     height: auto;
-    padding: 40px 20px;
+    padding: 24px 16px;
   }
   .cine-hero-sticky {
     position: relative;
@@ -916,12 +917,13 @@ body {
    RESEARCH / TECHNOLOGY — dark section
    ============================================================ */
 .research {
-  padding: 24px 0 120px;
-  margin-top: 0;
-  border-top: 1px solid var(--border);
+  padding: 100px 0 120px;
+  margin-top: -100vh;
+  border-top: none;
   position: relative;
-  z-index: 3;
+  z-index: 2;
   overflow: hidden;
+  background: var(--bg-dark);
 }
 .research-flower {
   position: absolute;
@@ -2184,7 +2186,7 @@ body {
   .iphone-enter { height: auto; }
   .iphone-enter-sticky { position: relative; height: auto; padding: 60px 20px; }
 
-  .research { padding: 72px 0; margin-top: 0; }
+  .research { padding: 48px 0 72px; margin-top: 0; }
   .research-list { gap: 2px; margin-top: 32px; }
   .research-item {
     grid-template-columns: 1fr;
