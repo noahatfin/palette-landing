@@ -216,40 +216,352 @@
 
     var vid      = document.querySelector('.hero-vid');
     var content  = document.querySelector('.hero-content');
+    var target   = document.querySelector('.mockup-video');
     var heroWrap = document.querySelector('.hero-sticky-wrap');
-    if (!vid || !heroWrap) return;
+    if (!vid || !target || !heroWrap) return;
+
+    var headline = content ? content.querySelector('.hero-headline') : null;
+    var eyebrow  = content ? content.querySelector('.hero-eyebrow') : null;
+    var heroSub  = content ? content.querySelector('.hero-sub') : null;
+    var heroCTA  = content ? content.querySelector('.btn') : null;
 
     var centerText = document.querySelector('.hero-center-text');
     var centerHL   = (!isMobile && centerText) ? centerText.querySelector('.hero-center-headline') : null;
     var centerMis  = (!isMobile && centerText) ? centerText.querySelector('.hero-center-mission') : null;
+    var missionSection = document.querySelector('.mission');
+    var hasMerged = false;
+
     function lerp(a, b, t) { return a + (b - a) * t; }
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
     function ease(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
 
-    // scrollEnd: hero zone height minus viewport = actual scroll distance
-    var heroEl = document.querySelector('.hero.hero-zone');
-    var scrollEnd = heroEl ? (heroEl.offsetHeight - window.innerHeight) : window.innerHeight;
+    var BOTTOM_GAP = isMobile ? 0 : 80;
+    var FLY_ENTER = 0.65;   // fly to phone when iphone-screen top < 65% viewport
+    var FLY_EXIT  = 0.75;   // restore from phone when iphone-screen top > 75% viewport
+    var isDocked = false;
+    var isUndocking = false;
+    var undockTimeout = 0;
+
+    var params = {};
+    function calcParams() {
+      var r = target.getBoundingClientRect();
+      var docTop  = r.top  + window.scrollY;
+      var docLeft = r.left + window.scrollX;
+      var mW = r.width, mH = r.height;
+      var vidH = window.innerHeight - BOTTOM_GAP;
+
+      var scrollEnd = docTop + mH / 2 - window.innerHeight / 2;
+      var s  = Math.min(mW / window.innerWidth, mH / vidH);
+      var tx = (docLeft + mW / 2) - window.innerWidth / 2;
+      var ty = BOTTOM_GAP / 2;
+
+      params = { scrollEnd: scrollEnd, scale: s, tx: tx, ty: ty, targetW: mW, targetH: mH, targetDocTop: docTop, targetDocLeft: docLeft };
+    }
+    calcParams();
+
+    window.addEventListener('resize', calcParams);
+
+    // Dock: reparent into .mockup-video, keep shrunk size (centered in panel)
+    function dock() {
+      if (isDocked) return;
+      isDocked = true;
+
+      clearTimeout(undockTimeout);
+      isUndocking = false;
+      vid.style.transition = '';
+
+      // FLIP: capture current visual position before reparent
+      var firstRect = vid.getBoundingClientRect();
+
+      var panelW  = target.offsetWidth;
+      var panelH  = target.offsetHeight;
+
+      if (isMobile) {
+        // On mobile, fill the mockup panel completely
+        vid.style.transform    = '';
+        vid.style.borderRadius = '12px';
+        target.appendChild(vid);
+        vid.style.position      = 'absolute';
+        vid.style.inset         = '0';
+        vid.style.width         = '100%';
+        vid.style.height        = '100%';
+        vid.style.left          = '';
+        vid.style.top           = '';
+        vid.style.objectFit     = 'cover';
+        vid.style.zIndex        = '2';
+        vid.style.pointerEvents = 'none';
+      } else {
+        var s    = params.scale;
+        var dockedW = window.innerWidth  * s;
+        var dockedH = (window.innerHeight - BOTTOM_GAP) * s;
+        vid.style.transform    = '';
+        vid.style.borderRadius = '12px';
+        target.appendChild(vid);
+        vid.style.position      = 'absolute';
+        vid.style.inset         = '';
+        vid.style.width         = dockedW + 'px';
+        vid.style.height        = dockedH + 'px';
+        vid.style.left          = ((panelW - dockedW) / 2) + 'px';
+        vid.style.top           = ((panelH - dockedH) / 2) + 'px';
+        vid.style.objectFit     = 'cover';
+        vid.style.zIndex        = '1';
+        vid.style.pointerEvents = 'none';
+      }
+      if (centerHL) centerHL.style.opacity = '0';
+
+      // FLIP: animate from old position to docked position
+      var lastRect = vid.getBoundingClientRect();
+      var dx = firstRect.left - lastRect.left;
+      var dy = firstRect.top  - lastRect.top;
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+        vid.style.transformOrigin = '0 0';
+        vid.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+        vid.style.transition = 'none';
+        void vid.offsetWidth;
+        vid.style.transition = 'transform 0.3s cubic-bezier(0.2,0.8,0.2,1)';
+        vid.style.transform = 'translate(0,0)';
+        setTimeout(function () {
+          vid.style.transition = '';
+          vid.style.transform = '';
+          vid.style.transformOrigin = '';
+        }, 300);
+      }
+    }
+
+    function undock() {
+      if (!isDocked) return;
+      isDocked = false;
+
+      var firstRect = vid.getBoundingClientRect();
+
+      vid.style.position      = '';
+      vid.style.inset         = '';
+      vid.style.width         = '';
+      vid.style.height        = '';
+      vid.style.left          = '';
+      vid.style.top           = '';
+      vid.style.objectFit     = '';
+      vid.style.zIndex        = '';
+      vid.style.pointerEvents = '';
+      heroWrap.appendChild(vid);
+
+      if (isMobile) {
+        // On mobile: snap back to scroll-driven state, no transform animation
+        vid.style.transform = '';
+        vid.style.borderRadius = '';
+        vid.style.transformOrigin = '';
+        isUndocking = false;
+      } else {
+        vid.style.transform = 'none';
+        var rawRect = vid.getBoundingClientRect();
+
+        var firstCenterX = firstRect.left + firstRect.width / 2;
+        var firstCenterY = firstRect.top + firstRect.height / 2;
+        var rawCenterX = rawRect.left + rawRect.width / 2;
+        var rawCenterY = rawRect.top + rawRect.height / 2;
+
+        var dx = firstCenterX - rawCenterX;
+        var dy = firstCenterY - rawCenterY;
+
+        vid.style.transformOrigin = '50% 50%';
+        vid.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + params.scale + ')';
+        vid.style.borderRadius = '12px';
+        vid.style.transition = 'none';
+
+        void vid.offsetWidth;
+
+        isUndocking = true;
+        vid.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
+
+        clearTimeout(undockTimeout);
+        undockTimeout = setTimeout(function() {
+          isUndocking = false;
+          vid.style.transition = '';
+          vid.style.transformOrigin = '';
+        }, 400);
+      }
+    }
+
+    var phoneScreen = document.querySelector('.products-phone .iphone-screen');
+    var phoneBorderRadius = isMobile ? '28px' : '50px';
+    var hasFlewToPhone = false;
+    var isFlying = false;
+
+    function flyToPhone() {
+      if (hasFlewToPhone || isFlying || !phoneScreen) return;
+      hasFlewToPhone = true;
+      isFlying = true;
+
+      var firstRect = vid.getBoundingClientRect();
+      var device = document.querySelector('.iphone-device');
+      var productsPhone = document.querySelector('.products-phone');
+
+      if (device) device.style.overflow = 'visible';
+      if (phoneScreen) phoneScreen.style.overflow = 'visible';
+      if (productsPhone) productsPhone.style.zIndex = '100';
+
+      phoneScreen.insertBefore(vid, phoneScreen.firstChild);
+      vid.style.transform    = '';
+      vid.style.position     = 'absolute';
+      vid.style.inset        = '0';
+      vid.style.width        = '100%';
+      vid.style.height       = '100%';
+      vid.style.zIndex       = '100';
+      vid.style.borderRadius = phoneBorderRadius;
+      isDocked = false;
+
+      var lastRect = vid.getBoundingClientRect();
+
+      var dx = firstRect.left - lastRect.left;
+      var dy = firstRect.top - lastRect.top;
+      var sw = firstRect.width / lastRect.width;
+      var sh = firstRect.height / lastRect.height;
+
+      vid.style.transformOrigin = '0 0';
+      vid.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + sw + ', ' + sh + ')';
+      vid.style.borderRadius = '12px';
+      vid.style.transition = 'none';
+
+      void vid.offsetWidth;
+
+      vid.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+      vid.style.transform = 'translate(0px, 0px) scale(1, 1)';
+      vid.style.borderRadius = phoneBorderRadius;
+
+      setTimeout(function() {
+        if (!isFlying) return;
+        vid.style.transition = '';
+        vid.style.transform = '';
+        vid.style.transformOrigin = '';
+        vid.style.borderRadius = '';
+        vid.style.zIndex = '1';
+
+        if (device) device.style.overflow = '';
+        if (phoneScreen) phoneScreen.style.overflow = '';
+        if (productsPhone) productsPhone.style.zIndex = '';
+        isFlying = false;
+      }, 500);
+    }
+
+    function flyFromPhone() {
+      if (!hasFlewToPhone || isFlying) return;
+      hasFlewToPhone = false;
+      isFlying = true;
+
+      var firstRect = vid.getBoundingClientRect();
+      var device = document.querySelector('.iphone-device');
+      var productsPhone = document.querySelector('.products-phone');
+
+      if (device) device.style.overflow = 'visible';
+      if (phoneScreen) phoneScreen.style.overflow = 'visible';
+      if (productsPhone) productsPhone.style.zIndex = '100';
+      if (target) {
+        target.style.overflow = 'visible';
+        target.style.zIndex = '100';
+      }
+
+      dock(); // Sets isDocked = true and puts vid into target
+
+      var lastRect = vid.getBoundingClientRect();
+
+      var dx = firstRect.left - lastRect.left;
+      var dy = firstRect.top - lastRect.top;
+      var sw = firstRect.width / lastRect.width;
+      var sh = firstRect.height / lastRect.height;
+
+      vid.style.transformOrigin = '0 0';
+      vid.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + sw + ', ' + sh + ')';
+      vid.style.borderRadius = phoneBorderRadius;
+      vid.style.transition = 'none';
+
+      void vid.offsetWidth;
+
+      vid.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-radius 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+      vid.style.transform = 'translate(0px, 0px) scale(1, 1)';
+      vid.style.borderRadius = '12px';
+
+      setTimeout(function() {
+        if (!isFlying) return;
+        vid.style.transition = '';
+        vid.style.transform = '';
+        vid.style.transformOrigin = '';
+        vid.style.borderRadius = '12px';
+        
+        if (device) device.style.overflow = '';
+        if (phoneScreen) phoneScreen.style.overflow = '';
+        if (productsPhone) productsPhone.style.zIndex = '';
+        if (target) {
+          target.style.overflow = '';
+          target.style.zIndex = '';
+        }
+        isFlying = false;
+      }, 500);
+    }
 
     addScrollHandler(function () {
+        if (isFlying) return;
+
         var scrollY = window.scrollY;
 
-        // ── HERO (scroll-driven) ─────────────────────────────────
-        var p = clamp(scrollY / scrollEnd, 0, 1);
-        var e  = ease(p);
-
-        // Scale down the video as user scrolls (capped at scale 0.6)
-        // Dead zone: video stays full-scale for first 20% of scroll,
-        // then shrinks over the remaining 80%
-        // Skip if morph handler has taken over the transform
-        if (!isMobile && !window._heroMorphActive) {
-          var shrinkP = clamp((p - 0.2) / 0.8, 0, 1);
-          var shrinkE = ease(shrinkP);
-          var scale = lerp(1, 0.6, shrinkE);
-          vid.style.transform = 'scale(' + scale + ')';
-          vid.style.borderRadius = lerp(0, 12, shrinkE) + 'px';
-          vid.style.opacity = '1';
+        // ── IN_PHONE: restore when phone exits viewport below ────
+        if (hasFlewToPhone) {
+          var r = phoneScreen.getBoundingClientRect();
+          if (r.top > window.innerHeight * FLY_EXIT) {
+            flyFromPhone();   // → DOCKED or HERO
+          }
+          return;
         }
 
+        // ── Ensure docked if past scrollEnd (handles fast-scroll) ─
+        var p = clamp(scrollY / params.scrollEnd, 0, 1);
+        if (p >= 1 && !isDocked) { dock(); }
+
+        // ── DOCKED ───────────────────────────────────────────────
+        if (isDocked) {
+          if (phoneScreen) {
+            var r = phoneScreen.getBoundingClientRect();
+            if (r.top < window.innerHeight * FLY_ENTER) {
+              flyToPhone(); return;
+            }
+          }
+          if (scrollY < params.scrollEnd - window.innerHeight * 0.25) {
+            undock(); // fall through to HERO
+          } else {
+            return;   // snap: stay docked
+          }
+        }
+
+        // ── HERO (scroll-driven) ─────────────────────────────────
+        p = clamp(scrollY / params.scrollEnd, 0, 1);
+        var e  = ease(p);
+
+        if (isMobile) {
+          // Mobile: animate width/height from fullscreen portrait to landscape mockup
+          var vw = window.innerWidth;
+          var vh = window.innerHeight;
+          var tw = params.targetW;
+          var th = params.targetH;
+          // Target center (viewport-relative at scrollEnd)
+          var tCX = params.targetDocLeft + tw / 2;
+          var tCY = params.targetDocTop + th / 2 - params.scrollEnd;
+
+          var curW = lerp(vw, tw, e);
+          var curH = lerp(vh, th, e);
+          var curCX = lerp(vw / 2, tCX, e);
+          var curCY = lerp(vh / 2, tCY, e);
+
+          vid.style.inset = 'auto';
+          vid.style.width  = curW + 'px';
+          vid.style.height = curH + 'px';
+          vid.style.left   = (curCX - curW / 2) + 'px';
+          vid.style.top    = (curCY - curH / 2) + 'px';
+          vid.style.objectFit = 'cover';
+          vid.style.borderRadius = lerp(0, 12, e) + 'px';
+        } else {
+          vid.style.transform    = 'translate(' + lerp(0, params.tx, e) + 'px,' +
+                                    lerp(0, params.ty, e) + 'px) scale(' + lerp(1, params.scale, e) + ')';
+          vid.style.borderRadius = lerp(0, 12, e) + 'px';
+        }
         if (content) {
           // Fade out ALL bottom-left content over p 0.00–0.10
           var contentFade = clamp(p / 0.10, 0, 1);
@@ -257,10 +569,10 @@
           content.style.pointerEvents = p > 0.05 ? 'none' : '';
         }
         // Centered text overlay
-        // Headline: entrance at p 0.08–0.20, long hold, crossfades out at p 0.75–0.87
+        // Headline: entrance at p 0.18–0.32, holds until p 0.58, crossfades out at p 0.58–0.72
         if (centerHL) {
-          var hlIn  = ease(clamp((p - 0.08) / 0.12, 0, 1));
-          var hlOut = ease(clamp((p - 0.75) / 0.12, 0, 1));
+          var hlIn  = ease(clamp((p - 0.18) / 0.14, 0, 1));
+          var hlOut = ease(clamp((p - 0.58) / 0.14, 0, 1));
           centerHL.style.opacity   = hlIn * (1 - hlOut);
           var scaleIn = lerp(0.92, 1, hlIn);
           var yIn     = lerp(40, 0, hlIn);
@@ -269,227 +581,61 @@
           if (hlIn > 0.01) centerHL.classList.add('is-visible');
           else centerHL.classList.remove('is-visible');
         }
-        // Mission crossfades in at p 0.75–0.87, fades out at p 0.92–1.0 (exits before video)
-        if (centerMis) {
-          var misIn  = ease(clamp((p - 0.75) / 0.12, 0, 1));
-          var misOut = ease(clamp((p - 0.92) / 0.08, 0, 1));
-          centerMis.style.opacity = misIn * (1 - misOut);
+        // Mission fades in at p 0.58–0.72, stays visible (merge handled separately)
+        if (centerMis && !hasMerged) {
+          var misIn = ease(clamp((p - 0.58) / 0.14, 0, 1));
+          centerMis.style.opacity = misIn;
           centerMis.style.transform = 'translateY(' + lerp(30, 0, misIn) + 'px)';
         }
       });
 
-  }
+    // Mission text merge: overlay → real text seamless handoff
+    var missionText = document.querySelector('.mission-text');
 
-  /* ── Hero → Demo Morph (UI Assemble - Scheme A) ── */
-  function setupHeroDemoMorph() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (window.innerWidth < 810) return;
-
-    var vid        = document.querySelector('.hero-vid');
-    var demoApp    = document.querySelector('.demo-app');
-    var demoSection = document.getElementById('demo');
-    var centerTextEl = document.querySelector('.hero-center-text');
-    var demoCanvas   = document.querySelector('.demo-canvas');
-    if (!vid || !demoApp || !demoSection || !demoCanvas) return;
-
-    function lerp(a, b, t) { return a + (b - a) * t; }
-    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-
-    var BOTTOM_GAP    = 80;
-    var SNAP_TRIGGER  = 0.35;
-    var MORPH_START   = 0.45; 
-
-    var isSnapping     = false;
-    var morphTriggered = false;
-    var morphComplete  = false;
-    var collapseAnim   = null;
-    var curTx = 0, curTy = 0, curScale = 0.6, curRadius = 12;
-
-    // Scroll lock helpers
-    var lockHandler = function (e) { e.preventDefault(); };
-    function lockScroll() {
-      window.addEventListener('wheel', lockHandler, { passive: false });
-      window.addEventListener('touchmove', lockHandler, { passive: false });
-    }
-    function unlockScroll() {
-      window.removeEventListener('wheel', lockHandler);
-      window.removeEventListener('touchmove', lockHandler);
+    if (isMobile && missionText) {
+      // Mobile: no center overlay, just show mission text directly
+      missionText.style.opacity = '1';
+      missionText.style.color = '';
+      missionText.style.textShadow = '';
+      missionText.classList.add('is-revealed');
     }
 
-    function getTarget() {
-      var r = demoCanvas.getBoundingClientRect();
-      return { cx: r.left + r.width / 2, cy: r.top + r.height / 2, width: r.width, height: r.height };
-    }
-
-    function snapToDemo() {
-      if (isSnapping) return;
-      isSnapping = true;
-      lockScroll();
-
-      var targetY   = demoSection.offsetTop;
-      var startY    = window.scrollY;
-      var diff      = targetY - startY;
-      var duration  = Math.min(700, Math.max(400, Math.abs(diff) * 0.4));
-      var startTime = performance.now();
-
-      function tick(now) {
-        var t = Math.min((now - startTime) / duration, 1);
-        var e = 1 - Math.pow(1 - t, 3);
-        window.scrollTo(0, startY + diff * e);
-        if (t < 1) {
-          requestAnimationFrame(tick);
-        } else {
-          triggerAssemble();
-        }
-      }
-      requestAnimationFrame(tick);
-    }
-
-    function triggerAssemble() {
-      if (morphTriggered) return;
-      morphTriggered = true;
-
-      if (centerTextEl) {
-        centerTextEl.style.transition = 'opacity 0.25s ease';
-        centerTextEl.style.opacity = '0';
-      }
-
-      var vw = window.innerWidth;
-      var vh = window.innerHeight;
-      var tgt = getTarget();
-
-      var targetScale = Math.max(tgt.width / vw, tgt.height / (vh - BOTTOM_GAP));
-
-      var MORPH_DUR = 450;
-
-      window._heroCollapseAnim = collapseAnim = vid.animate([
-        {
-          transform: 'translate(0px, 0px) scale(' + curScale + ')',
-          borderRadius: curRadius + 'px',
-          boxShadow: '0 0 0 rgba(0,0,0,0)',
-          opacity: 1
-        },
-        {
-          transform: 'translate(0px, 0px) scale(' + (targetScale * 0.96) + ')',
-          borderRadius: '16px',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-          opacity: 1,
-          offset: 0.4
-        },
-        {
-          transform: 'translate(0px, 0px) scale(' + (targetScale * 1.02) + ')',
-          borderRadius: '16px',
-          boxShadow: '0 40px 80px rgba(0,0,0,0.8)',
-          opacity: 1,
-          offset: 0.65
-        },
-        {
-          transform: 'translate(0px, 0px) scale(' + targetScale + ')',
-          borderRadius: '16px',
-          boxShadow: '0 10px 20px rgba(0,0,0,0.3)',
-          opacity: 0, // Video dissolves smoothly to reveal storyboard
-          offset: 1
-        }
-      ], {
-        duration: MORPH_DUR,
-        easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
-        fill: 'forwards'
-      });
-
-      // At offset 0.65 (the bounce peak), fade in the UI
-      setTimeout(function() {
-        demoApp.classList.add('demo-intro');
-        demoApp.classList.remove('collapsed');
-        var chatInputEl = document.querySelector('.demo-chat-input');
-        if (chatInputEl) {
-          chatInputEl.classList.add('focused');
-          chatInputEl.classList.add('morph-landed');
-        }
-        
-        window.dispatchEvent(new CustomEvent('hero-morph-complete'));
-      }, MORPH_DUR * 0.65);
-
-      collapseAnim.onfinish = function () {
-        vid.style.visibility = 'hidden';
-        morphComplete = true;
-        unlockScroll();
-      };
-    }
-
-    function resetMorph() {
-      if (collapseAnim) { collapseAnim.cancel(); collapseAnim = null; }
-      isSnapping     = false;
-      morphTriggered = false;
-      morphComplete  = false;
-      unlockScroll();
-      vid.style.visibility   = '';
-      vid.style.opacity      = '';
-      vid.style.filter       = '';
-      vid.style.borderRadius = '';
-      vid.style.transform    = '';
-      vid.style.boxShadow    = '';
-      
-      var chatInputEl = document.querySelector('.demo-chat-input');
-      if (chatInputEl) {
-        chatInputEl.classList.remove('focused');
-        chatInputEl.classList.remove('morph-landed');
-      }
-
-      if (centerTextEl) {
-        centerTextEl.style.transition = '';
-        centerTextEl.style.opacity = '';
-      }
-      if (demoApp) {
-        demoApp.classList.remove('expanded');
-        demoApp.classList.add('collapsed');
-      }
-      window._heroMorphActive = false;
-      window.dispatchEvent(new CustomEvent('hero-morph-reverse'));
-    }
-
-    /* ── Scroll handler ── */
     addScrollHandler(function () {
-      var demoRect = demoSection.getBoundingClientRect();
-      var vh = window.innerHeight;
-      var demoVis = clamp(1 - demoRect.top / vh, 0, 1);
+      if (!centerMis || !missionText) return;
+      var mtRect = missionText.getBoundingClientRect();
+      var mtCenter = mtRect.top + mtRect.height / 2;
+      var vpCenter = window.innerHeight / 2;
 
-      if (morphTriggered) {
-        if (demoVis < 0.3) resetMorph();
-        return;
-      }
-
-      if (demoVis < SNAP_TRIGGER) {
-        window._heroMorphActive = false;
-        return;
-      }
-
-      if (!isSnapping) {
-        snapToDemo();
-      }
-
-      if (demoVis >= MORPH_START) {
-        window._heroMorphActive = true;
-        var vw = window.innerWidth;
-        
-        var tgt = getTarget();
-
-        var mp = clamp((demoVis - MORPH_START) / (1.0 - MORPH_START), 0, 1);
-        var me = 1 - Math.pow(1 - mp, 2); 
-
-        var targetScale = Math.max(tgt.width / vw, tgt.height / (vh - BOTTOM_GAP));
-
-        curScale  = lerp(0.6, targetScale * 1.05, me);
-        curTx     = 0;
-        curTy     = 0;
-        curRadius = lerp(12, 16, me);
-
-        vid.style.transform    = 'translate(0px, 0px) scale(' + curScale + ')';
-        vid.style.borderRadius = curRadius + 'px';
-        vid.style.filter       = 'none';
-        vid.style.opacity      = '1';
+      if (mtCenter <= vpCenter && !hasMerged) {
+        hasMerged = true;
+        // 1. Instantly show real text as white (same as overlay)
+        missionText.style.transition = 'none';
+        missionText.style.opacity = '1';
+        missionText.style.color = 'var(--cream)';
+        missionText.style.transform = 'translateY(0)';
+        missionText.style.textShadow = '0 2px 32px rgba(0,0,0,0.5)';
+        // 2. Hide overlay (same frame — visually seamless)
+        centerMis.style.opacity = '0';
+        // 3. Force reflow, then transition color to black
+        void missionText.offsetWidth;
+        missionText.style.transition = 'color 1.0s ease, text-shadow 0.8s ease';
+        missionText.style.color = '';
+        missionText.style.textShadow = '';
+        missionText.classList.add('is-revealed');
+      } else if (mtCenter > vpCenter && hasMerged) {
+        // Reverse: restore overlay, hide real text
+        hasMerged = false;
+        missionText.classList.remove('is-revealed');
+        missionText.style.transition = 'none';
+        missionText.style.opacity = '0';
+        missionText.style.color = '';
+        missionText.style.transform = '';
+        missionText.style.textShadow = '';
+        centerMis.style.opacity = '1';
       }
     });
   }
+
   /* ── iPhone Enter Zone ───────────────────────────────────── */
   function setupIphoneEnter() {
     if (window.innerWidth < 810) return;
@@ -537,271 +683,22 @@
     io.observe(zone);
   }
 
-  /* ── Demo → Phone Entrance (trigger-based) + Products Carousel (scroll-driven) ── */
-  function setupDemoToPhone() {
-    if (window.innerWidth < 810) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    var demoApp        = document.querySelector('.demo-app');
-    var demoSection    = document.getElementById('demo');
-    var productsSection = document.getElementById('features');
+  /* ── Products Section — scroll-driven ────────────────────── */
+  function setupProductsScroll() {
     var scrollContainer = document.getElementById('products-scroll');
-    var device         = document.querySelector('.iphone-device');
-    var phoneContainer = document.querySelector('.products-phone');
-    var productsText   = document.querySelector('.products-text');
-    var bgFader        = document.querySelector('.products-bg-fader');
-    var heroClone      = document.querySelector('.feed-item-hero');
-    var productsHeader = document.querySelector('.products-header');
-    var productsLayout = document.querySelector('.products-layout');
-
-    if (!demoApp || !demoSection || !productsSection || !scrollContainer || !device || !phoneContainer || !productsText) return;
-
-    function lerp(a, b, t) { return a + (b - a) * t; }
-    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-
-    // Hero visibility is controlled by is-active/is-prev like all feed items.
-    // The whole phone is hidden via device translateY(200vh) until entrance.
-
-    // ── Hide products UI until entrance triggers ──
-    // The products section overlaps demo (margin-top: -240vh, z-index:3),
-    // so without this the phone would be visible during demo scroll.
-    device.style.transform = 'translateY(200vh)';
-    if (bgFader) bgFader.style.opacity = '0';
-    if (productsHeader) {
-      productsHeader.style.opacity = '0';
-      productsHeader.style.transform = 'translateY(20px)';
-    }
-    productsText.style.opacity = '0';
-    productsText.style.transform = 'translateY(40px)';
-
-    /* ── Scroll lock helpers ── */
-    var lockHandler = function (e) { e.preventDefault(); };
-    function lockScroll() {
-      window.addEventListener('wheel', lockHandler, { passive: false });
-      window.addEventListener('touchmove', lockHandler, { passive: false });
-    }
-    function unlockScroll() {
-      window.removeEventListener('wheel', lockHandler);
-      window.removeEventListener('touchmove', lockHandler);
-    }
-
-    /* ── Entrance state ── */
-    var entranceTriggered = false;
-    var entranceComplete  = false;
-    var triggerScrollY    = 0; // scrollY when entrance fired
-    var reverseCooldown   = false; // prevent re-trigger right after reverse
-    var lastScrollY       = window.scrollY; // for scroll direction detection
-
-    /* ── Trigger: detect when demo sticky zone is near its end ── */
-    function checkTrigger() {
-      if (entranceTriggered) return;
-      if (reverseCooldown) return;
-
-      // Only trigger when scrolling DOWN
-      var currentY = window.scrollY;
-      var scrollingDown = currentY > lastScrollY;
-      lastScrollY = currentY;
-      if (!scrollingDown) return;
-
-      var demoRect = demoSection.getBoundingClientRect();
-      var vh = window.innerHeight;
-      if (demoRect.bottom <= vh * 1.3) {
-        triggerEntrance();
-      }
-    }
-
-    function triggerEntrance() {
-      if (entranceTriggered) return;
-      entranceTriggered = true;
-      triggerScrollY = window.scrollY;
-      lockScroll();
-
-      // Start hero clone video playing
-      var cloneVid = heroClone ? heroClone.querySelector('video') : null;
-      if (cloneVid) cloneVid.play().catch(function(){});
-
-      // Step 1: Snap-scroll to products section
-      var targetY = productsSection.offsetTop;
-      var startY  = window.scrollY;
-      var diff    = targetY - startY;
-      var snapDur = Math.min(600, Math.max(300, Math.abs(diff) * 0.3));
-      var snapStart = performance.now();
-
-      function snapTick(now) {
-        var t = Math.min((now - snapStart) / snapDur, 1);
-        var e = 1 - Math.pow(1 - t, 3); // ease-out cubic
-        window.scrollTo(0, startY + diff * e);
-        if (t < 1) {
-          requestAnimationFrame(snapTick);
-        } else {
-          playEntrance();
-        }
-      }
-      requestAnimationFrame(snapTick);
-    }
-
-    function playEntrance() {
-      var vw = window.innerWidth;
-      var vh = window.innerHeight;
-
-      // Compute positions
-      var pRect = phoneContainer.getBoundingClientRect();
-      var devW  = device.offsetWidth;
-      var natDevL    = pRect.left + (pRect.width - devW) / 2;
-      var centerDevL = (vw - devW) / 2;
-      var offsetTx   = centerDevL - natDevL;
-      var SCALE_BIG  = 1.8;
-
-      // Initial state: phone below viewport, centered, large
-      device.style.transition = 'none';
-      device.style.transform  = 'translate(' + offsetTx + 'px, ' + vh + 'px) scale(' + SCALE_BIG + ')';
-
-      // Force reflow so initial state applies
-      void device.offsetWidth;
-
-      // ── Phase 1 (0ms): Demo fades out ──
-      demoApp.style.transition = 'opacity 0.4s ease, transform 0.5s ease';
-      demoApp.style.opacity = '0';
-      demoApp.style.transform = 'scale(1.08)';
-      demoApp.style.pointerEvents = 'none';
-
-      // ── Phase 2 (100ms): Phone rises to center ──
-      setTimeout(function() {
-        device.style.transition = 'transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)';
-        device.style.transform  = 'translate(' + offsetTx + 'px, 0px) scale(' + SCALE_BIG + ')';
-      }, 100);
-
-      // ── Phase 3 (1100ms): Hold, then phone slides left + shrinks ──
-      setTimeout(function() {
-        device.style.transition = 'transform 0.7s cubic-bezier(0.22, 1, 0.36, 1)';
-        device.style.transform  = 'translate(0px, 0px) scale(1)';
-      }, 1100);
-
-      // ── Phase 4 (1200ms): Background fades to white ──
-      setTimeout(function() {
-        if (bgFader) {
-          bgFader.style.transition = 'opacity 0.6s ease';
-          bgFader.style.opacity = '1';
-        }
-      }, 1200);
-
-      // ── Phase 5 (1500ms): Header + text appear ──
-      setTimeout(function() {
-        if (productsHeader) {
-          productsHeader.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-          productsHeader.style.opacity   = '1';
-          productsHeader.style.transform = 'translateY(0)';
-        }
-      }, 1500);
-
-      setTimeout(function() {
-        productsText.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        productsText.style.opacity   = '1';
-        productsText.style.transform = 'translateY(0)';
-      }, 1650);
-
-      // ── Phase 6 (2200ms): Entrance complete, unlock scroll ──
-      setTimeout(function() {
-        entranceComplete = true;
-        unlockScroll();
-        // Clean up inline transitions so carousel scroll doesn't conflict
-        device.style.transition = '';
-      }, 2200);
-    }
-
-    /* ── Reverse entrance: phone flies back down, demo reappears ── */
-    var reverseTriggered = false;
-
-    function triggerReverse() {
-      if (reverseTriggered) return;
-      reverseTriggered = true;
-      lockScroll();
-
-      var vw = window.innerWidth;
-      var vh = window.innerHeight;
-
-      // Compute center offset (same math as playEntrance)
-      var pRect = phoneContainer.getBoundingClientRect();
-      var devW  = device.offsetWidth;
-      var natDevL    = pRect.left + (pRect.width - devW) / 2;
-      var centerDevL = (vw - devW) / 2;
-      var offsetTx   = centerDevL - natDevL;
-      var SCALE_BIG  = 1.8;
-
-      // Phase 1 (T+0): Hide text + header + bg fades to dark
-      productsText.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-      productsText.style.opacity   = '0';
-      productsText.style.transform = 'translateY(30px)';
-      if (productsHeader) {
-        productsHeader.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-        productsHeader.style.opacity   = '0';
-        productsHeader.style.transform = 'translateY(15px)';
-      }
-      if (bgFader) {
-        bgFader.style.transition = 'opacity 0.35s ease';
-        bgFader.style.opacity = '0';
-      }
-
-      // Phase 2 (T+100): Phone centers + grows (0.5s, finishes at T+600)
-      setTimeout(function() {
-        device.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
-        device.style.transform  = 'translate(' + offsetTx + 'px, 0px) scale(' + SCALE_BIG + ')';
-      }, 100);
-
-      // Phase 3 (T+620): Snap scroll (hidden behind big centered phone), then phone slides down
-      setTimeout(function() {
-        // Snap scroll while phone covers viewport
-        window.scrollTo(0, triggerScrollY);
-
-        // Start phone slide-down (no overlap with phase 2)
-        void device.offsetWidth; // force reflow so new transition applies cleanly
-        device.style.transition = 'transform 0.55s cubic-bezier(0.4, 0, 1, 1)';
-        device.style.transform  = 'translate(' + offsetTx + 'px, ' + vh + 'px) scale(' + SCALE_BIG + ')';
-      }, 620);
-
-      // Phase 4 (T+700): Demo fades in (while phone slides away)
-      setTimeout(function() {
-        demoApp.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-        demoApp.style.opacity = '1';
-        demoApp.style.transform = 'scale(1)';
-        demoApp.style.pointerEvents = '';
-      }, 700);
-
-      // Phase 5 (T+1250): All done, reset state
-      setTimeout(function() {
-        device.style.transition = 'none';
-        device.style.transform  = 'translateY(200vh)';
-
-        entranceTriggered = false;
-        entranceComplete  = false;
-        reverseTriggered  = false;
-        currentIdx = 0;
-
-        // Reset carousel feed items
-        feedItems.forEach(function(item, i) {
-          item.classList.remove('is-active', 'is-prev');
-          if (i === 0) item.classList.add('is-active');
-        });
-        features.forEach(function(f, i) { f.classList.toggle('is-active', i === 0); });
-        dots.forEach(function(d, i) { d.classList.toggle('active', i === 0); });
-
-        unlockScroll();
-
-        // Cooldown: prevent checkTrigger() from re-firing immediately
-        reverseCooldown = true;
-        lastScrollY = window.scrollY;
-        setTimeout(function() { reverseCooldown = false; }, 600);
-      }, 1250);
-    }
-
-    /* ── Carousel state ── */
-    var features  = Array.from(document.querySelectorAll('.products-feature'));
+    var features = Array.from(document.querySelectorAll('.products-feature'));
     var feedItems = Array.from(document.querySelectorAll('.phone-feed .feed-item'));
-    var dots      = Array.from(document.querySelectorAll('.progress-dot'));
-    var heartsEl  = document.getElementById('products-hearts');
-    var likeEl    = document.getElementById('products-like-count');
+    var dots = Array.from(document.querySelectorAll('.progress-dot'));
+    var hintEl = document.getElementById('products-scroll-hint');
+    var heartsEl = document.getElementById('products-hearts');
+    var likeEl   = document.getElementById('products-like-count');
     var danmakuEl = document.getElementById('products-danmaku');
-    var hintEl    = document.getElementById('products-scroll-hint');
+
+    if (!scrollContainer || !features.length) return;
+
+    var isMobileProducts = window.innerWidth < 810;
+    var featureVids = isMobileProducts ? Array.from(document.querySelectorAll('.products-feature-vid video')) : [];
+
     var totalSteps = features.length;
     var currentIdx = 0;
 
@@ -811,7 +708,10 @@
       ['The cinematography is insane', 'Director mode is fire', 'Bookmarked!'],
       ['One-click export?', 'The future is here', 'Game changer']
     ];
-    function formatCount(n) { return n >= 10000 ? (n / 10000).toFixed(1) + 'w' : n.toString(); }
+
+    function formatCount(n) {
+      return n >= 10000 ? (n / 10000).toFixed(1) + 'w' : n.toString();
+    }
 
     function spawnHearts(container, count) {
       for (var i = 0; i < count; i++) {
@@ -828,6 +728,7 @@
         })(i);
       }
     }
+
     function spawnComment(container, text) {
       var c = document.createElement('div');
       c.className = 'tiktok-danmaku-item';
@@ -837,81 +738,168 @@
       setTimeout(function() { c.remove(); }, 4000);
     }
 
+    // Hero video is the first "feed" — it's already in the phone via flyToPhone.
+    // feedItems (from .phone-feed) are only the 2nd and 3rd videos.
+    var heroVid = document.querySelector('.hero-vid');
+
     function setStep(newIdx) {
       if (newIdx === currentIdx) return;
       currentIdx = newIdx;
-      features.forEach(function(f, i) { f.classList.toggle('is-active', i === newIdx); });
-      feedItems.forEach(function(item, i) {
-        item.classList.remove('is-active', 'is-prev');
-        var vid = item.querySelector('video');
-        if (i === newIdx) {
-          item.classList.add('is-active');
-          if (vid) { vid.currentTime = 0; vid.play().catch(function(){}); }
-        } else if (i < newIdx) {
-          item.classList.add('is-prev');
-          if (vid) vid.pause();
-        } else {
-          if (vid) vid.pause();
+
+      // Text crossfade (works on both mobile and desktop)
+      features.forEach(function(f, i) {
+        f.classList.toggle('is-active', i === newIdx);
+      });
+
+      if (isMobileProducts) {
+        // Mobile: hero video is in the phone at step 0, slide it away for other steps
+        if (heroVid) {
+          heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
+          heroVid.style.transform = newIdx === 0 ? '' : 'translateY(-100%)';
         }
-      });
-      if (heartsEl) spawnHearts(heartsEl, 6);
-      if (likeEl) {
-        likeEl.textContent = formatCount(likeCounts[newIdx] || 0);
-        likeEl.classList.remove('like-bump');
-        void likeEl.offsetWidth;
-        likeEl.classList.add('like-bump');
+        // Feed items: feedItems[0] = step 1, feedItems[1] = step 2 (same as desktop)
+        feedItems.forEach(function(item, i) {
+          var stepIdx = i + 1;
+          item.classList.remove('is-active', 'is-prev');
+          var vid = item.querySelector('video');
+          if (stepIdx === newIdx) {
+            item.classList.add('is-active');
+            if (vid) { vid.currentTime = 0; vid.play().catch(function(){}); }
+          } else if (stepIdx < newIdx) {
+            item.classList.add('is-prev');
+            if (vid) vid.pause();
+          } else {
+            if (vid) vid.pause();
+          }
+        });
+      } else {
+        // Desktop: phone feed — hero video = step 0, feedItems[0] = step 1, feedItems[1] = step 2
+        if (heroVid) {
+          if (newIdx === 0) {
+            heroVid.style.transform = '';
+            heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
+          } else {
+            heroVid.style.transition = 'transform 0.55s cubic-bezier(0.22, 0.68, 0, 1)';
+            heroVid.style.transform = 'translateY(-100%)';
+          }
+        }
+
+        feedItems.forEach(function(item, i) {
+          var stepIdx = i + 1;
+          item.classList.remove('is-active', 'is-prev');
+          var vid = item.querySelector('video');
+          if (stepIdx === newIdx) {
+            item.classList.add('is-active');
+            if (vid) { vid.currentTime = 0; vid.play().catch(function(){}); }
+          } else if (stepIdx < newIdx) {
+            item.classList.add('is-prev');
+            if (vid) vid.pause();
+          } else {
+            if (vid) vid.pause();
+          }
+        });
+
+        // Hearts burst
+        if (heartsEl) spawnHearts(heartsEl, 6);
+
+        // Like count
+        if (likeEl) {
+          likeEl.textContent = formatCount(likeCounts[newIdx] || 0);
+          likeEl.classList.remove('like-bump');
+          void likeEl.offsetWidth;
+          likeEl.classList.add('like-bump');
+        }
+
+        // Danmaku
+        var msgs = commentSets[newIdx] || [];
+        msgs.forEach(function(msg, i) {
+          if (danmakuEl) setTimeout(spawnComment.bind(null, danmakuEl, msg), i * 800);
+        });
       }
-      var msgs = commentSets[newIdx] || [];
-      msgs.forEach(function(msg, i) {
-        if (danmakuEl) setTimeout(spawnComment.bind(null, danmakuEl, msg), i * 800);
+
+      // Progress dots
+      dots.forEach(function(d, i) {
+        d.classList.toggle('active', i === newIdx);
       });
-      dots.forEach(function(d, i) { d.classList.toggle('active', i === newIdx); });
     }
 
-    /* ── Scroll handler: trigger detection + carousel ── */
-    addScrollHandler(function () {
-      // Check for entrance trigger
-      if (!entranceTriggered) {
-        checkTrigger();
-        return;
-      }
+    // Scroll handler
+    addScrollHandler(function() {
+        var rect = scrollContainer.getBoundingClientRect();
+        var scrollDistance = rect.height - window.innerHeight;
+        if (scrollDistance <= 0) return;
+        var progress = Math.max(0, Math.min(1, -rect.top / scrollDistance));
+        var newIdx = Math.min(Math.floor(progress * totalSteps), totalSteps - 1);
+        setStep(newIdx);
 
-      // Block carousel changes during reverse animation
-      if (!entranceComplete || reverseTriggered) return;
+        // Fade hint after first step
+        if (hintEl) {
+          hintEl.style.opacity = progress < 0.15 ? '1' : '0';
+        }
+      });
 
-      var rect = scrollContainer.getBoundingClientRect();
-      var scrollDistance = rect.height - window.innerHeight;
-      if (scrollDistance <= 0) return;
-      var progress = clamp(-rect.top / scrollDistance, 0, 1);
-      var newIdx = Math.min(Math.floor(progress * totalSteps), totalSteps - 1);
-
-      // Reverse: at first video and scrolled above products-scroll top
-      // Check BEFORE setStep to avoid video 2 flashing during transition
-      if (newIdx === 0 && rect.top > 0) {
-        triggerReverse();
-        return;
-      }
-
-      setStep(newIdx);
-
-      if (hintEl) hintEl.style.opacity = progress < 0.1 ? '1' : '0';
-    });
-
-    // Ambient hearts
-    var ambientTimer = null;
+    // Ambient hearts — only run while section is visible
+    var ambientHeartsTimer = null;
     var heartsIO = new IntersectionObserver(function(entries) {
       entries.forEach(function(e) {
-        if (e.isIntersecting && !ambientTimer) {
-          ambientTimer = setInterval(function() {
-            if (heartsEl) spawnHearts(heartsEl, 2);
+        if (e.isIntersecting && !ambientHeartsTimer) {
+          ambientHeartsTimer = setInterval(function() {
+            if (heartsEl && currentIdx >= 0) spawnHearts(heartsEl, 2);
           }, 5000);
-        } else if (!e.isIntersecting && ambientTimer) {
-          clearInterval(ambientTimer);
-          ambientTimer = null;
+        } else if (!e.isIntersecting && ambientHeartsTimer) {
+          clearInterval(ambientHeartsTimer);
+          ambientHeartsTimer = null;
         }
       });
     }, { threshold: 0.1 });
     heartsIO.observe(scrollContainer);
+  }
+
+  /* ── Chat Animation ───────────────────────────────────────── */
+  function setupChatAnimation() {
+    var chatPanel = document.querySelector('.mockup-chat');
+    if (!chatPanel) return;
+
+    var bubbles = Array.from(chatPanel.querySelectorAll('[data-chat]'));
+    if (!bubbles.length) return;
+
+    // Insert typing indicator before first AI bubble
+    var typingEl = document.createElement('div');
+    typingEl.className = 'chat-typing';
+    typingEl.innerHTML = '<span></span><span></span><span></span>';
+    var firstAI = chatPanel.querySelector('.chat-bubble.ai');
+    if (firstAI) { chatPanel.insertBefore(typingEl, firstAI); }
+
+    function showBubble(i) { if (bubbles[i]) bubbles[i].classList.add('is-visible'); }
+    function hideBubbles() { bubbles.forEach(function (b) { b.classList.remove('is-visible'); }); }
+    function showTyping() { typingEl.classList.add('is-active'); }
+    function hideTyping() { typingEl.classList.remove('is-active'); }
+
+    function runSequence() {
+      hideBubbles();
+      hideTyping();
+      setTimeout(function () { showBubble(0); }, 400);
+      setTimeout(function () { showTyping(); }, 1200);
+      setTimeout(function () { hideTyping(); showBubble(1); }, 2600);
+      setTimeout(function () { showBubble(2); }, 3800);
+      setTimeout(function () { showTyping(); }, 4600);
+      setTimeout(function () { hideTyping(); showBubble(3); }, 6000);
+      setTimeout(function () { hideBubbles(); hideTyping(); setTimeout(runSequence, 400); }, 9000);
+    }
+
+    var hasStarted = false;
+    var appPreview = document.querySelector('.app-preview');
+    if (!appPreview) return;
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting && !hasStarted) {
+          hasStarted = true;
+          runSequence();
+        }
+      });
+    }, { threshold: 0.35 });
+    observer.observe(appPreview);
   }
 
   /* ── Nav theme swap (light/dark section detection) ──────── */
@@ -981,12 +969,11 @@
     if (window.innerWidth < 810) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    var section  = document.querySelector('.cine-hero');
-    var stickyEl = document.querySelector('.cine-hero-sticky');
-    var frame    = document.querySelector('.cine-hero-frame');
-    var video    = document.querySelector('.cine-hero-vid');
-    var title    = document.querySelector('.cine-hero-title');
-    if (!section || !stickyEl || !frame || !video) return;
+    var section = document.querySelector('.cine-hero');
+    var frame   = document.querySelector('.cine-hero-frame');
+    var video   = document.querySelector('.cine-hero-vid');
+    var title   = document.querySelector('.cine-hero-title');
+    if (!section || !frame || !video) return;
 
     function lerp(a, b, t) { return a + (b - a) * t; }
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
@@ -995,12 +982,13 @@
     var FINAL_W = 918;
     var FINAL_H = 459;
     var FINAL_R = 20;
-    var DEAD_ZONE = 0.0;
-    var SHRINK_END = 0.35;  // shrink in first 35%
-    var FADE_START = 0.40;  // fade starts right after shrink
-    var FADE_END = 0.75;    // fully transparent — research visible behind
+    var DEAD_ZONE = 0.05;
+    var SHRINK_END = 0.25;  // shrink completes at 25%
+    var FADE_START = 0.55;  // crossfade starts at 55% — long pause after shrink
+    var FADE_END = 0.62;    // crossfade ends
     var waitingToFreeze = false;
     var frozen = false;
+    var demoSection = document.getElementById('demo');
 
     // Freeze when video finishes its current playthrough
     video.addEventListener('ended', function () {
@@ -1032,18 +1020,18 @@
 
         // Title fade in during shrink
         if (title) {
-          var titleProgress = clamp((progress - 0.10) / 0.15, 0, 1);
+          var titleProgress = clamp((progress - 0.15) / 0.2, 0, 1);
           title.style.opacity = titleProgress;
         }
 
-        // Fade out entire sticky (frame + black background) — reveals research behind
+        // Crossfade: cine-hero fades out, demo fades in
         if (progress >= FADE_START) {
           var fadeT = clamp((progress - FADE_START) / (FADE_END - FADE_START), 0, 1);
-          stickyEl.style.opacity = 1 - fadeT;
-          stickyEl.style.pointerEvents = fadeT > 0.5 ? 'none' : '';
+          frame.style.opacity = 1 - fadeT;
+          if (demoSection) demoSection.classList.add('active');
         } else {
-          stickyEl.style.opacity = 1;
-          stickyEl.style.pointerEvents = '';
+          frame.style.opacity = 1;
+          if (demoSection) demoSection.classList.remove('active');
         }
 
         // Freeze: wait for video to finish its current playthrough
@@ -1243,9 +1231,9 @@
     setupTextVideoMask();
     setupFpIndicator();
     setupHeroShrink();
-    setupHeroDemoMorph();
-    setupDemoToPhone();
+    setupChatAnimation();
     setupIphoneEnter();
+    setupProductsScroll();
     setupCineHeroSnap();
     setupCineHeroShrink();
     setupResearchReveal();
