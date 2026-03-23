@@ -2661,3 +2661,15 @@ body {
   .creator-track { animation: none !important; }
   .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
 }
+
+/* ── Mobile footer fix: stack columns vertically ── */
+@media (max-width: 809px) {
+  .footer-3col {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    text-align: center;
+  }
+  .footer-col-left { align-items: center; }
+  .footer-col-right { align-items: center; }
+  .footer-container { padding: 60px 20px 32px; }
+}
