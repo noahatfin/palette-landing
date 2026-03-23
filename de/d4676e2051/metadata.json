@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "ded4676e2051",
+  "strategy": "manual-commit",
+  "branch": "staging-v2",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "mobile/css/palette.css",
+    "mobile/css/styles.css",
+    "mobile/index.html",
+    "mobile/js/main.js",
+    "mobile/js/palette.js"
+  ],
+  "sessions": [
+    {
+      "metadata": "/de/d4676e2051/0/metadata.json",
+      "transcript": "/de/d4676e2051/0/full.jsonl",
+      "context": "/de/d4676e2051/0/context.md",
+      "content_hash": "/de/d4676e2051/0/content_hash.txt",
+      "prompt": "/de/d4676e2051/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 714,
+    "cache_creation_tokens": 1077092,
+    "cache_read_tokens": 86182189,
+    "output_tokens": 241612,
+    "api_call_count": 546
+  }
+}
