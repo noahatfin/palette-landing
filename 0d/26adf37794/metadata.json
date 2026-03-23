@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.9",
+  "checkpoint_id": "0d26adf37794",
+  "strategy": "manual-commit",
+  "branch": "staging-v2",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "mobile/css/demo.css",
+    "mobile/js/demo.js"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0d/26adf37794/0/metadata.json",
+      "transcript": "/0d/26adf37794/0/full.jsonl",
+      "context": "/0d/26adf37794/0/context.md",
+      "content_hash": "/0d/26adf37794/0/content_hash.txt",
+      "prompt": "/0d/26adf37794/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 747,
+    "cache_creation_tokens": 1088550,
+    "cache_read_tokens": 91823256,
+    "output_tokens": 245456,
+    "api_call_count": 571
+  }
+}
