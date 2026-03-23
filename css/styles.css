@@ -76,9 +76,9 @@ ul { list-style: none; }
   gap: 8px;
   border-radius: 100px;
   font-family: var(--f-sans);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 400;
-  padding: 12px 22px;
+  padding: 13px 26px;
   transition: background var(--t), color var(--t);
   white-space: nowrap;
   cursor: pointer;
@@ -136,7 +136,7 @@ ul { list-style: none; }
   margin-right: 32px;
 }
 .nav-links a {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--muted);
   transition: color var(--t);
 }
